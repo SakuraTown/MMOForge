@@ -35,6 +35,7 @@ tasks {
     shadowJar {
         dependencies {
             include(dependency("org.jetbrains.kotlin:kotlin-stdlib:1.6.10"))
+            include(dependency("com.entiv:insekicore:1.0.1"))
         }
         destinationDirectory.set(file(jarOutputFile))
         minimize()
