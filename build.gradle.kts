@@ -11,35 +11,40 @@ val jarOutputFile = "E:\\mc\\1.18 server\\plugins"
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven {
         url = uri("https://papermc.io/repo/repository/maven-public/")
     }
-    maven {
-        url = uri("https://maven.pkg.github.com/SakuraTown/InsekiCore")
-        credentials {
-            username = project.properties["USER"].toString()
-            password = project.properties["TOKEN"].toString()
-        }
-    }
-//    mavenLocal()
+//    maven {
+//        url = uri("https://maven.pkg.github.com/SakuraTown/InsekiCore")
+//        credentials {
+//            username = project.properties["USER"].toString()
+//            password = project.properties["TOKEN"].toString()
+//        }
+//    }
+
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
-    implementation("com.entiv:insekicore:1.0.1")
     compileOnly(fileTree("lib"))
-    compileOnly(kotlin("stdlib"))
+    implementation("com.entiv:insekicore:1.0.3")
+    implementation(kotlin("reflect"))
+    implementation(kotlin("stdlib"))
 
 }
 tasks {
     shadowJar {
-        dependencies {
-            include(dependency("org.jetbrains.kotlin:kotlin-stdlib:1.6.10"))
-            include(dependency("com.entiv:insekicore:1.0.1"))
-        }
+//        dependencies {
+//            include(dependency("org.jetbrains.kotlin:kotlin-stdlib:1.6.10"))
+//            include(dependency("org.jetbrains.kotlin:kotlin-reflect:1.6.10"))
+//            include(dependency("com.entiv:insekicore:1.0.1"))
+//        }
         relocate("com.entiv.insekicore", "${project.group}.${mainClass.toLowerCase()}.lib")
         destinationDirectory.set(file(jarOutputFile))
-        minimize()
+        minimize {
+            exclude(dependency("org.jetbrains.kotlin:kotlin-reflect*"))
+        }
     }
     processResources {
         val p = "${project.group}.${rootProject.name.toLowerCase()}"

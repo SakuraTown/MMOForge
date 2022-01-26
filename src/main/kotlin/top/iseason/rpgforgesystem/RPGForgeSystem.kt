@@ -8,19 +8,30 @@
 package top.iseason.rpgforgesystem
 
 
-import com.entiv.insekicore.plugin.SimplePlugin
-import org.bukkit.plugin.java.JavaPlugin
+import com.entiv.core.plugin.SimplePlugin
+import org.bukkit.Bukkit
 
 class RPGForgeSystem : SimplePlugin() {
 
+    companion object {
+        lateinit var instance: RPGForgeSystem
+            private set
+    }
+
     override fun onLoad() {
-
+        instance = this
+        super.onLoad()
+        debug = true
     }
 
-    override fun onEnable() {
+    override fun onEnabled() {
+        MainCommand().register()
+        Bukkit.getServer().pluginManager.registerEvents(EventListener, instance)
+        Config.init(instance)
     }
 
-    override fun onDisable() {
+    override fun onDisabled() {
+
     }
 
 }
