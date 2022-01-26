@@ -11,7 +11,6 @@ import com.entiv.core.config.*
 import com.entiv.core.debug.SimpleLogger
 import net.Indyuce.mmoitems.ItemStats
 import net.Indyuce.mmoitems.stat.type.DoubleStat
-import net.Indyuce.mmoitems.stat.type.ItemStat
 import java.lang.reflect.Field
 import java.util.*
 
@@ -42,7 +41,7 @@ object Config : SimpleYAMLConfig() {
     @Key("forge-map")
     var ForgeMap = listOf("ATTACK_DAMAGE 3-5")
 
-    var forgeMap = mutableMapOf<ItemStat, String>()
+    var forgeMap = mutableMapOf<DoubleStat, String>()
     override val onPreLoad: (ConfigState) -> Boolean = {
         //加载配置前调用
         true
@@ -63,13 +62,10 @@ object Config : SimpleYAMLConfig() {
             }
             val itemStat = declaredField.get(null)
             if (itemStat != null && itemStat is DoubleStat)
-                forgeMap[declaredField.get(null) as ItemStat] = split[1]
+                forgeMap[itemStat] = split[1]
             else
                 SimpleLogger.warn("Attribute is not a doubleData! :${split[0]}")
         }
-//        forgeMap.forEach { t, u ->
-//            "${t.name} $u".sendConsole()
-//        }
     }
 
     override val onPreSave: (ConfigState) -> Boolean = {

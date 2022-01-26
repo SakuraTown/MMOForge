@@ -8,6 +8,7 @@
 package top.iseason.rpgforgesystem.uitls
 
 import com.entiv.core.common.toColor
+import com.entiv.core.utils.RandomUtils
 import io.lumine.mythic.lib.api.item.ItemTag
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.ItemStats
@@ -72,17 +73,20 @@ fun ItemStack.modifyRefine(value: Int) = setRefine(getRPGData(Config.REFINE_TAG)
  * 设置强化等级
  */
 fun ItemStack.setForge(level: Int) = setRPGData(Config.FORGE_TAG, level, modifyMMO = {
-    val statHistory = it.getStatHistory(ItemStats.ATTACK_DAMAGE) ?: StatHistory(
-        it,
-        ItemStats.ATTACK_DAMAGE,
-        it.getData(ItemStats.ATTACK_DAMAGE)
-    )
-    val doubleData = statHistory.getModifiersBonus(Config.ForgeUUID)
-    //获取
-    val raw = if (doubleData != null) (doubleData as DoubleData) else DoubleData(0.0)
-    //设置
-    statHistory.registerModifierBonus(Config.ForgeUUID, raw)
-    it.setStatHistory(ItemStats.ATTACK_DAMAGE, statHistory)
+    Config.forgeMap.forEach { (itemStat, value) ->
+        val statHistory = it.getStatHistory(itemStat) ?: StatHistory(
+            it,
+            itemStat,
+            it.getData(itemStat)
+        )
+        val doubleData = statHistory.getModifiersBonus(Config.ForgeUUID)
+        //获取
+        val raw = if (doubleData != null) (doubleData as DoubleData) else DoubleData(0.0)
+        raw.add(formatForgeString(value))
+        //设置
+        statHistory.registerModifierBonus(Config.ForgeUUID, raw)
+        it.setStatHistory(itemStat, statHistory)
+    }
 })
 
 /**
@@ -112,4 +116,20 @@ fun Int.toRoman(): String {
     val i = arrayOf("", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX")
 //    val sign = if (num > 0) "+" else if (num < 0) "-" else ""
     return m[num / 1000] + c[num % 1000 / 100] + x[num % 100 / 10] + i[num % 10]
+}
+
+fun formatForgeString(value: String): Double {
+    val split = value.split("-")
+    if (split.size == 2) {
+        return try {
+            RandomUtils.getGaussian(split[0].toDouble(), split[1].toDouble())
+        } catch (e: Exception) {
+            0.0
+        }
+    }
+    return try {
+        return value.toDouble()
+    } catch (e: Exception) {
+        0.0
+    }
 }
