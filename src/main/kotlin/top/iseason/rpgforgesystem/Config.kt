@@ -11,6 +11,8 @@ import com.entiv.core.config.*
 import com.entiv.core.debug.SimpleLogger
 import net.Indyuce.mmoitems.ItemStats
 import net.Indyuce.mmoitems.stat.type.DoubleStat
+import org.bukkit.configuration.MemorySection
+import org.bukkit.configuration.file.YamlConfiguration
 import java.lang.reflect.Field
 import java.util.*
 
@@ -41,13 +43,53 @@ object Config : SimpleYAMLConfig() {
     @Key("forge-map")
     var ForgeMap = listOf("ATTACK_DAMAGE 3-5")
 
-    var forgeMap = mutableMapOf<DoubleStat, String>()
+    //实际使用的
+    val forgeMap = mutableMapOf<DoubleStat, String>()
+
+    @Comment("", "强化突破属性增加，支持小数及百分比")
+    @Key("forge-limit-map")
+    var ForgeLimitSection: MemorySection = YamlConfiguration().apply {
+        createSection("1").set("ATTACK_DAMAGE", "1%")
+        createSection("2").set("ATTACK_DAMAGE", "2%")
+        createSection("3").set("ATTACK_DAMAGE", "3%")
+        createSection("4").set("ATTACK_DAMAGE", "4%")
+        createSection("5").set("ATTACK_DAMAGE", "5%")
+    }
+    val forgeLimitMap: MutableMap<Int, Map<DoubleStat, String>> = mutableMapOf()
+
+
+    @Comment("", "精炼属性，支持小数及百分比")
+    @Key("refine-map")
+    var RefineSection: MemorySection = YamlConfiguration().apply {
+        createSection("1").set("ATTACK_DAMAGE", "1%")
+        createSection("2").set("ATTACK_DAMAGE", "2%")
+        createSection("3").set("ATTACK_DAMAGE", "3%")
+        createSection("4").set("ATTACK_DAMAGE", "4%")
+        createSection("5").set("ATTACK_DAMAGE", "5%")
+    }
+    val refineMap: MutableMap<Int, Map<DoubleStat, String>> = mutableMapOf()
+
+
     override val onPreLoad: (ConfigState) -> Boolean = {
         //加载配置前调用
         true
     }
     override val onLoad: (ConfigState) -> Unit = {
         //加载配置后调用
+        resetForge()
+        reset(RefineSection, refineMap)
+        reset(ForgeLimitSection, forgeLimitMap)
+    }
+
+    override val onPreSave: (ConfigState) -> Boolean = {
+        //保存配置前调用
+        true
+    }
+    override val onSave: (ConfigState) -> Unit = {
+        //保存配置后调用
+    }
+
+    private fun resetForge() {
         forgeMap.clear()
         val clazz = ItemStats::class.java
         ForgeMap.forEach {
@@ -68,12 +110,35 @@ object Config : SimpleYAMLConfig() {
         }
     }
 
-    override val onPreSave: (ConfigState) -> Boolean = {
-        //保存配置前调用
-        true
-    }
-    override val onSave: (ConfigState) -> Unit = {
-        //保存配置后调用
+    private fun reset(section: MemorySection, map: MutableMap<Int, Map<DoubleStat, String>>) {
+        map.clear()
+        val clazz = ItemStats::class.java
+        for (key in section.getKeys(false)) {
+            val level = try {
+                key.toInt()
+            } catch (e: NumberFormatException) {
+                continue
+            }
+            val configurationSection = section.getConfigurationSection(key) ?: continue
+            var mutableMapOf = mutableMapOf<DoubleStat, String>()
+            configurationSection.getKeys(false).forEach {
+                mutableMapOf = mutableMapOf()
+                lateinit var declaredField: Field
+                try {
+                    declaredField = clazz.getDeclaredField(it)
+                } catch (e: Exception) {
+                    SimpleLogger.warn("Attribute no found! :${it}")
+                    return@forEach
+                }
+                val itemStat = declaredField.get(null)
+                val string = configurationSection.getString(it)
+                if (itemStat != null && string != null && itemStat is DoubleStat)
+                    mutableMapOf[itemStat] = string
+                else
+                    SimpleLogger.warn("Attribute is not a doubleData! :${it}")
+            }
+            map[level] = mutableMapOf
+        }
     }
 
 }
