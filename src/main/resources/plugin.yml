@@ -2,6 +2,6 @@ name: ${name}
 main: ${main}
 version: ${version}
 authors: [${author}]
-#commands:
+api-version: 1.13
 depend:
   - MMOItems

@@ -9,7 +9,8 @@ package top.iseason.rpgforgesystem
 
 
 import com.entiv.core.command.SimpleCommand
-import top.iseason.rpgforgesystem.uitls.modifyForge
+import top.iseason.rpgforgesystem.uitls.addExp
+
 
 class MainCommand : SimpleCommand(RPGForgeSystem.instance, true, name = "test", isPlayerOnly = true) {
     override fun onCommand() {
@@ -17,7 +18,9 @@ class MainCommand : SimpleCommand(RPGForgeSystem.instance, true, name = "test", 
 //        val liveMMOItem = LiveMMOItem(itemInMainHand)
 //        liveMMOItem.getData(ItemStats.NAME).sendConsole()
 //        liveMMOItem.getData(ItemStats.ATTACK_DAMAGE).sendConsole()
-        player?.inventory?.setItemInMainHand(itemInMainHand.modifyForge(1))
+        player?.inventory?.setItemInMainHand(itemInMainHand.addExp(500))
 //        player!!.send(player?.inventory?.itemInMainHand?.getRPGData(Config.QUALITY_TAG))
+
+//        ForgeMenu().open(player!!)
     }
 }

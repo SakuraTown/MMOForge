@@ -30,6 +30,14 @@ object Config : SimpleYAMLConfig() {
     var LIMIT_TAG = "SAKURA_FORGE_LIMIT"
     val LimitUUID = UUID.fromString("aff6ef71-8963-4651-aa31-62782ba7e71f")
 
+    @Comment("", "强化限制对应多少强化等级")
+    @Key("limit-rate-tag")
+    var LimitRate = 20
+
+    @Comment("", "强化经验标签，储存在物品NBT")
+    @Key("limit-exp-tag")
+    var FORGE_EXP_TAG = "SAKURA_FORGE_EXP"
+
     @Comment("", "精炼标签，储存在物品NBT")
     @Key("refine-tag")
     var REFINE_TAG = "SAKURA_REFINE"
@@ -39,14 +47,25 @@ object Config : SimpleYAMLConfig() {
     @Key("quality_tag")
     var QUALITY_TAG = "SAKURA_QUALITY"
 
-    @Comment("", "强化属性，支持小数及范围")
+    @Comment("", "强化每级增加的属性，支持小数及范围")
     @Key("forge-map")
-    var ForgeMap = listOf("ATTACK_DAMAGE 3-5")
+    var ForgeMap: MemorySection = YamlConfiguration().apply {
+        set("ATTACK_DAMAGE", "3-5")
+    }
 
     //实际使用的
     val forgeMap = mutableMapOf<DoubleStat, String>()
 
-    @Comment("", "强化突破属性增加，支持小数及百分比")
+    @Comment("", "强化每级所需的经验公式")
+    @Comment("{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ")
+    @Key("forge-level-map")
+    var ForgeLevelSection: MemorySection = YamlConfiguration().apply {
+        set("10", "2*{star}+5*{forge}")
+        set("20", "2*{star}+5.1*{forge}")
+    }
+    val forgeLevelMap = HashMap<Int, String>()
+
+    @Comment("", "强化突破属性增加，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("forge-limit-map")
     var ForgeLimitSection: MemorySection = YamlConfiguration().apply {
         createSection("1").set("ATTACK_DAMAGE", "1%")
@@ -57,18 +76,10 @@ object Config : SimpleYAMLConfig() {
     }
     val forgeLimitMap: MutableMap<Int, Map<DoubleStat, String>> = mutableMapOf()
 
-
-    @Comment("", "精炼属性，支持小数及百分比")
+    @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("refine-map")
-    var RefineSection: MemorySection = YamlConfiguration().apply {
-        createSection("1").set("ATTACK_DAMAGE", "1%")
-        createSection("2").set("ATTACK_DAMAGE", "2%")
-        createSection("3").set("ATTACK_DAMAGE", "3%")
-        createSection("4").set("ATTACK_DAMAGE", "4%")
-        createSection("5").set("ATTACK_DAMAGE", "5%")
-    }
+    var RefineSection: MemorySection = ForgeLimitSection
     val refineMap: MutableMap<Int, Map<DoubleStat, String>> = mutableMapOf()
-
 
     override val onPreLoad: (ConfigState) -> Boolean = {
         //加载配置前调用
@@ -79,6 +90,7 @@ object Config : SimpleYAMLConfig() {
         resetForge()
         reset(RefineSection, refineMap)
         reset(ForgeLimitSection, forgeLimitMap)
+        restForgeLevelMap()
     }
 
     override val onPreSave: (ConfigState) -> Boolean = {
@@ -92,21 +104,19 @@ object Config : SimpleYAMLConfig() {
     private fun resetForge() {
         forgeMap.clear()
         val clazz = ItemStats::class.java
-        ForgeMap.forEach {
-            val split = it.split(" ")
-            if (split.size != 2) return@forEach
+        ForgeMap.getKeys(false).forEach {
             lateinit var declaredField: Field
             try {
-                declaredField = clazz.getDeclaredField(split[0])
+                declaredField = clazz.getDeclaredField(it)
             } catch (e: Exception) {
-                SimpleLogger.warn("Attribute no found! :${split[0]}")
+                SimpleLogger.warn("Attribute no found! :${it}")
                 return@forEach
             }
             val itemStat = declaredField.get(null)
             if (itemStat != null && itemStat is DoubleStat)
-                forgeMap[itemStat] = split[1]
+                forgeMap[itemStat] = ForgeMap.getString(it)!!
             else
-                SimpleLogger.warn("Attribute is not a doubleData! :${split[0]}")
+                SimpleLogger.warn("Attribute is not a doubleData! :${it}")
         }
     }
 
@@ -138,6 +148,13 @@ object Config : SimpleYAMLConfig() {
                     SimpleLogger.warn("Attribute is not a doubleData! :${it}")
             }
             map[level] = mutableMapOf
+        }
+    }
+
+    fun restForgeLevelMap() {
+        forgeLevelMap.clear()
+        ForgeLevelSection.getKeys(false).forEach {
+            forgeLevelMap[it.toInt()] = ForgeLevelSection.getString(it) ?: return@forEach
         }
     }
 
