@@ -25,7 +25,7 @@ class RPGForgeSystem : SimplePlugin() {
     }
 
     override fun onEnabled() {
-        MainCommand().register()
+        AllCommand
         Bukkit.getServer().pluginManager.registerEvents(EventListener, instance)
         Config.init(instance)
     }

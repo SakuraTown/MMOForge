@@ -16,6 +16,10 @@ repositories {
     maven {
         url = uri("https://papermc.io/repo/repository/maven-public/")
     }
+    maven {
+        name = "Vault"
+        url = uri("https://jitpack.io")
+    }
 //    maven {
 //        url = uri("https://maven.pkg.github.com/SakuraTown/InsekiCore")
 //        credentials {
@@ -29,10 +33,10 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
     compileOnly(fileTree("lib"))
-    implementation("com.entiv:insekicore:1.0.3")
+    implementation("com.entiv:insekicore:1.0.5")
     implementation(kotlin("reflect"))
     implementation(kotlin("stdlib"))
-
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 }
 tasks {
     shadowJar {
@@ -49,7 +53,6 @@ tasks {
     }
     processResources {
         val p = "${project.group}.${rootProject.name.toLowerCase()}"
-        include("config.yml")
         include("plugin.yml").expand(
             "name" to rootProject.name.toLowerCase(),
             "main" to "$p.$mainClass",

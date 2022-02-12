@@ -14,7 +14,6 @@ import org.bukkit.event.entity.EntityDamageEvent
 
 object EventListener : Listener {
 
-
     @EventHandler
     fun test(event: EntityDamageEvent) {
 
