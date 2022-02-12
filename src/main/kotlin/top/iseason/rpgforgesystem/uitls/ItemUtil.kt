@@ -7,7 +7,6 @@
 
 package top.iseason.rpgforgesystem.uitls
 
-import com.entiv.core.common.toColor
 import com.entiv.core.utils.RandomUtils
 import io.lumine.mythic.lib.api.item.ItemTag
 import io.lumine.mythic.lib.api.item.NBTItem
@@ -17,9 +16,8 @@ import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
 import net.Indyuce.mmoitems.stat.type.NameData
 import net.Indyuce.mmoitems.stat.type.StatHistory
-import net.kyori.adventure.text.Component
 import org.bukkit.inventory.ItemStack
-import top.iseason.rpgforgesystem.Config
+import top.iseason.rpgforgesystem.configs.MainConfig
 import top.iseason.rpgforgesystem.uitls.kparser.ExpressionParser
 import java.util.*
 
@@ -41,11 +39,11 @@ fun ItemStack.setRPGData(
 ): ItemStack {
     val liveMMOItem = LiveMMOItem(this)
     modifyMMO(liveMMOItem)
-    val name = liveMMOItem.getData(ItemStats.NAME).toString()
     val nbtItem = liveMMOItem.newBuilder().buildNBT()
+//    val name = liveMMOItem.getData(ItemStats.NAME).toString()
     nbtItem.addTag(ItemTag(tag, level))
     modifyNBT(nbtItem)
-    return nbtItem.toItem().apply { itemMeta = itemMeta.apply { displayName(Component.text(name.toColor())) } }
+    return nbtItem.toItem()
 }
 
 /**
@@ -57,16 +55,16 @@ fun ItemStack.modifyRPGData(tag: String, value: Int) = setRPGData(tag, getRPGDat
  * 增加精炼等级
  */
 fun ItemStack.addRefine(level: Int) =
-    setRPGData(Config.REFINE_TAG, level) {
-        val rawLevel = getRPGData(Config.REFINE_TAG)
+    setRPGData(MainConfig.REFINE_TAG, getRPGData(MainConfig.REFINE_TAG) + level) {
+        val rawLevel = getRPGData(MainConfig.REFINE_TAG)
         val statHistory =
             it.getStatHistory(ItemStats.NAME) ?: StatHistory(it, ItemStats.NAME, it.getData(ItemStats.NAME))
         val originalData = ((statHistory.originalData as NameData).cloneData() as NameData)
         originalData.addSuffix((rawLevel + level).toRoman())
-        statHistory.registerModifierBonus(Config.RefineUUID, originalData)
+        statHistory.registerModifierBonus(MainConfig.RefineUUID, originalData)
         it.setStatHistory(ItemStats.NAME, statHistory)
         for (i in 1..level) {
-            it.addAttribute(Config.RefineUUID, Config.refineMap.getLevelMap(rawLevel + i))
+            it.addAttribute(MainConfig.RefineUUID, MainConfig.refineMap.getLevelMap(rawLevel + i))
         }
     }
 
@@ -75,9 +73,9 @@ fun ItemStack.addRefine(level: Int) =
  * 增加强化等级
  */
 fun ItemStack.addForge(level: Int) =
-    setRPGData(Config.FORGE_TAG, getRPGData(Config.FORGE_TAG) + level) {
+    setRPGData(MainConfig.FORGE_TAG, getRPGData(MainConfig.FORGE_TAG) + level) {
         for (i in 1..level) {
-            it.addAttribute(Config.ForgeUUID, Config.forgeMap)
+            it.addAttribute(MainConfig.ForgeUUID, MainConfig.forgeMap)
         }
     }
 
@@ -85,21 +83,21 @@ fun ItemStack.addForge(level: Int) =
  * 增加强化限制等级
  */
 fun ItemStack.addLimit(level: Int): ItemStack {
-    val rawLevel = getRPGData(Config.LIMIT_TAG)
-    return setRPGData(Config.LIMIT_TAG, rawLevel + level) {
+    val rawLevel = getRPGData(MainConfig.LIMIT_TAG)
+    return setRPGData(MainConfig.LIMIT_TAG, rawLevel + level) {
         for (i in 1..level) {
-            it.addAttribute(Config.LimitUUID, Config.forgeLimitMap.getLevelMap(rawLevel + i))
+            it.addAttribute(MainConfig.LimitUUID, MainConfig.forgeLimitMap.getLevelMap(rawLevel + i))
         }
     }
 }
 
 fun NBTItem.getForgeUpdateExp(): Int {
-    val forgeLevel = getInteger(Config.FORGE_TAG)
-    val limitLevel = getInteger(Config.LIMIT_TAG)
-    val refineLevel = getInteger(Config.REFINE_TAG)
-    val starLevel = getInteger(Config.QUALITY_TAG)
+    val forgeLevel = getInteger(MainConfig.FORGE_TAG)
+    val limitLevel = getInteger(MainConfig.LIMIT_TAG)
+    val refineLevel = getInteger(MainConfig.REFINE_TAG)
+    val starLevel = getInteger(MainConfig.QUALITY_TAG)
     var formula = "100*{forge}"
-    Config.forgeLevelMap.forEach { (l, f) ->
+    MainConfig.forgeLevelMap.forEach { (l, f) ->
         formula = f
         if (forgeLevel >= l) {
             return@forEach
@@ -112,15 +110,14 @@ fun NBTItem.getForgeUpdateExp(): Int {
     return parser.evaluate(replace).toInt()
 }
 
-fun NBTItem.getForgeRequireExp() = getForgeUpdateExp() - getInteger(Config.FORGE_EXP_TAG)
+fun NBTItem.getForgeRequireExp() = getForgeUpdateExp() - getInteger(MainConfig.FORGE_EXP_TAG)
 
-fun NBTItem.getMaxForge() = (getInteger(Config.LIMIT_TAG) + 1) * Config.LimitRate
+fun NBTItem.getMaxForge() = (getInteger(MainConfig.LIMIT_TAG) + 1) * MainConfig.LimitRate
 
-fun ItemStack.addExp(value: Int): ItemStack? {
+fun ItemStack.addExp(value: Int): ItemStack {
     var nbtItem = NBTItem.get(this)
-    var item = this
-    if (!nbtItem.hasTag(Config.QUALITY_TAG)) {
-        return null
+    if (!nbtItem.hasTag(MainConfig.QUALITY_TAG)) {
+        return this
     }
 //    "==================".sendConsole()
 //    "before forge ${nbtItem.getInteger(Config.FORGE_TAG)}".sendConsole()
@@ -129,24 +126,31 @@ fun ItemStack.addExp(value: Int): ItemStack? {
 //    "before forge_exp ${nbtItem.getInteger(Config.FORGE_EXP_TAG)}".sendConsole()
     var exp = value
     var requireExp = nbtItem.getForgeRequireExp()
-    val limit = nbtItem.getInteger(Config.LIMIT_TAG)
-    var forge = nbtItem.getInteger(Config.FORGE_TAG)
-    if (forge >= (limit + 1) * 10) return this
+    val forge = nbtItem.getInteger(MainConfig.FORGE_TAG)
+    if (forge >= nbtItem.getMaxForge()) return this
 //    "before forge_exp_require $requireExp".sendConsole()
+    var addedLevel = 0
+    val temp = NBTItem.get(this)
     while (exp > requireExp) {
-        item = item.addForge(1)
-        nbtItem = NBTItem.get(item)
-        nbtItem.addTag(ItemTag(Config.FORGE_EXP_TAG, 0))
+//        item = item.addForge(1)
+//        nbtItem = NBTItem.get(item)
+//        forge = nbtItem.getInteger(Config.FORGE_TAG)
+        if (forge + addedLevel >= nbtItem.getMaxForge()) break
+        temp.addTag(ItemTag(MainConfig.FORGE_TAG, forge + addedLevel))
+        temp.addTag(ItemTag(MainConfig.FORGE_EXP_TAG, 0))
         exp -= requireExp
-        requireExp = nbtItem.getForgeRequireExp()
+        requireExp = temp.getForgeRequireExp()
 //        "ing forge_exp_require $requireExp".sendConsole()
-        forge = nbtItem.getInteger(Config.FORGE_TAG)
-        if (forge >= nbtItem.getMaxForge()) break
+        addedLevel++
+    }
+    if (addedLevel > 0) {
+        nbtItem.addTag(ItemTag(MainConfig.FORGE_EXP_TAG, 0))
+        nbtItem = NBTItem.get(nbtItem.toItem().addForge(addedLevel))
     }
     val remain =
         if (exp >= nbtItem.getForgeRequireExp()) nbtItem.getForgeUpdateExp()
-        else nbtItem.getInteger(Config.FORGE_EXP_TAG) + exp
-    nbtItem.addTag(ItemTag(Config.FORGE_EXP_TAG, remain))
+        else nbtItem.getInteger(MainConfig.FORGE_EXP_TAG) + exp
+    nbtItem.addTag(ItemTag(MainConfig.FORGE_EXP_TAG, remain))
 //    "after forge ${nbtItem.getInteger(Config.FORGE_TAG)}".sendConsole()
 //    "after limit ${nbtItem.getInteger(Config.LIMIT_TAG)}".sendConsole()
 //    "after refine ${nbtItem.getInteger(Config.REFINE_TAG)}".sendConsole()
@@ -180,7 +184,7 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<DoubleStat, String>) {
             //百分比,基于基础值+强化值
             val percent = data.replace("%", "").toDouble() / 100.0
             val base = (statHistory.originalData as DoubleData).value
-            val forge = statHistory.getModifiersBonus(Config.ForgeUUID) ?: DoubleData(0.0)
+            val forge = statHistory.getModifiersBonus(MainConfig.ForgeUUID) ?: DoubleData(0.0)
             raw.add((base + (forge as DoubleData).value) * percent)
         }
         //设置

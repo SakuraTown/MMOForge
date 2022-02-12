@@ -8,16 +8,13 @@
 
 package top.iseason.rpgforgesystem
 
-import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.entity.EntityDamageEvent
 
 object EventListener : Listener {
 
-
-    @EventHandler
-    fun test(event: EntityDamageEvent) {
-
-    }
+//    @EventHandler
+//    fun test(event: PlayerJumpEvent) {
+//        event.player.openUI<ChestUI> { }
+//    }
 
 }

@@ -1,14 +1,21 @@
 /*
  * Description:
  * @Author: Iseason2000
+ * @Date: 2022/3/26 上午12:19
+ *
+ */
+
+/*
+ * Description:
+ * @Author: Iseason2000
  * @Date: 2022/1/20 下午8:50
  *
  */
 
-package top.iseason.rpgforgesystem
+package top.iseason.rpgforgesystem.configs
 
 import com.entiv.core.config.*
-import com.entiv.core.debug.SimpleLogger
+import com.entiv.core.debug.warn
 import net.Indyuce.mmoitems.ItemStats
 import net.Indyuce.mmoitems.stat.type.DoubleStat
 import org.bukkit.configuration.MemorySection
@@ -18,7 +25,7 @@ import java.util.*
 
 //配置保存路径
 @FilePath("config.yml")
-object Config : SimpleYAMLConfig() {
+object MainConfig : SimpleYAMLConfig() {
 
     @Comment("强化标签，储存在物品NBT")
     @Key("foreg-tag")
@@ -43,9 +50,25 @@ object Config : SimpleYAMLConfig() {
     var REFINE_TAG = "SAKURA_REFINE"
     val RefineUUID = UUID.fromString("6e6f2bb6-068e-481f-b913-1b80c2cf1dbb")
 
+    @Comment("", "物品最大精炼等级，储存在物品NBT")
+    @Key("max_refine_tag")
+    var MAX_REFINE = 5
+
+    @Comment("", "物品最大突破等级，储存在物品NBT")
+    @Key("max_limit_tag")
+    var MAX_LIMIT = 5
+
     @Comment("", "物品星级标签，储存在物品NBT")
     @Key("quality_tag")
     var QUALITY_TAG = "SAKURA_QUALITY"
+
+    @Comment("", "材料拥有的强化经验，储存在物品NBT")
+    @Key("material_forge_tag")
+    var MATERIAL_FORGE_TAG = "SAKURA_MATERIAL_FORGE"
+
+    @Comment("", "材料拥有的突破等级，储存在物品NBT")
+    @Key("material_limit_tag")
+    var MATERIAL_LIMIT_TAG = "SAKURA_MATERIAL_LIMIT"
 
     @Comment("", "强化每级增加的属性，支持小数及范围")
     @Key("forge-map")
@@ -81,6 +104,15 @@ object Config : SimpleYAMLConfig() {
     var RefineSection: MemorySection = ForgeLimitSection
     val refineMap: MutableMap<Int, Map<DoubleStat, String>> = mutableMapOf()
 
+    @Comment("", "金币公式")
+    @Comment("{forge}:增加的强化经验 {limit}:增加的突破等级 {refine}:增加的精炼等级 ")
+    @Key("gold-require-map")
+    var goldForgeExpression: MemorySection = YamlConfiguration().apply {
+        set("3", "{forge}*10+{limit}*200+{refine}*500")
+        set("4", "({forge}*10+{limit}*200+{refine}*500)*1.5")
+        set("5", "({forge}*10+{limit}*200+{refine}*500)*2.475")
+    }
+
     override val onPreLoad: (ConfigState) -> Boolean = {
         //加载配置前调用
         true
@@ -109,14 +141,14 @@ object Config : SimpleYAMLConfig() {
             try {
                 declaredField = clazz.getDeclaredField(it)
             } catch (e: Exception) {
-                SimpleLogger.warn("Attribute no found! :${it}")
+                warn("Attribute no found! :${it}")
                 return@forEach
             }
             val itemStat = declaredField.get(null)
             if (itemStat != null && itemStat is DoubleStat)
                 forgeMap[itemStat] = ForgeMap.getString(it)!!
             else
-                SimpleLogger.warn("Attribute is not a doubleData! :${it}")
+                warn("Attribute is not a doubleData! :${it}")
         }
     }
 
@@ -137,7 +169,7 @@ object Config : SimpleYAMLConfig() {
                 try {
                     declaredField = clazz.getDeclaredField(it)
                 } catch (e: Exception) {
-                    SimpleLogger.warn("Attribute no found! :${it}")
+                    warn("Attribute no found! :${it}")
                     return@forEach
                 }
                 val itemStat = declaredField.get(null)
@@ -145,7 +177,7 @@ object Config : SimpleYAMLConfig() {
                 if (itemStat != null && string != null && itemStat is DoubleStat)
                     mutableMapOf[itemStat] = string
                 else
-                    SimpleLogger.warn("Attribute is not a doubleData! :${it}")
+                    warn("Attribute is not a doubleData! :${it}")
             }
             map[level] = mutableMapOf
         }

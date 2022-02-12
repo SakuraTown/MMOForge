@@ -10,6 +10,7 @@ package top.iseason.rpgforgesystem
 
 import com.entiv.core.plugin.SimplePlugin
 import org.bukkit.Bukkit
+import top.iseason.rpgforgesystem.configs.MainConfig
 
 class RPGForgeSystem : SimplePlugin() {
 
@@ -21,13 +22,13 @@ class RPGForgeSystem : SimplePlugin() {
     override fun onLoad() {
         instance = this
         super.onLoad()
-        debug = true
+//        debug = true
     }
 
     override fun onEnabled() {
-        MainCommand().register()
+        AllCommand
         Bukkit.getServer().pluginManager.registerEvents(EventListener, instance)
-        Config.init(instance)
+        MainConfig.init(instance)
     }
 
     override fun onDisabled() {

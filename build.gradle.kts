@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm") version "1.6.10"
 
 }
+
 group = "top.iseason"
 version = "1.0.0"
 val mainClass = "RPGForgeSystem"
@@ -16,6 +17,10 @@ repositories {
     maven {
         url = uri("https://papermc.io/repo/repository/maven-public/")
     }
+    maven {
+        name = "Vault"
+        url = uri("https://jitpack.io")
+    }
 //    maven {
 //        url = uri("https://maven.pkg.github.com/SakuraTown/InsekiCore")
 //        credentials {
@@ -27,12 +32,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
-    compileOnly(fileTree("lib"))
-    implementation("com.entiv:insekicore:1.0.3")
+    implementation("com.entiv:insekicore:1.0.7")
     implementation(kotlin("reflect"))
     implementation(kotlin("stdlib"))
-
+    compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
+    compileOnly(fileTree("lib"))
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 }
 tasks {
     shadowJar {
@@ -41,15 +46,16 @@ tasks {
 //            include(dependency("org.jetbrains.kotlin:kotlin-reflect:1.6.10"))
 //            include(dependency("com.entiv:insekicore:1.0.1"))
 //        }
-        relocate("com.entiv.insekicore", "${project.group}.${mainClass.toLowerCase()}.lib")
         destinationDirectory.set(file(jarOutputFile))
+        relocate("com.entiv.core", "${project.group}.${mainClass.toLowerCase()}.lib.core")
+//        relocate("kotlin","${project.group}.${mainClass.toLowerCase()}.lib.kotlin")
         minimize {
-            exclude(dependency("org.jetbrains.kotlin:kotlin-reflect*"))
+            exclude(dependency("org.jetbrains.kotlin:kotlin-reflect"))
         }
+
     }
     processResources {
         val p = "${project.group}.${rootProject.name.toLowerCase()}"
-        include("config.yml")
         include("plugin.yml").expand(
             "name" to rootProject.name.toLowerCase(),
             "main" to "$p.$mainClass",
@@ -64,3 +70,5 @@ tasks {
 tasks.jar {
     destinationDirectory.set(file(jarOutputFile))
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> { kotlinOptions.jvmTarget = "17" }
