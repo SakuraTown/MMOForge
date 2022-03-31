@@ -33,7 +33,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
     compileOnly(fileTree("lib"))
-    implementation("com.entiv:insekicore:1.0.5")
+    implementation("com.entiv:insekicore:1.0.7")
     implementation(kotlin("reflect"))
     implementation(kotlin("stdlib"))
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
