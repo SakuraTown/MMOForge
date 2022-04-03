@@ -2,7 +2,6 @@ plugins {
     java
     id("com.github.johnrengelman.shadow") version "7.1.2"
     kotlin("jvm") version "1.6.10"
-    //扩展
 }
 group = "top.iseason"
 version = "1.0.0"
@@ -40,11 +39,6 @@ dependencies {
 }
 tasks {
     shadowJar {
-//        dependencies {
-//            include(dependency("org.jetbrains.kotlin:kotlin-stdlib:1.6.10"))
-//            include(dependency("org.jetbrains.kotlin:kotlin-reflect:1.6.10"))
-//            include(dependency("com.entiv:insekicore:1.0.1"))
-//        }
         relocate("com.entiv.insekicore", "${project.group}.${mainClass.toLowerCase()}.lib")
         destinationDirectory.set(file(jarOutputFile))
         minimize {
@@ -62,13 +56,9 @@ tasks {
     }
     compileJava {
         options.encoding = "UTF-8"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
-}
-tasks.jar {
-    destinationDirectory.set(file(jarOutputFile))
-}
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+
 }
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> { kotlinOptions.jvmTarget = "17" }
