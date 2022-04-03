@@ -1,3 +1,3 @@
 
-rootProject.name = "RPGForgeSystem"
+rootProject.name = "MMOForge"
 

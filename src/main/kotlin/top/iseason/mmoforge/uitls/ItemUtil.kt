@@ -5,7 +5,7 @@
  *
  */
 
-package top.iseason.rpgforgesystem.uitls
+package top.iseason.mmoforge.uitls
 
 import com.entiv.core.utils.RandomUtils
 import io.lumine.mythic.lib.api.item.ItemTag
@@ -16,9 +16,10 @@ import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
 import net.Indyuce.mmoitems.stat.type.NameData
 import net.Indyuce.mmoitems.stat.type.StatHistory
+import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
-import top.iseason.rpgforgesystem.configs.MainConfig
-import top.iseason.rpgforgesystem.uitls.kparser.ExpressionParser
+import top.iseason.mmoforge.config.MainConfig
+import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import java.util.*
 
 val parser = ExpressionParser()
@@ -221,4 +222,45 @@ fun formatForgeString(value: String): Double {
     } catch (e: Exception) {
         0.0
     }
+}
+
+fun Material.isTool() = when (this) {
+
+    Material.WOODEN_SHOVEL,
+    Material.STONE_SHOVEL,
+    Material.IRON_SHOVEL,
+    Material.GOLDEN_SHOVEL,
+    Material.DIAMOND_SHOVEL,
+    Material.NETHERITE_SHOVEL,
+
+    Material.WOODEN_PICKAXE,
+    Material.STONE_PICKAXE,
+    Material.IRON_PICKAXE,
+    Material.GOLDEN_PICKAXE,
+    Material.DIAMOND_PICKAXE,
+    Material.NETHERITE_PICKAXE,
+
+    Material.WOODEN_HOE,
+    Material.STONE_HOE,
+    Material.IRON_HOE,
+    Material.GOLDEN_HOE,
+    Material.DIAMOND_HOE,
+    Material.NETHERITE_HOE,
+
+    Material.WOODEN_AXE,
+    Material.STONE_AXE,
+    Material.IRON_AXE,
+    Material.GOLDEN_AXE,
+    Material.DIAMOND_AXE,
+    Material.NETHERITE_AXE,
+
+    Material.FISHING_ROD,
+    Material.FLINT_AND_STEEL,
+    Material.COMPASS,
+    Material.CLOCK,
+    Material.SHEARS,
+    Material.SPYGLASS,
+    Material.LEAD,
+    Material.NAME_TAG -> true
+    else -> false
 }

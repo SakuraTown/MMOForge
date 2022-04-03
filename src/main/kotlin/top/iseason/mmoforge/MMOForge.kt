@@ -5,17 +5,19 @@
  *
  */
 
-package top.iseason.rpgforgesystem
+package top.iseason.mmoforge
 
 
 import com.entiv.core.plugin.SimplePlugin
 import org.bukkit.Bukkit
-import top.iseason.rpgforgesystem.configs.MainConfig
+import top.iseason.mmoforge.command.AllCommand
+import top.iseason.mmoforge.config.MainConfig
+import top.iseason.mmoforge.listener.EventListener
 
-class RPGForgeSystem : SimplePlugin() {
+class MMOForge : SimplePlugin() {
 
     companion object {
-        lateinit var instance: RPGForgeSystem
+        lateinit var instance: MMOForge
             private set
     }
 

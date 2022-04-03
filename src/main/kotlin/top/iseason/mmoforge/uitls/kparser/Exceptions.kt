@@ -5,7 +5,7 @@
  *
  */
 
-package top.iseason.rpgforgesystem.uitls.kparser
+package top.iseason.mmoforge.uitls.kparser
 
 class BadSyntaxException(msg: String = "Bad Syntax") : Exception(msg)
 

@@ -5,7 +5,7 @@
  *
  */
 
-package top.iseason.rpgforgesystem.uitls.kparser
+package top.iseason.mmoforge.uitls.kparser
 
 enum class NormalOperators(val sign: String, val precedence: Int) {
     PLUS("+", 2),

@@ -2,11 +2,11 @@ plugins {
     java
     id("com.github.johnrengelman.shadow") version "7.1.2"
     kotlin("jvm") version "1.6.10"
-
+    //扩展
 }
 group = "top.iseason"
 version = "1.0.0"
-val mainClass = "RPGForgeSystem"
+val mainClass = "MMOForge"
 val author = "Iseason"
 val jarOutputFile = "E:\\mc\\1.18 server\\plugins"
 

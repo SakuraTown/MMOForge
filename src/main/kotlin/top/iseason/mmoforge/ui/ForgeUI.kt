@@ -1,24 +1,28 @@
 /*
  * Description:
  * @Author: Iseason2000
+ * @Date: 2022/4/3 下午1:15
+ *
+ */
+
+/*
+ * Description:
+ * @Author: Iseason2000
  * @Date: 2022/3/31 下午8:48
  *
  */
 
-package top.iseason.rpgforgesystem
+package top.iseason.mmoforge.ui
 
-import com.entiv.core.hook.VaultEconomyHook
 import com.entiv.core.ui.*
-import com.entiv.core.utils.sendErrorMessage
 import io.lumine.mythic.lib.api.item.NBTItem
-import net.milkbowl.vault.economy.EconomyResponse
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
-import top.iseason.rpgforgesystem.configs.MainConfig
-import top.iseason.rpgforgesystem.uitls.*
+import top.iseason.mmoforge.config.MainConfig
+import top.iseason.mmoforge.uitls.*
 
 class ForgeUI : ChestUI("强化/精炼/突破") {
     private var quality = 0
@@ -26,6 +30,7 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
     private var forgeExp = 0
     private var limit = 0
     private var refine = 0
+    private var canForge = false
 
     init {//设置占位符
         setMultiSlots(Icon(Material.GRAY_STAINED_GLASS_PANE, " "), (1..53).toList())
@@ -34,44 +39,14 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
     private val toolInfo = Icon(Material.PAPER, "${ChatColor.RED}请放入可强化/精炼/突破的物品", index = 28).setUI(this)
     private val materialInfo = Icon(Material.PAPER, "${ChatColor.RED}请放入强化/精炼/突破 相应的材料", index = 30).setUI(this)
     private val forgeButton = Button(Material.ANVIL, "${ChatColor.RED}请放入物品和材料", index = 23).onClicked {
-        if (quality == 0 || (forgeExp == 0 && limit == 0 && refine == 0)) {
-            return@onClicked
-        }
-        val player = it.whoClicked
-        if (player !is Player) return@onClicked
-        if (VaultEconomyHook.has(player, gold) == true) {
-            val response = VaultEconomyHook.withdraw(player, gold)
-            if (response?.type != EconomyResponse.ResponseType.SUCCESS) {
-                sendErrorMessage(player, "余额不足!")
-                return@onClicked
-            }
-        } else {
-            sendErrorMessage(player, "余额不足!")
-            return@onClicked
-        }
+        if (!canForge) return@onClicked
+        (it.whoClicked as? Player)?.takeMoney(gold) ?: return@onClicked
         var tool = toolSlot.itemStack!!
-        if (forgeExp > 0) {
-            tool = tool.addExp(forgeExp)
-        }
-        if (limit > 0) {
-            val data = tool.getRPGData(MainConfig.LIMIT_TAG)
-            val level = limit + data
-            tool = tool.addLimit(if (level > MainConfig.MAX_LIMIT) MainConfig.MAX_LIMIT - data else level - data)
-        }
-        if (refine > 0) {
-            tool = tool.addRefine(refine)
-        }
+        if (forgeExp > 0) tool = tool.addExp(forgeExp)
+        if (limit > 0) tool = tool.addLimit(limit)
+        if (refine > 0) tool = tool.addRefine(refine)
+        this@ForgeUI.reset()
         resultSlot.itemStack = tool
-        toolSlot.reset()
-        toolInfo.reset()
-        materialSlot.reset()
-        materialInfo.reset()
-        this.reset()
-        quality = 0
-        gold = 0.0
-        forgeExp = 0
-        limit = 0
-        refine = 0
 
     }.setUI(this)
     private val toolSlot = IOSlot(19)
@@ -93,7 +68,6 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
             )
             updateResult()
         }.onOutput {
-            gold = 0.0
             quality = 0
             toolInfo.reset()
             updateResult()
@@ -139,7 +113,6 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
             }
             updateResult()
         }.onOutput {
-            gold = 0.0
             refine = 0
             forgeExp = 0
             limit = 0
@@ -153,14 +126,9 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
     private fun updateResult() {
         val tool = toolSlot.itemStack
         val material = materialSlot.itemStack
-        fun reset() {
-            gold = 0.0
-            refine = 0
-            forgeExp = 0
-            limit = 0
-        }
         if (tool == null || material == null) {
-            reset()
+            canForge = false
+            gold = 0.0
             forgeButton.reset()
             return
         }
@@ -176,7 +144,9 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
         val refine1 = NBTItem.get(tool).getInteger(MainConfig.REFINE_TAG)
         val refineLevel = refine1 + materialRefine
         refine = if (refineLevel > MainConfig.MAX_REFINE) MainConfig.MAX_REFINE - refine1 else refineLevel - refine1
-
+        /**
+         * 需要判断能不能强化
+         */
         val materialForge = materialNbt.getInteger(MainConfig.MATERIAL_FORGE_TAG) * material.amount
 
         val materialLimit = materialNbt.getInteger(MainConfig.MATERIAL_LIMIT_TAG) * material.amount
@@ -186,7 +156,7 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
 
         val expression = MainConfig.goldForgeExpression.getString(toolQuantity.toString())
             ?.replace("{forge}", materialForge.toString())
-            ?.replace("{limit}", materialLimit.toString())
+            ?.replace("{limit}", limit.toString())
             ?.replace("{refine}", refine.toString()) ?: "0"
         this.gold = parser.evaluate(expression)
         with(forgeButton) {
@@ -194,7 +164,8 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
             if (toolQuantity == materialQuality) {
                 if (refine == 0) {
                     displayName = "${ChatColor.RED}已达最大精炼上限"
-                    reset()
+                    canForge = false
+                    gold = 0.0
                     return
                 }
                 displayName = "${ChatColor.GREEN}点击${ChatColor.AQUA} 精炼 ${ChatColor.YELLOW}+$refine"
@@ -204,18 +175,29 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
             } else if (materialLimit > 0) {
                 if (limit == 0) {
                     displayName = "${ChatColor.RED}已达最大突破上限"
-                    reset()
+                    canForge = false
+                    gold = 0.0
                     return
                 }
-                limit = materialLimit
-                displayName = "${ChatColor.GREEN}点击${ChatColor.AQUA} 突破 ${ChatColor.YELLOW}+$materialLimit"
+                displayName = "${ChatColor.GREEN}点击${ChatColor.AQUA} 突破 ${ChatColor.YELLOW}+$limit"
             }
             lore = listOf("${ChatColor.GOLD}需要金币:${ChatColor.AQUA} $gold")
             itemMeta = itemMeta.apply {
                 addItemFlags(ItemFlag.HIDE_ENCHANTS)
                 addEnchant(Enchantment.DURABILITY, 3, true)
             }
+            canForge = true
         }
+    }
+
+    override fun reset() {
+        canForge = false
+        quality = 0
+        gold = 0.0
+        forgeExp = 0
+        limit = 0
+        refine = 0
+        super.reset()
     }
 }
 /**

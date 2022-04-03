@@ -12,7 +12,7 @@
  *
  */
 
-package top.iseason.rpgforgesystem.configs
+package top.iseason.mmoforge.config
 
 import com.entiv.core.config.*
 import com.entiv.core.debug.warn

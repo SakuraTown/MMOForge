@@ -5,7 +5,7 @@
  *
  */
 
-package top.iseason.rpgforgesystem.uitls.kparser
+package top.iseason.mmoforge.uitls.kparser
 
 import kotlin.math.*
 
