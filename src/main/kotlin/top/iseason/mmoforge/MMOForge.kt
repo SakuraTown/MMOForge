@@ -10,7 +10,7 @@ package top.iseason.mmoforge
 
 import com.entiv.core.plugin.SimplePlugin
 import org.bukkit.Bukkit
-import top.iseason.mmoforge.command.AllCommand
+import top.iseason.mmoforge.command.UICommand
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.listener.EventListener
 
@@ -28,7 +28,7 @@ class MMOForge : SimplePlugin() {
     }
 
     override fun onEnabled() {
-        AllCommand
+        UICommand
         Bukkit.getServer().pluginManager.registerEvents(EventListener, instance)
         MainConfig.init(instance)
     }

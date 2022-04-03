@@ -17,11 +17,11 @@ package top.iseason.mmoforge.command
 import com.entiv.core.command.CommandBuilder
 import com.entiv.core.ui.openUI
 import org.bukkit.entity.Player
-import top.iseason.mmoforge.ForgeUI
 import top.iseason.mmoforge.MMOForge
+import top.iseason.mmoforge.ui.ForgeUI
 
 
-object AllCommand : CommandBuilder(MMOForge.instance, name = "rpg", onScope = {
+object UICommand : CommandBuilder(MMOForge.instance, name = "MMOForge", aliases = listOf("mf"), onScope = {
     addSubCommand("gui") {
         onCommanded = {
             (sender as? Player)?.openUI<ForgeUI>()
