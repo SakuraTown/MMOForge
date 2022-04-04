@@ -2,7 +2,6 @@ plugins {
     java
     id("com.github.johnrengelman.shadow") version "7.1.2"
     kotlin("jvm") version "1.6.10"
-    //扩展
 }
 group = "top.iseason"
 version = "1.0.0"
@@ -34,22 +33,20 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
     compileOnly(fileTree("lib"))
     implementation("com.entiv:insekicore:1.0.7")
-    implementation(kotlin("reflect"))
-    implementation(kotlin("stdlib"))
+    compileOnly(kotlin("stdlib"))
+    compileOnly(kotlin("reflect"))
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 }
 tasks {
     shadowJar {
-//        dependencies {
-//            include(dependency("org.jetbrains.kotlin:kotlin-stdlib:1.6.10"))
-//            include(dependency("org.jetbrains.kotlin:kotlin-reflect:1.6.10"))
-//            include(dependency("com.entiv:insekicore:1.0.1"))
-//        }
-        relocate("com.entiv.insekicore", "${project.group}.${mainClass.toLowerCase()}.lib")
-        destinationDirectory.set(file(jarOutputFile))
-        minimize {
-            exclude(dependency("org.jetbrains.kotlin:kotlin-reflect*"))
+        relocate("com.entiv.core", "${project.group}.${mainClass.toLowerCase()}.lib.core")
+        relocate("org.bstats", "${project.group}.${mainClass.toLowerCase()}.lib.bstats")
+        mergeServiceFiles()
+        manifest {
+            attributes(mapOf("Main-Class" to "top.iseason.mmoforge.MMOForge"))
         }
+        minimize()
+        destinationDirectory.set(file(jarOutputFile))
     }
     processResources {
         val p = "${project.group}.${rootProject.name.toLowerCase()}"
@@ -57,7 +54,8 @@ tasks {
             "name" to rootProject.name.toLowerCase(),
             "main" to "$p.$mainClass",
             "version" to project.version,
-            "author" to author
+            "author" to author,
+            "kotlin" to "1.6.10"
         )
     }
     compileJava {

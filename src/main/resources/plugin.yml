@@ -3,5 +3,8 @@ main: ${main}
 version: ${version}
 authors: [${author}]
 api-version: 1.13
+libraries:
+  - org.jetbrains.kotlin:kotlin-stdlib:${kotlin}
+  - org.jetbrains.kotlin:kotlin-reflect:${kotlin}
 depend:
   - MMOItems

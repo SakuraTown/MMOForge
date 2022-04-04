@@ -40,7 +40,7 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
     private val materialInfo = Icon(Material.PAPER, "${ChatColor.RED}请放入强化/精炼/突破 相应的材料", index = 30).setUI(this)
     private val forgeButton = Button(Material.ANVIL, "${ChatColor.RED}请放入物品和材料", index = 23).onClicked {
         if (!canForge) return@onClicked
-        (it.whoClicked as? Player)?.takeMoney(gold) ?: return@onClicked
+        if ((it.whoClicked as? Player)?.takeMoney(gold) == false) return@onClicked
         var tool = toolSlot.itemStack!!
         if (forgeExp > 0) tool = tool.addExp(forgeExp)
         if (limit > 0) tool = tool.addLimit(limit)
@@ -58,7 +58,7 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
         }.onInput {
             val nbtItem = NBTItem.get(itemStack)
             quality = nbtItem.getInteger(MainConfig.QUALITY_TAG)
-            toolInfo.displayName = "${ChatColor.GOLD}物品信息 -> ${itemStack?.itemMeta?.displayName}"
+            toolInfo.displayName = "${ChatColor.GOLD}物品信息 -> ${ChatColor.RESET}${itemStack?.itemMeta?.displayName}"
             toolInfo.lore = listOf(
                 "${ChatColor.LIGHT_PURPLE}星级: ${ChatColor.YELLOW}${quality}",
                 "${ChatColor.GREEN}精炼等级: ${ChatColor.YELLOW}${nbtItem.getInteger(MainConfig.REFINE_TAG)}",
@@ -96,7 +96,8 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
             val mlimit = nbtItem.getInteger(MainConfig.MATERIAL_LIMIT_TAG) * nbtItem.item.amount
             //是精炼
             if (quality != 0) {
-                materialInfo.displayName = "${ChatColor.GOLD}物品信息 -> ${itemStack?.itemMeta?.displayName}"
+                materialInfo.displayName =
+                    "${ChatColor.GOLD}物品信息 -> ${ChatColor.RESET}${itemStack?.itemMeta?.displayName}"
                 materialInfo.lore = listOf(
                     "${ChatColor.LIGHT_PURPLE}星级: ${ChatColor.YELLOW}${quality}",
                     "${ChatColor.GREEN}精炼等级: ${ChatColor.YELLOW}${nbtItem.getInteger(MainConfig.REFINE_TAG)}",
@@ -105,7 +106,8 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
                     "${ChatColor.YELLOW}强化经验: ${ChatColor.RED}${nbtItem.getInteger(MainConfig.FORGE_EXP_TAG)}${ChatColor.WHITE} / ${ChatColor.YELLOW}${nbtItem.getForgeUpdateExp()}"
                 )
             } else {
-                materialInfo.displayName = "${ChatColor.GOLD}材料信息 -> ${itemStack?.itemMeta?.displayName}"
+                materialInfo.displayName =
+                    "${ChatColor.GOLD}材料信息 -> ${ChatColor.RESET}${itemStack?.itemMeta?.displayName}"
                 materialInfo.lore = listOf(
                     "${ChatColor.AQUA}强化经验: ${ChatColor.YELLOW}${mForge}",
                     "${ChatColor.GREEN}突破经验: ${ChatColor.YELLOW}${mlimit}"

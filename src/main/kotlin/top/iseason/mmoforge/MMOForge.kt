@@ -8,6 +8,7 @@
 package top.iseason.mmoforge
 
 
+import com.entiv.core.command.DefaultCommand
 import com.entiv.core.plugin.SimplePlugin
 import org.bukkit.Bukkit
 import top.iseason.mmoforge.command.UICommand
@@ -28,7 +29,9 @@ class MMOForge : SimplePlugin() {
     }
 
     override fun onEnabled() {
-        UICommand
+        val defaultCommand = DefaultCommand()
+        defaultCommand.addSubcommand(UICommand(defaultCommand))
+        defaultCommand.register()
         Bukkit.getServer().pluginManager.registerEvents(EventListener, instance)
         MainConfig.init(instance)
     }

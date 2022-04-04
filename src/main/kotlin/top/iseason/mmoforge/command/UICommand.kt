@@ -14,17 +14,23 @@
 
 package top.iseason.mmoforge.command
 
-import com.entiv.core.command.CommandBuilder
+import com.entiv.core.command.CompositeCommand
+import com.entiv.core.command.SimpleSubcommand
+import com.entiv.core.plugin.SimplePlugin
 import com.entiv.core.ui.openUI
 import org.bukkit.entity.Player
-import top.iseason.mmoforge.MMOForge
 import top.iseason.mmoforge.ui.ForgeUI
 
 
-object UICommand : CommandBuilder(MMOForge.instance, name = "MMOForge", aliases = listOf("mf"), onScope = {
-    addSubCommand("gui") {
-        onCommanded = {
-            (sender as? Player)?.openUI<ForgeUI>()
-        }
+class UICommand(parent: CompositeCommand) : SimpleSubcommand(
+    plugin = SimplePlugin.instance,
+    name = "gui",
+    adminOnly = false,
+    parent = parent,
+    usage = "${parent.name} gui",
+    description = "打开强化界面",
+) {
+    override fun onCommand() {
+        (sender as? Player)?.openUI<ForgeUI>()
     }
-})
+}

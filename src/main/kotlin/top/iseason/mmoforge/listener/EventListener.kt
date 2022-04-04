@@ -21,7 +21,7 @@ object EventListener : Listener {
 
 //    @EventHandler
 //    fun test(event: PlayerJumpEvent) {
-//        event.player.openUI<ChestUI> { }
+//        event.player.openUI<ForgeUI> { }
 //    }
 
 }
