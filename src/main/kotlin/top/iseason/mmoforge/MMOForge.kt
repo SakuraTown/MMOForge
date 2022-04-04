@@ -77,17 +77,15 @@ class MMOForge : SimplePlugin() {
         declaredField.isAccessible = false
     }
 
-    fun EnchantmentStat.register() {
-        if (!isEnabled) return
-        MMOItems.plugin.stats.register(this)
-        registerListener(this)
-        statLoreFormats.add(this)
+    private fun EnchantmentStat.register() {
+        registerStat(this)
     }
 
     private fun registerStat(stat: EnchantmentStat) {
         if (!stat.isEnabled) return
         MMOItems.plugin.stats.register(stat)
         statLoreFormats.add(stat)
+        registerListener(stat)
     }
 
 }
