@@ -228,7 +228,10 @@ fun formatForgeString(value: String): Double {
     }
 }
 
-inline fun <reified T : StatData> ItemStack.getMMOData(stat: ItemStat) = LiveMMOItem(this).getData(stat) as? T
+inline fun <reified T : StatData> ItemStack.getMMOData(stat: ItemStat): T? {
+    val nbt = NBTItem.get(this)
+    return if (!nbt.hasType()) null else LiveMMOItem(nbt).getData(stat) as? T
+}
 
 fun Material.isTool() = when (this) {
 

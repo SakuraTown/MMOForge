@@ -28,6 +28,12 @@ object SilkTouch : MMOEnchant(
         if (itemInMainHand.type.isAir) return
         val data = itemInMainHand.getMMOData<DoubleData>(stat) ?: return
         if (RandomUtils.checkPercentage(data.value)) return
-        println(event.items.size)
+        if (event.items.size != 1) return
+        val item = event.items[0]
+        if (item.itemStack.type == event.blockState.type) return
+        item.apply {
+            itemStack.type = event.blockState.type
+            itemStack.amount = 1
+        }
     }
 }
