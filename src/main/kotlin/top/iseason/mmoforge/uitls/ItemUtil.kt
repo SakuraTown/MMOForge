@@ -171,10 +171,12 @@ fun Map<Int, Map<DoubleStat, String>>.getLevelMap(level: Int): Map<DoubleStat, S
 
 fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<DoubleStat, String>) {
     attributes.forEach { (itemStat, data) ->
+        //没有该属性退出
+        val statData = this.getData(itemStat) ?: return@forEach
         val statHistory = getStatHistory(itemStat) ?: StatHistory(
             this,
             itemStat,
-            this.getData(itemStat)
+            statData
         )
         val doubleData = statHistory.getModifiersBonus(uuid)
         //获取

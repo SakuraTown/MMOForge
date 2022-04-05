@@ -15,12 +15,12 @@ import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
 import top.iseason.mmoforge.command.UICommand
 import top.iseason.mmoforge.config.MainConfig
-import top.iseason.mmoforge.enchantment.EnchantmentStat
+import top.iseason.mmoforge.enchantment.MMOEnchant
 import top.iseason.mmoforge.enchantment.SilkTouch
 import top.iseason.mmoforge.listener.EventListener
 
 class MMOForge : SimplePlugin() {
-    private val statLoreFormats = mutableListOf<EnchantmentStat>()
+    private val statLoreFormats = mutableListOf<MMOEnchant>()
 
     companion object {
         lateinit var instance: MMOForge
@@ -30,9 +30,6 @@ class MMOForge : SimplePlugin() {
     override fun onLoad() {
         instance = this
         SilkTouch.register()
-        setLoreFormat(statLoreFormats)
-        setStatsLore(statLoreFormats)
-        MMOItems.plugin.stats.register(SilkTouch)
         super.onLoad()
 //        debug = true
     }
@@ -43,6 +40,9 @@ class MMOForge : SimplePlugin() {
         defaultCommand.register()
         registerListener(EventListener)
         MainConfig.init(instance)
+        setStatsLoreFormat(statLoreFormats)
+        setStatsLore(statLoreFormats)
+        registerEnchants(statLoreFormats)
 
     }
 
@@ -50,7 +50,7 @@ class MMOForge : SimplePlugin() {
 
     }
 
-    fun setLoreFormat(stats: List<EnchantmentStat>) {
+    fun setStatsLoreFormat(stats: List<MMOEnchant>) {
         val declaredField = ConfigManager::class.java.getDeclaredField("loreFormat")
         declaredField.isAccessible = true
         val config = declaredField.get(MMOItems.plugin.language) as ConfigFile
@@ -65,7 +65,20 @@ class MMOForge : SimplePlugin() {
         declaredField.isAccessible = false
     }
 
-    private fun setStatsLore(stats: List<EnchantmentStat>) {
+    fun setStatLoreFormat(stat: MMOEnchant) {
+        val declaredField = ConfigManager::class.java.getDeclaredField("loreFormat")
+        declaredField.isAccessible = true
+        val config = declaredField.get(MMOItems.plugin.language) as ConfigFile
+        val list = config.config.getStringList("lore-format")
+        val loreKey = "#${stat.loreKey}#"
+        if (list.contains(loreKey)) return
+        list.add(loreKey)
+        config.config.set("lore-format", list)
+        config.save()
+        declaredField.isAccessible = false
+    }
+
+    private fun setStatsLore(stats: List<MMOEnchant>) {
         val declaredField = ConfigManager::class.java.getDeclaredField("stats")
         declaredField.isAccessible = true
         val configFile = declaredField.get(MMOItems.plugin.language) as ConfigFile
@@ -77,15 +90,29 @@ class MMOForge : SimplePlugin() {
         declaredField.isAccessible = false
     }
 
-    private fun EnchantmentStat.register() {
+    fun setStatLore(stat: MMOEnchant) {
+        val declaredField = ConfigManager::class.java.getDeclaredField("stats")
+        declaredField.isAccessible = true
+        val configFile = declaredField.get(MMOItems.plugin.language) as ConfigFile
+        val config = configFile.config
+        config.set(stat.loreKey, stat.loreFormat)
+        configFile.save()
+        declaredField.isAccessible = false
+    }
+
+    private fun MMOEnchant.register() {
         registerStat(this)
     }
 
-    private fun registerStat(stat: EnchantmentStat) {
-        if (!stat.isEnabled) return
-        MMOItems.plugin.stats.register(stat)
-        statLoreFormats.add(stat)
-        registerListener(stat)
+    private fun registerStat(mmoEnchant: MMOEnchant) {
+        if (!mmoEnchant.stat.isEnabled) return
+        statLoreFormats.add(mmoEnchant)
     }
 
+    private fun registerEnchants(mmoEnchants: List<MMOEnchant>) {
+        for (mmoEnchant in mmoEnchants) {
+            mmoEnchant.init(this)
+            registerListener(mmoEnchant)
+        }
+    }
 }
