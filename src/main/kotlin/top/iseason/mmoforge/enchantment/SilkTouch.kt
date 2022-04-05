@@ -7,10 +7,12 @@
 
 package top.iseason.mmoforge.enchantment
 
-import io.lumine.mythic.lib.api.item.NBTItem
+import com.entiv.core.utils.RandomUtils
+import net.Indyuce.mmoitems.stat.data.DoubleData
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
-import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockDropItemEvent
+import top.iseason.mmoforge.uitls.getMMOData
 
 object SilkTouch : MMOEnchant(
     "SILK_TOUCH",
@@ -21,11 +23,11 @@ object SilkTouch : MMOEnchant(
     arrayOf("tool")
 ) {
     @EventHandler
-    fun onBlockBreakEvent(event: BlockBreakEvent) {
+    fun onBlockDropItemEvent(event: BlockDropItemEvent) {
         val itemInMainHand = event.player.equipment.itemInMainHand
         if (itemInMainHand.type.isAir) return
-        val data = NBTItem.get(itemInMainHand).getDouble(nbtKey)
-        if (data == 0.0) return
-        println(data)
+        val data = itemInMainHand.getMMOData<DoubleData>(stat) ?: return
+        if (RandomUtils.checkPercentage(data.value)) return
+        println(event.items.size)
     }
 }

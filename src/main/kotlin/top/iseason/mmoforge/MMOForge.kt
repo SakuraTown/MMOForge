@@ -29,7 +29,7 @@ class MMOForge : SimplePlugin() {
 
     override fun onLoad() {
         instance = this
-        SilkTouch.register()
+        registerEnchants()
         super.onLoad()
 //        debug = true
     }
@@ -50,7 +50,12 @@ class MMOForge : SimplePlugin() {
 
     }
 
-    fun setStatsLoreFormat(stats: List<MMOEnchant>) {
+    private fun registerEnchants() {
+        SilkTouch.register()
+    }
+
+
+    private fun setStatsLoreFormat(stats: List<MMOEnchant>) {
         val declaredField = ConfigManager::class.java.getDeclaredField("loreFormat")
         declaredField.isAccessible = true
         val config = declaredField.get(MMOItems.plugin.language) as ConfigFile
@@ -107,6 +112,7 @@ class MMOForge : SimplePlugin() {
     private fun registerStat(mmoEnchant: MMOEnchant) {
         if (!mmoEnchant.stat.isEnabled) return
         statLoreFormats.add(mmoEnchant)
+        MMOItems.plugin.stats.register(mmoEnchant.stat)
     }
 
     private fun registerEnchants(mmoEnchants: List<MMOEnchant>) {

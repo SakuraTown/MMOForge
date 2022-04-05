@@ -16,11 +16,10 @@ package top.iseason.mmoforge.config
 
 import com.entiv.core.config.*
 import com.entiv.core.debug.warn
-import net.Indyuce.mmoitems.ItemStats
+import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.stat.type.DoubleStat
 import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
-import java.lang.reflect.Field
 import java.util.*
 
 //配置保存路径
@@ -135,26 +134,18 @@ object MainConfig : SimpleYAMLConfig() {
 
     private fun resetForge() {
         forgeMap.clear()
-        val clazz = ItemStats::class.java
         ForgeMap.getKeys(false).forEach {
-            lateinit var declaredField: Field
-            try {
-                declaredField = clazz.getDeclaredField(it)
-            } catch (e: Exception) {
+            val stat = MMOItems.plugin.stats.get(it)
+            if (stat == null || stat !is DoubleStat) {
                 warn("Attribute no found! :${it}")
                 return@forEach
             }
-            val itemStat = declaredField.get(null)
-            if (itemStat != null && itemStat is DoubleStat)
-                forgeMap[itemStat] = ForgeMap.getString(it)!!
-            else
-                warn("Attribute is not a doubleData! :${it}")
+            forgeMap[stat] = ForgeMap.getString(it)!!
         }
     }
 
     private fun reset(section: MemorySection, map: MutableMap<Int, Map<DoubleStat, String>>) {
         map.clear()
-        val clazz = ItemStats::class.java
         for (key in section.getKeys(false)) {
             val level = try {
                 key.toInt()
@@ -165,19 +156,12 @@ object MainConfig : SimpleYAMLConfig() {
             var mutableMapOf = mutableMapOf<DoubleStat, String>()
             configurationSection.getKeys(false).forEach {
                 mutableMapOf = mutableMapOf()
-                lateinit var declaredField: Field
-                try {
-                    declaredField = clazz.getDeclaredField(it)
-                } catch (e: Exception) {
+                val stat = MMOItems.plugin.stats.get(it)
+                if (stat == null || stat !is DoubleStat) {
                     warn("Attribute no found! :${it}")
                     return@forEach
                 }
-                val itemStat = declaredField.get(null)
-                val string = configurationSection.getString(it)
-                if (itemStat != null && string != null && itemStat is DoubleStat)
-                    mutableMapOf[itemStat] = string
-                else
-                    warn("Attribute is not a doubleData! :${it}")
+                mutableMapOf[stat] = configurationSection.getString(it)!!
             }
             map[level] = mutableMapOf
         }

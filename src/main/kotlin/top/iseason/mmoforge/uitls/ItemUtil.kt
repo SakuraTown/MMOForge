@@ -13,7 +13,9 @@ import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.ItemStats
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
 import net.Indyuce.mmoitems.stat.data.DoubleData
+import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
+import net.Indyuce.mmoitems.stat.type.ItemStat
 import net.Indyuce.mmoitems.stat.type.NameData
 import net.Indyuce.mmoitems.stat.type.StatHistory
 import org.bukkit.Material
@@ -225,6 +227,8 @@ fun formatForgeString(value: String): Double {
         0.0
     }
 }
+
+inline fun <reified T : StatData> ItemStack.getMMOData(stat: ItemStat) = LiveMMOItem(this).getData(stat) as? T
 
 fun Material.isTool() = when (this) {
 

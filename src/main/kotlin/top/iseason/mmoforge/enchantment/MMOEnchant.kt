@@ -11,15 +11,14 @@ import com.entiv.core.config.Comment
 import com.entiv.core.config.ConfigState
 import com.entiv.core.config.Key
 import com.entiv.core.config.SimpleYAMLConfig
-import io.lumine.mythic.lib.api.item.ItemTag
-import net.Indyuce.mmoitems.api.item.build.ItemStackBuilder
-import net.Indyuce.mmoitems.stat.data.DoubleData
-import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
 import org.bukkit.Material
 import org.bukkit.event.Listener
 import top.iseason.mmoforge.MMOForge
 
+/**
+ * types see https://git.lumine.io/mythiccraft/mmoitems/-/blob/master/src/main/java/net/Indyuce/mmoitems/api/Type.java
+ */
 abstract class MMOEnchant(
     val mID: String,
     val mMaterial: Material,
@@ -28,6 +27,7 @@ abstract class MMOEnchant(
     val mLore: Array<out String>,
     val mTypes: Array<out String>
 ) : SimpleYAMLConfig(defaultPath = "enchants/${mID.lowercase()}.yml"), Listener {
+
     @Comment("识别标签，储存在物品NBT")
     @Key("nbtKey")
     var nbtKey: String = "MMOFORGE_${mID}"
@@ -40,6 +40,7 @@ abstract class MMOEnchant(
     @Key("loreFormat")
     var loreFormat: String = format
     val stat = EnchantStat()
+
     override val onLoad: (ConfigState) -> Unit = {
         MMOForge.instance.setStatLore(this)
         MMOForge.instance.setStatLoreFormat(this)
@@ -49,10 +50,5 @@ abstract class MMOEnchant(
         mID, mMaterial, mName,
         mLore, mTypes
     ) {
-        override fun whenApplied(builder: ItemStackBuilder, statData: StatData) {
-            val var3 = (statData as DoubleData).value.toInt()
-            builder.addItemTag(ItemTag(nbtKey, var3))
-            builder.lore.insert(loreKey, formatNumericStat(var3.toDouble(), "#", "" + var3))
-        }
     }
 }
