@@ -17,7 +17,7 @@ package top.iseason.mmoforge.config
 import com.entiv.core.config.*
 import com.entiv.core.debug.warn
 import net.Indyuce.mmoitems.MMOItems
-import net.Indyuce.mmoitems.stat.type.DoubleStat
+import net.Indyuce.mmoitems.stat.type.Upgradable
 import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
 import java.util.*
@@ -25,6 +25,19 @@ import java.util.*
 //配置保存路径
 @FilePath("config.yml")
 object MainConfig : SimpleYAMLConfig() {
+    @Comment("")
+    @Comment("所有加成的格式：基础值为200")
+    @Comment(" +5 => 205")
+    @Comment(" -5 => 195")
+    @Comment("  5 => 5")
+    @Comment(" n5 => -5")
+    @Comment(" 5% => 10")
+    @Comment("+5% => 210")
+    @Comment("-5% => 190")
+    @Comment(" n5% => -10")
+    @Comment(" 3-5 => 203 - 205 的随机区间")
+    @Key("ahead")
+    var ahead = "写在前头的说明"
 
     @Comment("强化标签，储存在物品NBT")
     @Key("foreg-tag")
@@ -76,7 +89,7 @@ object MainConfig : SimpleYAMLConfig() {
     }
 
     //实际使用的
-    val forgeMap = mutableMapOf<DoubleStat, String>()
+    val forgeMap = mutableMapOf<Upgradable, String>()
 
     @Comment("", "强化每级所需的经验公式")
     @Comment("{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ")
@@ -96,12 +109,12 @@ object MainConfig : SimpleYAMLConfig() {
         createSection("4").set("ATTACK_DAMAGE", "4%")
         createSection("5").set("ATTACK_DAMAGE", "5%")
     }
-    val forgeLimitMap: MutableMap<Int, Map<DoubleStat, String>> = mutableMapOf()
+    val forgeLimitMap: MutableMap<Int, Map<Upgradable, String>> = mutableMapOf()
 
     @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("refine-map")
     var RefineSection: MemorySection = ForgeLimitSection
-    val refineMap: MutableMap<Int, Map<DoubleStat, String>> = mutableMapOf()
+    val refineMap: MutableMap<Int, Map<Upgradable, String>> = mutableMapOf()
 
     @Comment("", "金币公式")
     @Comment("{forge}:增加的强化经验 {limit}:增加的突破等级 {refine}:增加的精炼等级 ")
@@ -136,7 +149,7 @@ object MainConfig : SimpleYAMLConfig() {
         forgeMap.clear()
         ForgeMap.getKeys(false).forEach {
             val stat = MMOItems.plugin.stats.get(it)
-            if (stat == null || stat !is DoubleStat) {
+            if (stat == null || stat !is Upgradable) {
                 warn("Attribute no found! :${it}")
                 return@forEach
             }
@@ -144,7 +157,7 @@ object MainConfig : SimpleYAMLConfig() {
         }
     }
 
-    private fun reset(section: MemorySection, map: MutableMap<Int, Map<DoubleStat, String>>) {
+    private fun reset(section: MemorySection, map: MutableMap<Int, Map<Upgradable, String>>) {
         map.clear()
         for (key in section.getKeys(false)) {
             val level = try {
@@ -153,11 +166,11 @@ object MainConfig : SimpleYAMLConfig() {
                 continue
             }
             val configurationSection = section.getConfigurationSection(key) ?: continue
-            var mutableMapOf = mutableMapOf<DoubleStat, String>()
+            var mutableMapOf = mutableMapOf<Upgradable, String>()
             configurationSection.getKeys(false).forEach {
                 mutableMapOf = mutableMapOf()
                 val stat = MMOItems.plugin.stats.get(it)
-                if (stat == null || stat !is DoubleStat) {
+                if (stat == null || stat !is Upgradable) {
                     warn("Attribute no found! :${it}")
                     return@forEach
                 }

@@ -12,13 +12,13 @@ import io.lumine.mythic.lib.api.item.ItemTag
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.ItemStats
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
+import net.Indyuce.mmoitems.stat.Enchants
 import net.Indyuce.mmoitems.stat.data.DoubleData
+import net.Indyuce.mmoitems.stat.data.EnchantListData
 import net.Indyuce.mmoitems.stat.data.type.StatData
-import net.Indyuce.mmoitems.stat.type.DoubleStat
-import net.Indyuce.mmoitems.stat.type.ItemStat
-import net.Indyuce.mmoitems.stat.type.NameData
-import net.Indyuce.mmoitems.stat.type.StatHistory
+import net.Indyuce.mmoitems.stat.type.*
 import org.bukkit.Material
+import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
@@ -78,7 +78,7 @@ fun ItemStack.addRefine(level: Int) =
 fun ItemStack.addForge(level: Int) =
     setRPGData(MainConfig.FORGE_TAG, getRPGData(MainConfig.FORGE_TAG) + level) {
         for (i in 1..level) {
-            it.addAttribute(MainConfig.ForgeUUID, MainConfig.forgeMap)
+            it.addAttribute(MainConfig.ForgeUUID, MainConfig.forgeMap.toTypeMap())
         }
     }
 
@@ -162,16 +162,24 @@ fun ItemStack.addExp(value: Int): ItemStack {
     return nbtItem.toItem()
 }
 
-fun Map<Int, Map<DoubleStat, String>>.getLevelMap(level: Int): Map<DoubleStat, String> {
-    val attributes = mutableMapOf<DoubleStat, String>()
+fun Map<Int, Map<Upgradable, String>>.getLevelMap(level: Int): Map<ItemStat, String> {
+    val attributes = mutableMapOf<ItemStat, String>()
     forEach { (l, dataMap) ->
         if (l > level) return@forEach
-        attributes.putAll(dataMap)
+        attributes.putAll(dataMap.toTypeMap())
     }
     return attributes
 }
 
-fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<DoubleStat, String>) {
+inline fun <T, U, reified C> Map<T, U>.toTypeMap(): Map<C, U> {
+    val mutableMapOf = mutableMapOf<C, U>()
+    forEach { (k, v) ->
+        mutableMapOf[k as C] = v
+    }
+    return mutableMapOf
+}
+
+fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>) {
     attributes.forEach { (itemStat, data) ->
         //没有该属性退出
         val statData = this.getData(itemStat) ?: return@forEach
@@ -180,21 +188,41 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<DoubleStat, String>) {
             itemStat,
             statData
         )
-        val doubleData = statHistory.getModifiersBonus(uuid)
-        //获取
-        val raw = if (doubleData != null) (doubleData as DoubleData) else DoubleData(0.0)
-        if (!data.contains("%")) {
-            raw.add(formatForgeString(data))
-        } else {
-            //百分比,基于基础值+强化值
-            val percent = data.replace("%", "").toDouble() / 100.0
-            val base = (statHistory.originalData as DoubleData).value
-            val forge = statHistory.getModifiersBonus(MainConfig.ForgeUUID) ?: DoubleData(0.0)
-            raw.add((base + (forge as DoubleData).value) * percent)
+        var operatorString = data
+        //说明是区间
+        if (data.matches(Regex("[0-9]+-[0-9]+"))) {
+            val split = data.split('-', limit = 2)
+            if (split.size == 2)
+                operatorString = "+${RandomUtils.getDouble(split[0].toDouble(), split[1].toDouble())}"
         }
-        //设置
-        statHistory.registerModifierBonus(uuid, raw)
-        this.setStatHistory(itemStat, statHistory)
+        val mData =
+            statHistory.getModifiersBonus(uuid) ?: if (itemStat is DoubleStat) DoubleData(0.0) else statData
+        var enchants: Set<Enchantment> = emptySet()
+        if (statData is EnchantListData) {
+            enchants = (statData.cloneData() as EnchantListData).enchants
+        }
+        val upgradeInfo =
+            if (itemStat is DoubleStat) DoubleStat.DoubleUpgradeInfo.GetFrom(operatorString) else Enchants.EnchantUpgradeInfo.GetFrom(
+                operatorString.split(',').toList()
+            )
+        var raw = if (itemStat is DoubleStat) itemStat.apply(mData, upgradeInfo, 1)
+        else (itemStat as Enchants).apply(mData, upgradeInfo, 1)
+        if (raw is EnchantListData) {
+            val cloneData = EnchantListData()
+            raw.enchants.forEach {
+                if (enchants.contains(it)) {
+                    cloneData.addEnchant(it, (raw as EnchantListData).getLevel(it))
+                }
+            }
+            raw = cloneData
+        }
+        //附魔没有历史
+        if (raw is EnchantListData) {
+            setData(itemStat, raw)
+        } else {
+            statHistory.registerModifierBonus(uuid, raw)
+            this.setStatHistory(itemStat, statHistory)
+        }
     }
 }
 

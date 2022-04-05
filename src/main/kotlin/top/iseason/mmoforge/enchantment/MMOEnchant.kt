@@ -49,6 +49,5 @@ abstract class MMOEnchant(
     inner class EnchantStat : DoubleStat(
         mID, mMaterial, mName,
         mLore, mTypes
-    ) {
-    }
+    )
 }
