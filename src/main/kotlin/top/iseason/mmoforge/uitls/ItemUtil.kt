@@ -205,16 +205,16 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>) {
             if (itemStat is DoubleStat) DoubleStat.DoubleUpgradeInfo.GetFrom(operatorString) else Enchants.EnchantUpgradeInfo.GetFrom(
                 operatorString.split(',').toList()
             )
-        var raw = if (itemStat is DoubleStat) itemStat.apply(mData, upgradeInfo, 1)
+        val raw = if (itemStat is DoubleStat) itemStat.apply(mData, upgradeInfo, 1)
         else (itemStat as Enchants).apply(mData, upgradeInfo, 1)
         if (raw is EnchantListData) {
-            val cloneData = EnchantListData()
-            raw.enchants.forEach {
-                if (enchants.contains(it)) {
-                    cloneData.addEnchant(it, (raw as EnchantListData).getLevel(it))
+            val enchants1 = raw.enchants
+            enchants1.forEach {
+                if (!enchants.contains(it)) {
+                    //设置为0 即 删除
+                    raw.addEnchant(it, 0)
                 }
             }
-            raw = cloneData
         }
         //附魔没有历史
         if (raw is EnchantListData) {
