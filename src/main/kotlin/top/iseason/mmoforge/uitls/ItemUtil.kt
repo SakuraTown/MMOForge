@@ -16,6 +16,7 @@ import net.Indyuce.mmoitems.stat.Enchants
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.EnchantListData
 import net.Indyuce.mmoitems.stat.data.type.StatData
+import net.Indyuce.mmoitems.stat.data.type.UpgradeInfo
 import net.Indyuce.mmoitems.stat.type.*
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
@@ -23,6 +24,7 @@ import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import java.util.*
+import java.util.regex.Pattern
 
 val parser = ExpressionParser()
 
@@ -183,46 +185,37 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>) {
     attributes.forEach { (itemStat, data) ->
         //没有该属性退出
         val statData = this.getData(itemStat) ?: return@forEach
-        val statHistory = getStatHistory(itemStat) ?: StatHistory(
-            this,
-            itemStat,
-            statData
-        )
+        val statHistory = getStatHistory(itemStat) ?: StatHistory(this, itemStat, statData)
         var operatorString = data
         //说明是区间
-        if (data.matches(Regex("[0-9]+-[0-9]+"))) {
-            val split = data.split('-', limit = 2)
-            if (split.size == 2)
-                operatorString = "+${RandomUtils.getDouble(split[0].toDouble(), split[1].toDouble())}"
+        val areaValue = formatForgeString(data)
+        if (areaValue != null) {
+            operatorString = if (areaValue > 0) "+$areaValue" else areaValue.toString()
         }
-        val mData =
-            statHistory.getModifiersBonus(uuid) ?: if (itemStat is DoubleStat) DoubleData(0.0) else statData
-        var enchants: Set<Enchantment> = emptySet()
-        if (statData is EnchantListData) {
-            enchants = (statData.cloneData() as EnchantListData).enchants
-        }
-        val upgradeInfo =
-            if (itemStat is DoubleStat) DoubleStat.DoubleUpgradeInfo.GetFrom(operatorString) else Enchants.EnchantUpgradeInfo.GetFrom(
-                operatorString.split(',').toList()
-            )
-        val raw = if (itemStat is DoubleStat) itemStat.apply(mData, upgradeInfo, 1)
-        else (itemStat as Enchants).apply(mData, upgradeInfo, 1)
-        if (raw is EnchantListData) {
-            val enchants1 = raw.enchants
-            enchants1.forEach {
-                if (!enchants.contains(it)) {
-                    //设置为0 即 删除
-                    raw.addEnchant(it, 0)
-                }
+        val mData: StatData
+        val upgradeInfo: UpgradeInfo
+        if (itemStat is Enchants) {
+            mData = statData
+            upgradeInfo = Enchants.EnchantUpgradeInfo.GetFrom(operatorString.split(',').toList())
+            var enchants: Set<Enchantment> = emptySet()
+            if (statData is EnchantListData) {
+                enchants = (statData.cloneData() as EnchantListData).enchants
             }
+            val apply = (itemStat as Upgradable).apply(mData, upgradeInfo, 1) as EnchantListData
+            val enchants1 = apply.enchants
+            val temp = enchants1.filter { !enchants.contains(it) }
+            temp.forEach {
+                apply.addEnchant(it, 0)
+            }
+            //附魔没有历史,直接设置
+            setData(itemStat, apply)
+            return
         }
-        //附魔没有历史
-        if (raw is EnchantListData) {
-            setData(itemStat, raw)
-        } else {
-            statHistory.registerModifierBonus(uuid, raw)
-            this.setStatHistory(itemStat, statHistory)
-        }
+        mData = statHistory.getModifiersBonus(uuid) ?: DoubleData(0.0)
+        upgradeInfo = DoubleStat.DoubleUpgradeInfo.GetFrom(operatorString)
+        val raw = (itemStat as Upgradable).apply(mData, upgradeInfo, 1)
+        statHistory.registerModifierBonus(uuid, raw)
+        this.setStatHistory(itemStat, statHistory)
     }
 }
 
@@ -240,20 +233,17 @@ fun Int.toRoman(): String {
     return m[num / 1000] + c[num % 1000 / 100] + x[num % 100 / 10] + i[num % 10]
 }
 
-fun formatForgeString(value: String): Double {
-    val split = value.split("-")
-    if (split.size == 2) {
-        return try {
-            RandomUtils.getGaussian(split[0].toDouble(), split[1].toDouble())
-        } catch (e: Exception) {
-            0.0
-        }
-    }
+fun formatForgeString(value: String): Double? {
+    val matcher = Pattern.compile("\\[(.+),(.+)]").matcher(value)
+    if (!matcher.find()) return null
     return try {
-        return value.toDouble()
-    } catch (e: Exception) {
-        0.0
+        val fist = matcher.group(1).toDouble()
+        val second = matcher.group(2).toDouble()
+        RandomUtils.getGaussian(fist, second)
+    } catch (_: NumberFormatException) {
+        null
     }
+
 }
 
 inline fun <reified T : StatData> ItemStack.getMMOData(stat: ItemStat): T? {

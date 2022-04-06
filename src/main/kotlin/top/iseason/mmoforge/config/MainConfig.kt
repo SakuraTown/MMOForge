@@ -25,19 +25,6 @@ import java.util.*
 //配置保存路径
 @FilePath("config.yml")
 object MainConfig : SimpleYAMLConfig() {
-    @Comment("")
-    @Comment("所有加成的格式：基础值为200")
-    @Comment(" +5 => 205")
-    @Comment(" -5 => 195")
-    @Comment("  5 => 5")
-    @Comment(" n5 => -5")
-    @Comment(" 5% => 10")
-    @Comment("+5% => 210")
-    @Comment("-5% => 190")
-    @Comment(" n5% => -10")
-    @Comment(" 3-5 => 203 - 205 的随机区间")
-    @Key("ahead")
-    var ahead = "写在前头的说明"
 
     @Comment("强化标签，储存在物品NBT")
     @Key("foreg-tag")
@@ -85,8 +72,22 @@ object MainConfig : SimpleYAMLConfig() {
     @Comment("", "强化每级增加的属性，支持小数及范围")
     @Key("forge-map")
     var ForgeMap: MemorySection = YamlConfiguration().apply {
-        set("ATTACK_DAMAGE", "3-5")
+        set("ATTACK_DAMAGE", "[3,5]")
     }
+
+    @Comment("")
+    @Comment("所有加成的格式：基础值为200")
+    @Comment(" +5 => 205")
+    @Comment(" -5 => 195")
+    @Comment("  5 => 5")
+    @Comment(" n5 => -5")
+    @Comment(" 5% => 10")
+    @Comment("+5% => 210")
+    @Comment("-5% => 190")
+    @Comment(" n5% => -10")
+    @Comment(" [3,5] => 203 - 205 的高斯分布区间")
+    @Key
+    var AHEAD = "属性加成格式"
 
     //实际使用的
     val forgeMap = mutableMapOf<Upgradable, String>()
