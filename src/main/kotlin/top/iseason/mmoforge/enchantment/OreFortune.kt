@@ -1,7 +1,7 @@
 /*
  * Description:
  * @Author: Iseason2000
- * @Date: 2022/4/4 下午9:42
+ * @Date: 2022/4/7 下午4:57
  *
  */
 
@@ -13,28 +13,28 @@ import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockDropItemEvent
 import top.iseason.mmoforge.uitls.getMMOData
+import top.iseason.mmoforge.uitls.isOre
 
-object SilkTouch : MMOEnchant(
-    "SILK_TOUCH",
-    Material.IRON_PICKAXE,
-    "Silk Touch",
-    "&7■ &f精准: &a# %",
-    arrayOf("挖掘方块时有概率触发精准采集效果"),
+object OreFortune : MMOEnchant(
+    "ORE_FORTUNE",
+    Material.DIAMOND_PICKAXE,
+    "Ore Fortune",
+    "&7■ &f矿物时运 &a#",
+    arrayOf("挖掘矿物时有概率凋落物增加"),
     arrayOf("tool")
 ) {
     @EventHandler
     fun onBlockDropItemEvent(event: BlockDropItemEvent) {
         if (event.isCancelled) return
+        val type = event.blockState.type
+        if (!type.isOre()) return
+        val items = event.items
+        if (items.size != 1) return
+        val item = items[0]
+        if (type == item.itemStack.type) return
         val itemInMainHand = event.player.equipment.itemInMainHand
         if (itemInMainHand.type.isAir) return
         val data = itemInMainHand.getMMOData<DoubleData>(stat) ?: return
-        if (RandomUtils.checkPercentage(data.value)) return
-        if (event.items.size != 1) return
-        val item = event.items[0]
-        if (item.itemStack.type == event.blockState.type) return
-        item.apply {
-            itemStack.type = event.blockState.type
-            itemStack.amount = 1
-        }
+        items[0].itemStack.apply { amount *= RandomUtils.calculateFortune(data.value.toInt()) }
     }
 }
