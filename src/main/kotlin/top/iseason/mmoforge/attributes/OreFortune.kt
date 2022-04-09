@@ -5,7 +5,7 @@
  *
  */
 
-package top.iseason.mmoforge.enchantment
+package top.iseason.mmoforge.attributes
 
 import com.entiv.core.utils.RandomUtils
 import net.Indyuce.mmoitems.stat.data.DoubleData
