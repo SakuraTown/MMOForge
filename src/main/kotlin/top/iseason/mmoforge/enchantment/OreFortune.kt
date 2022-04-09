@@ -28,13 +28,13 @@ object OreFortune : MMOEnchant(
         if (event.isCancelled) return
         val type = event.blockState.type
         if (!type.isOre()) return
-        val items = event.items
-        if (items.size != 1) return
-        val item = items[0]
-        if (type == item.itemStack.type) return
         val itemInMainHand = event.player.equipment.itemInMainHand
         if (itemInMainHand.type.isAir) return
-        val data = itemInMainHand.getMMOData<DoubleData>(stat) ?: return
-        items[0].itemStack.apply { amount *= RandomUtils.calculateFortune(data.value.toInt()) }
+        val level = itemInMainHand.getMMOData<DoubleData>(stat)?.value?.toInt() ?: return
+        for (item in event.items) {
+            val itemStack = item.itemStack
+            if (type == itemStack.type) continue
+            itemStack.amount *= RandomUtils.calculateFortune(level)
+        }
     }
 }
