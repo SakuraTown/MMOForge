@@ -7,7 +7,6 @@ group = "top.iseason"
 version = "1.0.0"
 val mainClass = "MMOForge"
 val author = "Iseason"
-val jarOutputFile = "E:\\mc\\1.18 server\\plugins"
 
 repositories {
     mavenCentral()
@@ -46,12 +45,14 @@ tasks {
             attributes(mapOf("Main-Class" to "top.iseason.mmoforge.MMOForge"))
         }
         minimize()
-        destinationDirectory.set(file(jarOutputFile))
+        project.findProperty("outputPath")?.let {
+            destinationDirectory.set(file(it.toString()))
+        }
     }
     processResources {
         val p = "${project.group}.${rootProject.name.toLowerCase()}"
         include("plugin.yml").expand(
-            "name" to rootProject.name.toLowerCase(),
+            "name" to rootProject.name,
             "main" to "$p.$mainClass",
             "version" to project.version,
             "author" to author,
@@ -62,9 +63,7 @@ tasks {
         options.encoding = "UTF-8"
     }
 }
-tasks.jar {
-    destinationDirectory.set(file(jarOutputFile))
-}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
