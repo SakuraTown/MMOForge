@@ -18,15 +18,18 @@ import net.Indyuce.mmoitems.stat.data.EnchantListData
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.data.type.UpgradeInfo
 import net.Indyuce.mmoitems.stat.type.*
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
+import org.bukkit.util.Vector
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import java.util.*
 import java.util.regex.Pattern
 
 val parser = ExpressionParser()
+val RANDOM = Random()
 
 /**
  * 获取ItemStack某个RPG NBT
@@ -290,4 +293,36 @@ fun Material.isTool() = when (this) {
     Material.LEAD,
     Material.NAME_TAG -> true
     else -> false
+}
+
+fun Material.isOre() = when (this) {
+    Material.COAL_ORE,
+    Material.COPPER_ORE,
+    Material.IRON_ORE,
+    Material.GOLD_ORE,
+    Material.REDSTONE_ORE,
+    Material.LAPIS_ORE,
+    Material.DIAMOND_ORE,
+    Material.EMERALD_ORE,
+    Material.DEEPSLATE_COAL_ORE,
+    Material.DEEPSLATE_COPPER_ORE,
+    Material.DEEPSLATE_IRON_ORE,
+    Material.DEEPSLATE_GOLD_ORE,
+    Material.DEEPSLATE_REDSTONE_ORE,
+    Material.DEEPSLATE_LAPIS_ORE,
+    Material.DEEPSLATE_DIAMOND_ORE,
+    Material.DEEPSLATE_EMERALD_ORE,
+    Material.NETHER_GOLD_ORE,
+    Material.NETHER_QUARTZ_ORE,
+    Material.ANCIENT_DEBRIS,
+    Material.AMETHYST_CLUSTER -> true
+    else -> false
+}
+
+// 掉落物品 并且有初始速度，类似于原版挖方块
+fun dropItemNaturally(loc: Location, stack: ItemStack?) {
+    val dx = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
+    val dy = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
+    val dz = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
+    loc.world.dropItem(loc.add(0.5, 0.5, 0.5), stack!!).velocity = Vector(dx, dy, dz)
 }

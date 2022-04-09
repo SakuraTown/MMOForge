@@ -75,17 +75,18 @@ object MainConfig : SimpleYAMLConfig() {
         set("ATTACK_DAMAGE", "[3,5]")
     }
 
-    @Comment("")
-    @Comment("所有加成的格式：基础值为200")
-    @Comment(" +5 => 205")
-    @Comment(" -5 => 195")
-    @Comment("  5 => 5")
-    @Comment(" n5 => -5")
-    @Comment(" 5% => 10")
-    @Comment("+5% => 210")
-    @Comment("-5% => 190")
-    @Comment(" n5% => -10")
-    @Comment(" [3,5] => 203 - 205 的高斯分布区间")
+    @Comment(
+        "", "所有加成的格式：基础值为200",
+        " +5 => 205",
+        " -5 => 195",
+        "  5 => 5",
+        " n5 => -5",
+        " 5% => 10",
+        "+5% => 210",
+        "-5% => 190",
+        " n5% => -10",
+        " [3,5] => 203 - 205 的高斯分布区间"
+    )
     @Key
     var AHEAD = "属性加成格式"
 
