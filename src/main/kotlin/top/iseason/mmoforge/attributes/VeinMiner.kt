@@ -48,9 +48,5 @@ object VeinMiner : MMOEnchant(
                 player.breakBlock(veinBlocksIterator.next())
             }
         }
-//        for (veinBlock in veinBlocks) {
-//            player.breakBlock(veinBlock)
-//        }
-
     }
 }

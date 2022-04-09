@@ -10,38 +10,6 @@ package top.iseason.mmoforge.uitls
 import org.bukkit.block.Block
 import org.bukkit.util.Vector
 
-val relativeVectors = arrayOf(
-//    Vector(0, 0, 0)
-    Vector(1, 0, 0),
-    Vector(0, 0, 1),
-    Vector(-1, 0, 0),
-    Vector(0, -1, 0),
-    Vector(0, 0, -1),
-
-    Vector(0, 1, 0),
-    Vector(0, 1, 1),
-    Vector(1, 1, 0),
-
-    Vector(1, 0, 1),
-    Vector(-1, -1, 0),
-    Vector(-1, 0, -1),
-    Vector(0, -1, -1),
-    Vector(1, -1, 0),
-    Vector(1, 0, -1),
-    Vector(0, 1, -1),
-    Vector(-1, 1, 0),
-    Vector(-1, 0, 1),
-    Vector(0, -1, 1),
-    Vector(1, 1, 1),
-    Vector(1, 1, -1),
-    Vector(1, -1, 1),
-    Vector(-1, 1, 1),
-    Vector(1, -1, -1),
-    Vector(-1, -1, 1),
-    Vector(-1, 1, -1),
-    Vector(-1, -1, -1),
-)
-
 /**
  * 连锁相同的方块
  * @param start 开始的方块
@@ -63,6 +31,12 @@ fun Block.getNearBlocks(): Set<Block> {
     return totalBlocks
 }
 
+/**
+ * 由DFS算法递归获取相似方块
+ * @param start 起始方块
+ * @param set 将返回的方块集合，不包括起始方块
+ * @param limit 限制最大数量
+ */
 fun Block.getVeinChainBlocks(
     start: Block = this,
     set: MutableSet<Block> = mutableSetOf(),
@@ -79,3 +53,35 @@ fun Block.getVeinChainBlocks(
     return set
 }
 
+/**
+ * 一个由方块组成的 9*9 立方体，其核心方块周围26个方块坐标相对其的偏移矢量
+ */
+val relativeVectors = arrayOf(
+//    Vector(0, 0, 0)
+    Vector(1, 0, 0),
+    Vector(0, 0, 1),
+    Vector(-1, 0, 0),
+    Vector(0, -1, 0),
+    Vector(0, 0, -1),
+    Vector(0, 1, 0),
+    Vector(0, 1, 1),
+    Vector(1, 1, 0),
+    Vector(1, 0, 1),
+    Vector(-1, -1, 0),
+    Vector(-1, 0, -1),
+    Vector(0, -1, -1),
+    Vector(1, -1, 0),
+    Vector(1, 0, -1),
+    Vector(0, 1, -1),
+    Vector(-1, 1, 0),
+    Vector(-1, 0, 1),
+    Vector(0, -1, 1),
+    Vector(1, 1, 1),
+    Vector(1, 1, -1),
+    Vector(1, -1, 1),
+    Vector(-1, 1, 1),
+    Vector(1, -1, -1),
+    Vector(-1, -1, 1),
+    Vector(-1, 1, -1),
+    Vector(-1, -1, -1),
+)
