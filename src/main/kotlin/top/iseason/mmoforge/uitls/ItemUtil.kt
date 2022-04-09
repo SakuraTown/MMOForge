@@ -21,6 +21,7 @@ import net.Indyuce.mmoitems.stat.type.*
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.Item
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 import top.iseason.mmoforge.config.MainConfig
@@ -320,9 +321,9 @@ fun Material.isOre() = when (this) {
 }
 
 // 掉落物品 并且有初始速度，类似于原版挖方块
-fun dropItemNaturally(loc: Location, stack: ItemStack?) {
+fun dropItemNaturally(loc: Location, stack: ItemStack?): Item {
     val dx = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
     val dy = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
     val dz = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
-    loc.world.dropItem(loc.add(0.5, 0.5, 0.5), stack!!).velocity = Vector(dx, dy, dz)
+    return loc.world.dropItem(loc.add(0.5, 0.5, 0.5), stack!!).apply { velocity = Vector(dx, dy, dz) }
 }
