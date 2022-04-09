@@ -322,8 +322,8 @@ fun Material.isOre() = when (this) {
 
 // 掉落物品 并且有初始速度，类似于原版挖方块
 fun dropItemNaturally(loc: Location, stack: ItemStack?): Item {
-    val dx = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
-    val dy = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
-    val dz = ((RANDOM.nextFloat() * 0.5f).toDouble() + 0.25) / 10.0
+    val dx = (RANDOM.nextDouble() - 0.5) * 0.2
+    val dy = RANDOM.nextDouble() * 0.1 + 0.15
+    val dz = (RANDOM.nextDouble() - 0.5) * 0.2
     return loc.world.dropItem(loc.add(0.5, 0.5, 0.5), stack!!).apply { velocity = Vector(dx, dy, dz) }
 }

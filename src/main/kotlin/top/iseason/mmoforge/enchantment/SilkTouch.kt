@@ -13,6 +13,7 @@ import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
+import top.iseason.mmoforge.uitls.dropBlock
 import top.iseason.mmoforge.uitls.getMMOData
 
 object SilkTouch : MMOEnchant(
@@ -26,12 +27,14 @@ object SilkTouch : MMOEnchant(
     @EventHandler
     fun onBlockBreakEvent(event: BlockBreakEvent) {
         if (event.isCancelled) return
-        val itemInMainHand = event.player.equipment.itemInMainHand
+        val player = event.player
+        val itemInMainHand = player.equipment.itemInMainHand
         if (itemInMainHand.type.isAir) return
         val level = itemInMainHand.getMMOData<DoubleData>(stat)?.value ?: return
         if (RandomUtils.checkPercentage(level)) return
-        event.block.breakNaturally(itemInMainHand.clone().apply {
+        player.dropBlock(event.block, itemInMainHand.clone().apply {
             addUnsafeEnchantment(Enchantment.SILK_TOUCH, 1)
         })
+        event.isDropItems = false
     }
 }
