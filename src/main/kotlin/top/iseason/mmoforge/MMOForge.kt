@@ -18,6 +18,7 @@ import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.enchantment.MMOEnchant
 import top.iseason.mmoforge.enchantment.OreFortune
 import top.iseason.mmoforge.enchantment.SilkTouch
+import top.iseason.mmoforge.enchantment.VeinMiner
 import top.iseason.mmoforge.listener.EventListener
 
 class MMOForge : SimplePlugin() {
@@ -54,6 +55,7 @@ class MMOForge : SimplePlugin() {
     private fun registerEnchants() {
         SilkTouch.register()
         OreFortune.register()
+        VeinMiner.register()
     }
 
 

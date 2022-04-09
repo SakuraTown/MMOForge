@@ -124,7 +124,9 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
 
     val resultSlot = IOSlot(25).inputAble(false).setUI(this)
 
-
+    /**
+     * 根据2个输入格子更新result格
+     */
     private fun updateResult() {
         val tool = toolSlot.itemStack
         val material = materialSlot.itemStack
