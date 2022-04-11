@@ -7,6 +7,7 @@
 
 package top.iseason.mmoforge.attributes
 
+import com.entiv.core.common.submit
 import io.lumine.mythic.lib.MythicLib
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.UpgradeTemplate
@@ -42,12 +43,19 @@ object ScopeMiner : MMOEnchant(
         val count = level.toInt() + 2
         val rangeX = count / 2
         val rangeY = count - rangeX
-        for (scopeBlock in player.getScopeBlocks(event.block, rangeX, rangeY)) {
-            player.breakBlock(scopeBlock)
+        val scopeBlocks = player.getScopeBlocks(event.block, rangeX, rangeY, 1)
+        val iterator = scopeBlocks.iterator()
+        submit(period = 1L) {
+            repeat(10) {
+                if (!iterator.hasNext()) {
+                    scopeSet.remove(player)
+                    cancel()
+                    return@submit
+                }
+                player.breakBlock(iterator.next())
+            }
         }
-        scopeSet.remove(player)
     }
-
 
     override val stat: EnchantStat = object : EnchantStat() {
         override fun whenApplied(item: ItemStackBuilder, data: StatData) {

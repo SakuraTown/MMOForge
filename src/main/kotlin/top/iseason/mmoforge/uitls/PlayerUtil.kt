@@ -17,11 +17,14 @@ import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.inventory.ItemStack
-import kotlin.math.abs
 import kotlin.math.cos
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
+/**
+ * 扣除玩家一定金额
+ * @param money 金额
+ * @return true 为成功 false 为失败
+ */
 fun Player.takeMoney(money: Double): Boolean {
     if (VaultEconomyHook.has(this, money) == true) {
         val response = VaultEconomyHook.withdraw(this, money)
@@ -52,38 +55,56 @@ fun Player.dropBlock(block: Block, tool: ItemStack?) {
     }
 }
 
-fun Player.getScopeBlocks(target: Block, rangeX: Int, rangeY: Int): Set<Block> {
+/**
+ * 在给定方块周围获取与玩家视角平行的 xyz 矩形区域内的方块
+ * @param target 起始方块
+ * @param rangeX 宽度
+ * @param rangeY 高度
+ * @param rangeZ 深度
+ * @return 所有方块的集合(除了 target)
+ */
+fun Player.getScopeBlocks(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int): Set<Block> {
     val set = mutableSetOf<Block>()
     val location = target.location
-    println("start ============")
-//    println("target $location")
     val world = location.world
-    val eyePitch = eyeLocation.pitch
-    val eyeYaw = eyeLocation.yaw
-    val pitch = (eyePitch / 45).roundToInt() * 45.0
-    val yaw = (eyeYaw / 45).roundToInt() * 45.0
-
-//    // 180.0 * Math.PI
-//    println("eyePitch = $eyePitch")
-//    println("eyeYaw = $eyeYaw")
-//    println("pitch = $pitch")
-//    println("yaw = $yaw")
-    val transformMatrix = getTransformMatrix(target.location, pitch / 180.0 * Math.PI, yaw / 180.0 * Math.PI, 0.0)
+    // X轴旋转角(角度 转 弧度)
+    val eyePitch = eyeLocation.pitch / 180.0 * Math.PI
+    //Y轴旋转角(角度 转 弧度)
+    val eyeYaw = eyeLocation.yaw / 180.0 * Math.PI
+    //生成变换矩阵
+    val transformMatrix =
+        getTransformMatrix(
+            location.x + 0.5,
+            location.y + 0.5,
+            location.z + 0.5,
+            eyePitch,
+            -eyeYaw,
+            0.0
+        )
     val halfRangeX = rangeX / 2
     val halfRangeY = rangeY / 2
+    //长
     for (x in -halfRangeX until rangeX - halfRangeX) {
+        //宽
         for (y in -halfRangeY until rangeY - halfRangeY) {
-            //todo :不完美
-            val transform = if (abs(pitch) == 90.0 && abs(yaw) == 90.0) {
-                Location(world, 0.0, x.toDouble(), y.toDouble()).transform(transformMatrix)
-            } else Location(world, x.toDouble(), y.toDouble(), 0.0).transform(transformMatrix)
-            set.add(transform.block)
+            //深
+            for (z in 0 until rangeZ) {
+                val block = Location(world, x.toDouble(), y.toDouble(), z.toDouble()).transform(transformMatrix).block
+                //跳过水
+                if (block.isLiquid) continue
+                //跳过不可挖掘方块
+                if (block.getBreakSpeed(this) == 0.0F) continue
+                set.add(block)
+            }
         }
     }
     set.remove(target)
     return set
 }
 
+/**
+ * 由变换矩阵求出变换后的位置
+ */
 fun Location.transform(transformMatrix: Matrix<Double>): Location {
     val pointMatrix = matrixOf(
         1, 4,
@@ -93,39 +114,50 @@ fun Location.transform(transformMatrix: Matrix<Double>): Location {
     return Location(world, matrix[0][0], matrix[1][0], matrix[2][0])
 }
 
-fun getTransformMatrix(location: Location, angleX: Double, angleY: Double, angleZ: Double): Matrix<Double> {
-    val zeroX = location.x + 0.5
-    val zeroY = location.y + 0.5
-    val zeroZ = location.z + 0.5
-    val moveMatrix = matrixOf(
+/**
+ * 根据变换生成变换矩阵，支持平移和旋转
+ */
+fun getTransformMatrix(
+    moveX: Double,
+    moveY: Double,
+    moveZ: Double,
+    angleX: Double,
+    angleY: Double,
+    angleZ: Double
+): Matrix<Double> {
+    //平移矩阵
+    val translationMatrix = matrixOf(
         4, 4,
-        1.0, 0.0, 0.0, zeroX,
-        0.0, 1.0, 0.0, zeroY,
-        0.0, 0.0, 1.0, zeroZ,
+        1.0, 0.0, 0.0, moveX,
+        0.0, 1.0, 0.0, moveY,
+        0.0, 0.0, 1.0, moveZ,
         0.0, 0.0, 0.0, 1.0
     )
-    val transformMatrixX = matrixOf(
+    // X 轴旋转矩阵
+    val rotationMatrixX = matrixOf(
         4, 4,
         1.0, 0.0, 0.0, 0.0,
         0.0, cos(angleX), -sin(angleX), 0.0,
         0.0, sin(angleX), cos(angleX), 0.0,
         0.0, 0.0, 0.0, 1.0
     )
-    val transformMatrixY = matrixOf(
+    // Y 轴旋转矩阵
+    val rotationMatrixY = matrixOf(
         4, 4,
         cos(angleY), 0.0, sin(angleY), 0.0,
         0.0, 1.0, 0.0, 0.0,
         -sin(angleY), 0.0, cos(angleY), 0.0,
         0.0, 0.0, 0.0, 1.0
     )
-    val transformMatrixZ = matrixOf(
+    // Z 轴旋转矩阵
+    val rotationMatrixZ = matrixOf(
         4, 4,
         cos(angleZ), -sin(angleZ), 0.0, 0.0,
         sin(angleZ), cos(angleZ), 0.0, 0.0,
         0.0, 0.0, 1, 0.0,
         0.0, 0.0, 0.0, 1.0
     )
-    val rotateMatrix = transformMatrixZ dot transformMatrixX dot transformMatrixY
+    val rotationMatrix = rotationMatrixY dot rotationMatrixX dot rotationMatrixZ
 
-    return moveMatrix dot rotateMatrix
+    return translationMatrix dot rotationMatrix
 }
