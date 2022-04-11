@@ -26,7 +26,6 @@ object VeinMiner : MMOEnchant(
     arrayOf("tool")
 ) {
     private val veiningSet = mutableSetOf<Player>()
-
     @EventHandler
     fun onBlockBreakEvent(event: BlockBreakEvent) {
         val player = event.player
@@ -39,7 +38,7 @@ object VeinMiner : MMOEnchant(
         veiningSet.add(player)
         //降低负担,每tick处理10个
         submit(period = 1L) {
-            for (a in 1..10) {
+            repeat(10) {
                 if (!veinBlocksIterator.hasNext()) {
                     veiningSet.remove(player)
                     cancel()

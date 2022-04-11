@@ -39,14 +39,14 @@ abstract class MMOEnchant(
     @Comment("格式字符，负责翻译lore")
     @Key("loreFormat")
     var loreFormat: String = format
-    val stat = EnchantStat()
+    open val stat = EnchantStat()
 
     override val onLoad: (ConfigState) -> Unit = {
         MMOForge.instance.setStatLore(this)
         MMOForge.instance.setStatLoreFormat(this)
     }
 
-    inner class EnchantStat : DoubleStat(
+    open inner class EnchantStat : DoubleStat(
         mID, mMaterial, mName,
         mLore, mTypes
     )

@@ -13,10 +13,7 @@ import com.entiv.core.plugin.SimplePlugin
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
-import top.iseason.mmoforge.attributes.MMOEnchant
-import top.iseason.mmoforge.attributes.OreFortune
-import top.iseason.mmoforge.attributes.SilkTouch
-import top.iseason.mmoforge.attributes.VeinMiner
+import top.iseason.mmoforge.attributes.*
 import top.iseason.mmoforge.command.UICommand
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.listener.EventListener
@@ -56,6 +53,7 @@ class MMOForge : SimplePlugin() {
         SilkTouch.register()
         OreFortune.register()
         VeinMiner.register()
+        ScopeMiner.register()
     }
 
 
