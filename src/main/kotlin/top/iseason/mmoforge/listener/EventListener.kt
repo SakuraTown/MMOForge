@@ -52,7 +52,10 @@ class ScopeTester(val player: Player, val x: Int, val y: Int, val z: Int) : Bukk
                 target.z,
                 eyePitch / 180.0 * Math.PI,
                 -eyeYaw / 180.0 * Math.PI,
-                0.0
+                1.0,
+                1.0,
+                1.0,
+                1.0
             )
         val halfRangeX = x / 2
         val halfRangeY = y / 2

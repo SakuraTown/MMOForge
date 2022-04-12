@@ -78,16 +78,15 @@ fun Player.getScopeBlocks(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int):
             location.y + 0.5,
             location.z + 0.5,
             eyePitch,
-            -eyeYaw,
-            0.0
+            -eyeYaw
         )
     val halfRangeX = rangeX / 2
     val halfRangeY = rangeY / 2
-    //长
+    //宽
     for (x in -halfRangeX until rangeX - halfRangeX) {
-        //宽
+        //高
         for (y in -halfRangeY until rangeY - halfRangeY) {
-            //深
+            //深度,从被挖的方块往里
             for (z in 0 until rangeZ) {
                 val block = Location(world, x.toDouble(), y.toDouble(), z.toDouble()).transform(transformMatrix).block
                 //跳过水
@@ -115,49 +114,99 @@ fun Location.transform(transformMatrix: Matrix<Double>): Location {
 }
 
 /**
- * 根据变换生成变换矩阵，支持平移和旋转
+ * 根据变换生成变换矩阵，支持平移、旋转 和缩放
  */
 fun getTransformMatrix(
-    moveX: Double,
-    moveY: Double,
-    moveZ: Double,
-    angleX: Double,
-    angleY: Double,
-    angleZ: Double
+    moveX: Double = 0.0,
+    moveY: Double = 0.0,
+    moveZ: Double = 0.0,
+    angleX: Double = 0.0,
+    angleY: Double = 0.0,
+    angleZ: Double = 0.0,
+    scaleX: Double = 1.0,
+    scaleY: Double = 1.0,
+    scaleZ: Double = 1.0,
 ): Matrix<Double> {
-    //平移矩阵
-    val translationMatrix = matrixOf(
-        4, 4,
-        1.0, 0.0, 0.0, moveX,
-        0.0, 1.0, 0.0, moveY,
-        0.0, 0.0, 1.0, moveZ,
-        0.0, 0.0, 0.0, 1.0
-    )
-    // X 轴旋转矩阵
-    val rotationMatrixX = matrixOf(
-        4, 4,
-        1.0, 0.0, 0.0, 0.0,
-        0.0, cos(angleX), -sin(angleX), 0.0,
-        0.0, sin(angleX), cos(angleX), 0.0,
-        0.0, 0.0, 0.0, 1.0
-    )
-    // Y 轴旋转矩阵
-    val rotationMatrixY = matrixOf(
-        4, 4,
-        cos(angleY), 0.0, sin(angleY), 0.0,
-        0.0, 1.0, 0.0, 0.0,
-        -sin(angleY), 0.0, cos(angleY), 0.0,
-        0.0, 0.0, 0.0, 1.0
-    )
-    // Z 轴旋转矩阵
-    val rotationMatrixZ = matrixOf(
-        4, 4,
-        cos(angleZ), -sin(angleZ), 0.0, 0.0,
-        sin(angleZ), cos(angleZ), 0.0, 0.0,
-        0.0, 0.0, 1, 0.0,
-        0.0, 0.0, 0.0, 1.0
-    )
-    val rotationMatrix = rotationMatrixY dot rotationMatrixX dot rotationMatrixZ
+//    //平移矩阵
+//    val translationMatrix = matrixOf(
+//        4, 4,
+//        1.0, 0.0, 0.0, moveX,
+//        0.0, 1.0, 0.0, moveY,
+//        0.0, 0.0, 1.0, moveZ,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    // X 轴旋转矩阵
+//    val rotationMatrixX = matrixOf(
+//        4, 4,
+//        1.0, 0.0, 0.0, 0.0,
+//        0.0, cos(angleX), -sin(angleX), 0.0,
+//        0.0, sin(angleX), cos(angleX), 0.0,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    // Y 轴旋转矩阵
+//    val rotationMatrixY = matrixOf(
+//        4, 4,
+//        cos(angleY), 0.0, sin(angleY), 0.0,
+//        0.0, 1.0, 0.0, 0.0,
+//        -sin(angleY), 0.0, cos(angleY), 0.0,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    // Z 轴旋转矩阵
+//    val rotationMatrixZ = matrixOf(
+//        4, 4,
+//        cos(angleZ), -sin(angleZ), 0.0, 0.0,
+//        sin(angleZ), cos(angleZ), 0.0, 0.0,
+//        0.0, 0.0, 1, 0.0,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    val scalingMatrix = matrixOf(
+//        4, 4,
+//        scaleX, 0.0, 0.0, 0.0,
+//        0.0, scaleY, 0.0, 0.0,
+//        0.0, 0.0, scaleZ, 0.0,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    val matrixOf = matrixOf(
+//        4,
+//        4,
+//
+//        scaleX * cos(angleY) * cos(angleZ),
+//        scaleX * cos(angleX) * sin(angleZ),
+//        -scaleX * sin(angleY), 0.0,
+//
+//        scaleY * (sin(angleX) * sin(angleY) * cos(angleZ) - cos(angleX) * sin(angleZ)),
+//        scaleY * (sin(angleX) * sin(angleY) * sin(angleZ) + cos(angleX) * cos(angleZ)),
+//        scaleY * sin(angleX) * cos(angleY), 0.0,
+//
+//        scaleZ * (cos(angleX) * sin(angleY) * cos(angleZ) + cos(angleX) * sin(angleZ)),
+//        scaleZ * (cos(angleX) * sin(angleY) * sin(angleZ) - sin(angleX) * cos(angleZ)),
+//        scaleZ * cos(angleX) * cos(angleY), 0.0,
+//
+//        moveX, moveY, moveZ, 1.0
+//    )
+//    val rotationMatrix = rotationMatrixY dot rotationMatrixX dot rotationMatrixZ
+//    val transform = translationMatrix dot rotationMatrix dot scalingMatrix
+//    return transform
 
-    return translationMatrix dot rotationMatrix
+    //一个等于上面这些
+    return matrixOf(
+        4,
+        4,
+        scaleX * cos(angleY) * cos(angleZ),
+        scaleY * (sin(angleX) * sin(angleY) * cos(angleZ) - cos(angleX) * sin(angleZ)),
+        scaleZ * (cos(angleX) * sin(angleY) * cos(angleZ) + cos(angleX) * sin(angleZ)),
+        moveX,
+
+        scaleX * cos(angleX) * sin(angleZ),
+        scaleY * (sin(angleX) * sin(angleY) * sin(angleZ) + cos(angleX) * cos(angleZ)),
+        scaleZ * (cos(angleX) * sin(angleY) * sin(angleZ) - sin(angleX) * cos(angleZ)),
+        moveY,
+
+        -scaleX * sin(angleY),
+        scaleY * sin(angleX) * cos(angleY),
+        scaleZ * cos(angleX) * cos(angleY),
+        moveZ,
+
+        0.0, 0.0, 0.0, 1.0
+    )
 }
