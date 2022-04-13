@@ -7,6 +7,9 @@
 
 package top.iseason.mmoforge.uitls
 
+import kotlin.math.cos
+import kotlin.math.sin
+
 interface Matrix<out T> {
     val cols: Int
     val rows: Int
@@ -267,4 +270,85 @@ private fun <M : Number> Matrix<M>.determinantOfSubMatrix(row: Int, col: Int): D
         value
     }
     return matrixOf(cols - 1, rows - 1, *list.toTypedArray()).determinant()
+}
+
+/**
+ * 根据变换生成变换矩阵，支持平移、旋转 和缩放
+ */
+fun getTransformMatrix(
+    moveX: Double = 0.0,
+    moveY: Double = 0.0,
+    moveZ: Double = 0.0,
+    angleX: Double = 0.0,
+    angleY: Double = 0.0,
+    angleZ: Double = 0.0,
+    scaleX: Double = 1.0,
+    scaleY: Double = 1.0,
+    scaleZ: Double = 1.0,
+): Matrix<Double> {
+//    //平移矩阵
+//    val translationMatrix = matrixOf(
+//        4, 4,
+//        1.0, 0.0, 0.0, moveX,
+//        0.0, 1.0, 0.0, moveY,
+//        0.0, 0.0, 1.0, moveZ,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    // X 轴旋转矩阵
+//    val rotationMatrixX = matrixOf(
+//        4, 4,
+//        1.0, 0.0, 0.0, 0.0,
+//        0.0, cos(angleX), -sin(angleX), 0.0,
+//        0.0, sin(angleX), cos(angleX), 0.0,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    // Y 轴旋转矩阵
+//    val rotationMatrixY = matrixOf(
+//        4, 4,
+//        cos(angleY), 0.0, sin(angleY), 0.0,
+//        0.0, 1.0, 0.0, 0.0,
+//        -sin(angleY), 0.0, cos(angleY), 0.0,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    // Z 轴旋转矩阵
+//    val rotationMatrixZ = matrixOf(
+//        4, 4,
+//        cos(angleZ), -sin(angleZ), 0.0, 0.0,
+//        sin(angleZ), cos(angleZ), 0.0, 0.0,
+//        0.0, 0.0, 1, 0.0,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    //缩放矩阵
+//    val scalingMatrix = matrixOf(
+//        4, 4,
+//        scaleX, 0.0, 0.0, 0.0,
+//        0.0, scaleY, 0.0, 0.0,
+//        0.0, 0.0, scaleZ, 0.0,
+//        0.0, 0.0, 0.0, 1.0
+//    )
+//    val rotationMatrix = rotationMatrixY dot rotationMatrixX dot rotationMatrixZ
+//    val transform = translationMatrix dot rotationMatrix dot scalingMatrix
+//    return transform
+
+    //一个等于上面这些
+    return matrixOf(
+        4,
+        4,
+        scaleX * cos(angleY) * cos(angleZ),
+        scaleY * (sin(angleX) * sin(angleY) * cos(angleZ) - cos(angleX) * sin(angleZ)),
+        scaleZ * (cos(angleX) * sin(angleY) * cos(angleZ) + cos(angleX) * sin(angleZ)),
+        moveX,
+
+        scaleX * cos(angleX) * sin(angleZ),
+        scaleY * (sin(angleX) * sin(angleY) * sin(angleZ) + cos(angleX) * cos(angleZ)),
+        scaleZ * (cos(angleX) * sin(angleY) * sin(angleZ) - sin(angleX) * cos(angleZ)),
+        moveY,
+
+        -scaleX * sin(angleY),
+        scaleY * sin(angleX) * cos(angleY),
+        scaleZ * cos(angleX) * cos(angleY),
+        moveZ,
+
+        0.0, 0.0, 0.0, 1.0
+    )
 }

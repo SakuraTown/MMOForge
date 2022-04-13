@@ -17,8 +17,7 @@ import org.bukkit.entity.Item
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.inventory.ItemStack
-import kotlin.math.cos
-import kotlin.math.sin
+import org.bukkit.util.Vector
 
 /**
  * 扣除玩家一定金额
@@ -63,7 +62,7 @@ fun Player.dropBlock(block: Block, tool: ItemStack?) {
  * @param rangeZ 深度
  * @return 所有方块的集合(除了 target)
  */
-fun Player.getScopeBlocks(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int): Set<Block> {
+fun Player.getScopeBlocksByMatrix(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int): Set<Block> {
     val set = mutableSetOf<Block>()
     val location = target.location
     val world = location.world
@@ -101,112 +100,54 @@ fun Player.getScopeBlocks(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int):
     return set
 }
 
-/**
- * 由变换矩阵求出变换后的位置
- */
-fun Location.transform(transformMatrix: Matrix<Double>): Location {
-    val pointMatrix = matrixOf(
-        1, 4,
-        x, y, z, 1.0
-    )
-    val matrix = transformMatrix dot pointMatrix
-    return Location(world, matrix[0][0], matrix[1][0], matrix[2][0])
+fun Player.getScopeBlocksByVector(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int): Set<Block> {
+    val set = mutableSetOf<Block>()
+    val baseX = target.location.apply {
+        x += 0.5
+        y += 0.5
+        z += 0.5
+    }.distance(eyeLocation)
+    val halfRangeX = rangeX / 2
+    val halfRangeY = rangeY / 2
+    val relativeCoordinate = getRelativeCoordinate()
+    val eyeLocation = eyeLocation
+    //宽
+    for (x in -halfRangeX until rangeX - halfRangeX) {
+        //高
+        for (y in -halfRangeY until rangeY - halfRangeY) {
+            //深度,从被挖的方块往里
+            for (z in 0 until rangeZ) {
+                val block =
+                    eyeLocation.getRelative(relativeCoordinate, x.toDouble(), y.toDouble(), baseX + z.toDouble()).block
+                set.add(block)
+            }
+        }
+    }
+    set.remove(target)
+    return set
+}
+
+
+// 由相对坐标及相对坐标系获取世界坐标
+fun Player.getLocationRelativelyByCoordinate(coordinate: Array<Vector>, x: Double, y: Double, z: Double): Location {
+    return eyeLocation.getRelative(coordinate, x, y, z)
+}
+
+// 由相对坐标系获取世界坐标
+fun Player.getRelative(x: Double, y: Double, z: Double): Location {
+    return getLocationRelativelyByCoordinate(getRelativeCoordinate(), x, y, z)
 }
 
 /**
- * 根据变换生成变换矩阵，支持平移、旋转 和缩放
+ * 获取玩家相对坐标系的3个坐标轴再世界坐标系下的单位向量
+ * @return 一个向量数组, index 0 为 X轴，1 为 Y轴，2 为Z轴
  */
-fun getTransformMatrix(
-    moveX: Double = 0.0,
-    moveY: Double = 0.0,
-    moveZ: Double = 0.0,
-    angleX: Double = 0.0,
-    angleY: Double = 0.0,
-    angleZ: Double = 0.0,
-    scaleX: Double = 1.0,
-    scaleY: Double = 1.0,
-    scaleZ: Double = 1.0,
-): Matrix<Double> {
-//    //平移矩阵
-//    val translationMatrix = matrixOf(
-//        4, 4,
-//        1.0, 0.0, 0.0, moveX,
-//        0.0, 1.0, 0.0, moveY,
-//        0.0, 0.0, 1.0, moveZ,
-//        0.0, 0.0, 0.0, 1.0
-//    )
-//    // X 轴旋转矩阵
-//    val rotationMatrixX = matrixOf(
-//        4, 4,
-//        1.0, 0.0, 0.0, 0.0,
-//        0.0, cos(angleX), -sin(angleX), 0.0,
-//        0.0, sin(angleX), cos(angleX), 0.0,
-//        0.0, 0.0, 0.0, 1.0
-//    )
-//    // Y 轴旋转矩阵
-//    val rotationMatrixY = matrixOf(
-//        4, 4,
-//        cos(angleY), 0.0, sin(angleY), 0.0,
-//        0.0, 1.0, 0.0, 0.0,
-//        -sin(angleY), 0.0, cos(angleY), 0.0,
-//        0.0, 0.0, 0.0, 1.0
-//    )
-//    // Z 轴旋转矩阵
-//    val rotationMatrixZ = matrixOf(
-//        4, 4,
-//        cos(angleZ), -sin(angleZ), 0.0, 0.0,
-//        sin(angleZ), cos(angleZ), 0.0, 0.0,
-//        0.0, 0.0, 1, 0.0,
-//        0.0, 0.0, 0.0, 1.0
-//    )
-//    val scalingMatrix = matrixOf(
-//        4, 4,
-//        scaleX, 0.0, 0.0, 0.0,
-//        0.0, scaleY, 0.0, 0.0,
-//        0.0, 0.0, scaleZ, 0.0,
-//        0.0, 0.0, 0.0, 1.0
-//    )
-//    val matrixOf = matrixOf(
-//        4,
-//        4,
-//
-//        scaleX * cos(angleY) * cos(angleZ),
-//        scaleX * cos(angleX) * sin(angleZ),
-//        -scaleX * sin(angleY), 0.0,
-//
-//        scaleY * (sin(angleX) * sin(angleY) * cos(angleZ) - cos(angleX) * sin(angleZ)),
-//        scaleY * (sin(angleX) * sin(angleY) * sin(angleZ) + cos(angleX) * cos(angleZ)),
-//        scaleY * sin(angleX) * cos(angleY), 0.0,
-//
-//        scaleZ * (cos(angleX) * sin(angleY) * cos(angleZ) + cos(angleX) * sin(angleZ)),
-//        scaleZ * (cos(angleX) * sin(angleY) * sin(angleZ) - sin(angleX) * cos(angleZ)),
-//        scaleZ * cos(angleX) * cos(angleY), 0.0,
-//
-//        moveX, moveY, moveZ, 1.0
-//    )
-//    val rotationMatrix = rotationMatrixY dot rotationMatrixX dot rotationMatrixZ
-//    val transform = translationMatrix dot rotationMatrix dot scalingMatrix
-//    return transform
-
-    //一个等于上面这些
-    return matrixOf(
-        4,
-        4,
-        scaleX * cos(angleY) * cos(angleZ),
-        scaleY * (sin(angleX) * sin(angleY) * cos(angleZ) - cos(angleX) * sin(angleZ)),
-        scaleZ * (cos(angleX) * sin(angleY) * cos(angleZ) + cos(angleX) * sin(angleZ)),
-        moveX,
-
-        scaleX * cos(angleX) * sin(angleZ),
-        scaleY * (sin(angleX) * sin(angleY) * sin(angleZ) + cos(angleX) * cos(angleZ)),
-        scaleZ * (cos(angleX) * sin(angleY) * sin(angleZ) - sin(angleX) * cos(angleZ)),
-        moveY,
-
-        -scaleX * sin(angleY),
-        scaleY * sin(angleX) * cos(angleY),
-        scaleZ * cos(angleX) * cos(angleY),
-        moveZ,
-
-        0.0, 0.0, 0.0, 1.0
-    )
+fun Player.getRelativeCoordinate(): Array<Vector> {
+    val eyeLocation = eyeLocation
+    val normalX = eyeLocation.getNormalX() // X 轴
+    val normalZ = eyeLocation.getNormalZ()
+    val normalY = normalX.clone().crossProduct(normalZ).multiply(-1)
+    return arrayOf(normalX, normalY, normalZ)
 }
+
+
