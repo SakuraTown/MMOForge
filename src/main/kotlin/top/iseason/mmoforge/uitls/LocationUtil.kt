@@ -43,8 +43,8 @@ fun Location.getNormalZ(): Vector {
 }
 
 // 以自身为原点和相对坐标系获取世界坐标
-fun Location.getRelative(
-    coordinate: Array<Vector>,
+fun Location.getRelativeByCoordinate(
+    coordinate: Array<Vector>, //坐标轴的单位向量
     x: Double,
     y: Double,
     z: Double

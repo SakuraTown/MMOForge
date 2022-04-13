@@ -65,6 +65,7 @@ fun Player.dropBlock(block: Block, tool: ItemStack?) {
 fun Player.getScopeBlocksByMatrix(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int): Set<Block> {
     val set = mutableSetOf<Block>()
     val location = target.location
+    location.direction
     val world = location.world
     // X轴旋转角(角度 转 弧度)
     val eyePitch = eyeLocation.pitch / 180.0 * Math.PI
@@ -88,10 +89,6 @@ fun Player.getScopeBlocksByMatrix(target: Block, rangeX: Int, rangeY: Int, range
             //深度,从被挖的方块往里
             for (z in 0 until rangeZ) {
                 val block = Location(world, x.toDouble(), y.toDouble(), z.toDouble()).transform(transformMatrix).block
-                //跳过水
-                if (block.isLiquid) continue
-                //跳过不可挖掘方块
-                if (block.getBreakSpeed(this) == 0.0F) continue
                 set.add(block)
             }
         }
@@ -110,6 +107,7 @@ fun Player.getScopeBlocksByMatrix(target: Block, rangeX: Int, rangeY: Int, range
  */
 fun Player.getScopeBlocksByVector(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int): Set<Block> {
     val set = mutableSetOf<Block>()
+    //玩家与准星上的方块之间的距离
     val baseX = target.location.apply {
         x += 0.5
         y += 0.5
@@ -117,6 +115,7 @@ fun Player.getScopeBlocksByVector(target: Block, rangeX: Int, rangeY: Int, range
     }.distance(eyeLocation)
     val halfRangeX = rangeX / 2
     val halfRangeY = rangeY / 2
+    //获取相对坐标系
     val relativeCoordinate = getRelativeCoordinate()
     val eyeLocation = eyeLocation
     //宽
@@ -125,8 +124,13 @@ fun Player.getScopeBlocksByVector(target: Block, rangeX: Int, rangeY: Int, range
         for (y in -halfRangeY until rangeY - halfRangeY) {
             //深度,从被挖的方块往里
             for (z in 0 until rangeZ) {
-                val block =
-                    eyeLocation.getRelative(relativeCoordinate, x.toDouble(), y.toDouble(), baseX + z.toDouble()).block
+                //相对坐标转世界坐标并获取对应的方块
+                val block = eyeLocation.getRelativeByCoordinate(
+                    relativeCoordinate,
+                    x.toDouble(),
+                    y.toDouble(),
+                    baseX + z.toDouble()
+                ).block
                 set.add(block)
             }
         }
@@ -138,23 +142,23 @@ fun Player.getScopeBlocksByVector(target: Block, rangeX: Int, rangeY: Int, range
 
 // 由相对坐标及相对坐标系获取世界坐标
 fun Player.getLocationRelativelyByCoordinate(coordinate: Array<Vector>, x: Double, y: Double, z: Double): Location {
-    return eyeLocation.getRelative(coordinate, x, y, z)
+    return eyeLocation.getRelativeByCoordinate(coordinate, x, y, z)
 }
 
 // 由相对坐标系获取世界坐标
-fun Player.getRelative(x: Double, y: Double, z: Double): Location {
+fun Player.getRelativeByCoordinate(x: Double, y: Double, z: Double): Location {
     return getLocationRelativelyByCoordinate(getRelativeCoordinate(), x, y, z)
 }
 
 /**
- * 获取玩家相对坐标系的3个坐标轴再世界坐标系下的单位向量
+ * 获取玩家相对坐标系的3个坐标轴在世界坐标系下的单位向量
  * @return 一个向量数组, index 0 为 X轴，1 为 Y轴，2 为Z轴
  */
 fun Player.getRelativeCoordinate(): Array<Vector> {
     val eyeLocation = eyeLocation
-    val normalX = eyeLocation.getNormalX() // X 轴
-    val normalZ = eyeLocation.getNormalZ()
-    val normalY = normalX.clone().crossProduct(normalZ).multiply(-1)
+    val normalX = eyeLocation.getNormalX()  // X 轴 其实就是getDirection()方法，我改了个名字
+    val normalZ = eyeLocation.getNormalZ()  //Z 轴
+    val normalY = normalX.clone().crossProduct(normalZ).multiply(-1) //叉乘得出Y轴，测试发现朝下，于是乘以-1使其朝上
     return arrayOf(normalX, normalY, normalZ)
 }
 

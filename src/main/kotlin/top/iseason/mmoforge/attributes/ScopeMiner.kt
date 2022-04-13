@@ -15,6 +15,7 @@ import net.Indyuce.mmoitems.api.item.build.ItemStackBuilder
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import org.bukkit.Material
+import org.bukkit.Tag
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
@@ -45,6 +46,7 @@ object ScopeMiner : MMOEnchant(
         val rangeY = count - rangeX
         val scopeBlocks = player.getScopeBlocksByVector(event.block, rangeX, rangeY, 1)
         val iterator = scopeBlocks.iterator()
+//        println(Tag.MINEABLE_PICKAXE.values)
         submit(period = 1L) {
             repeat(10) {
                 if (!iterator.hasNext()) {
@@ -52,7 +54,11 @@ object ScopeMiner : MMOEnchant(
                     cancel()
                     return@submit
                 }
-                player.breakBlock(iterator.next())
+                val block = iterator.next()
+                if (!Tag.MINEABLE_PICKAXE.values.contains(block.type)) {
+                    return@repeat
+                }
+                player.breakBlock(block)
             }
         }
     }
