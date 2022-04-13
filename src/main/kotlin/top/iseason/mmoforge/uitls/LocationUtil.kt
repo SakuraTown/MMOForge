@@ -12,6 +12,10 @@ import org.bukkit.util.Vector
 import kotlin.math.cos
 import kotlin.math.sin
 
+/**
+ * 根据坐标yaw和pith值获取X方向的单位向量
+ * @return X方向的单位向量
+ */
 fun Location.getNormalX(): Vector {
     val vector = Vector()
     val rotX = yaw.toDouble()
@@ -21,6 +25,11 @@ fun Location.getNormalX(): Vector {
     return vector
 }
 
+/**
+ * 根据坐标yaw和pith值获取Z方向的单位向量
+ * @return Z方向的单位向量,与 getDirection() 方法一致
+ *
+ */
 fun Location.getNormalZ(): Vector {
     val vector = Vector()
     val rotX = yaw.toDouble()

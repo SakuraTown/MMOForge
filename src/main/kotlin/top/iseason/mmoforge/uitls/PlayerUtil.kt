@@ -100,6 +100,14 @@ fun Player.getScopeBlocksByMatrix(target: Block, rangeX: Int, rangeY: Int, range
     return set
 }
 
+/**
+ * 由相对坐标系算法获取相对范围内的方块
+ * @param target 起始方块
+ * @param rangeX 宽度
+ * @param rangeY 高度
+ * @param rangeZ 深度
+ * @return 所有方块的集合(除了 target)
+ */
 fun Player.getScopeBlocksByVector(target: Block, rangeX: Int, rangeY: Int, rangeZ: Int): Set<Block> {
     val set = mutableSetOf<Block>()
     val baseX = target.location.apply {
