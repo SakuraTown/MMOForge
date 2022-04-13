@@ -15,7 +15,6 @@ import net.Indyuce.mmoitems.api.item.build.ItemStackBuilder
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import org.bukkit.Material
-import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
@@ -34,7 +33,7 @@ object ScopeMiner : MMOEnchant(
     private val scopeSet = mutableSetOf<Player>()
 
     @EventHandler
-    fun onBlockBreakEvent1(event: BlockBreakEvent) {
+    fun onBlockBreakEvent(event: BlockBreakEvent) {
         val player = event.player
         if (scopeSet.contains(player)) return
         val itemInMainHand = player.equipment.itemInMainHand
@@ -57,24 +56,24 @@ object ScopeMiner : MMOEnchant(
             }
         }
     }
-
-    @EventHandler
-    fun onBlockBreakEvent(event: BlockBreakEvent) {
-        val block = event.block //方块
-        val player = event.player //玩家
-        var facing = player.facing // BlockFace ->NORTH,EAST,SOUTH,WEST
-        val pitch = player.eyeLocation.pitch //0表示水平朝向.90表示向下,-90表示向上
-        facing = if (pitch < -45.0) BlockFace.DOWN else if (pitch > 45.0) BlockFace.UP else facing
-        //需要移动的坐标
-        val blockX = 0
-        val blockY = 0
-        val blockZ = 0
-        for (y in 1..3) {
-            for (z in 1..2) {
-                player.world.getBlockAt(0 + blockX, y + blockY, z + blockZ)
-            }
-        }
-    }
+//
+//    @EventHandler
+//    fun onBlockBreakEvent(event: BlockBreakEvent) {
+//        val block = event.block //方块
+//        val player = event.player //玩家
+//        var facing = player.facing // BlockFace ->NORTH,EAST,SOUTH,WEST
+//        val pitch = player.eyeLocation.pitch //0表示水平朝向.90表示向下,-90表示向上
+//        facing = if (pitch < -45.0) BlockFace.DOWN else if (pitch > 45.0) BlockFace.UP else facing
+//        //需要移动的坐标
+//        val blockX = 0
+//        val blockY = 0
+//        val blockZ = 0
+//        for (y in 1..3) {
+//            for (z in 1..2) {
+//                player.world.getBlockAt(0 + blockX, y + blockY, z + blockZ)
+//            }
+//        }
+//    }
 
 
     override val stat: EnchantStat = object : EnchantStat() {

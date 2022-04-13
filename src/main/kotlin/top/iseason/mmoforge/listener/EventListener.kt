@@ -22,7 +22,6 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.scheduler.BukkitRunnable
-import top.iseason.mmoforge.MMOForge
 import top.iseason.mmoforge.uitls.getLocationRelativelyByCoordinate
 import top.iseason.mmoforge.uitls.getRelativeCoordinate
 
@@ -30,7 +29,7 @@ object EventListener : Listener {
 
     @EventHandler
     fun test(event: PlayerJoinEvent) {
-        ScopeTester(event.player, 3, 3, 1).runTaskTimer(MMOForge.instance, 0L, 5L)
+//        ScopeTester(event.player, 3, 3, 1).runTaskTimer(MMOForge.instance, 0L, 5L)
     }
 
 }
