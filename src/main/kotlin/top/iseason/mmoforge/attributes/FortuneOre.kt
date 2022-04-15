@@ -8,14 +8,13 @@
 package top.iseason.mmoforge.attributes
 
 import com.entiv.core.utils.RandomUtils
-import net.Indyuce.mmoitems.stat.data.DoubleData
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockDropItemEvent
-import top.iseason.mmoforge.uitls.getMMOData
+import top.iseason.mmoforge.uitls.checkMainHand
 import top.iseason.mmoforge.uitls.isOre
 
-object OreFortune : MMOEnchant(
+object FortuneOre : MMOAttribute(
     "ORE_FORTUNE",
     Material.DIAMOND_PICKAXE,
     "Ore Fortune",
@@ -28,13 +27,11 @@ object OreFortune : MMOEnchant(
         if (event.isCancelled) return
         val type = event.blockState.type
         if (!type.isOre()) return
-        val itemInMainHand = event.player.equipment.itemInMainHand
-        if (itemInMainHand.type.isAir) return
-        val level = itemInMainHand.getMMOData<DoubleData>(stat)?.value?.toInt() ?: return
+        val level = event.player.checkMainHand(stat) ?: return
         for (item in event.items) {
             val itemStack = item.itemStack
             if (type == itemStack.type) continue
-            itemStack.amount *= RandomUtils.calculateFortune(level)
+            itemStack.amount *= RandomUtils.calculateFortune(level.toInt())
         }
     }
 }

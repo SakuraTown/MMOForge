@@ -9,6 +9,8 @@ package top.iseason.mmoforge.uitls
 
 import com.entiv.core.hook.VaultEconomyHook
 import com.entiv.core.utils.sendErrorMessage
+import net.Indyuce.mmoitems.stat.data.DoubleData
+import net.Indyuce.mmoitems.stat.type.ItemStat
 import net.milkbowl.vault.economy.EconomyResponse
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -38,6 +40,8 @@ fun Player.takeMoney(money: Double): Boolean {
     return true
 }
 
+fun Player.checkMainHand(stat: ItemStat): Double? = equipment.itemInMainHand.getMMOData<DoubleData>(stat)?.value
+
 /**
  * 在方块处掉落该方块相应的掉落物(使用指定工具)
  */
@@ -45,7 +49,7 @@ fun Player.dropBlock(block: Block, tool: ItemStack?) {
     val drops = block.getDrops(tool)
     val itemList = mutableListOf<Item>()
     for (drop in drops) {
-        itemList.add(dropItemNaturally(block.location, drop))
+        itemList.add(world.dropItemNaturally(block.location, drop))
     }
     val blockDropItemEvent = BlockDropItemEvent(block, block.state, this, itemList)
     Bukkit.getServer().pluginManager.callEvent(blockDropItemEvent)
@@ -93,7 +97,6 @@ fun Player.getScopeBlocksByMatrix(target: Block, rangeX: Int, rangeY: Int, range
             }
         }
     }
-    set.remove(target)
     return set
 }
 
@@ -135,7 +138,30 @@ fun Player.getScopeBlocksByVector(target: Block, rangeX: Int, rangeY: Int, range
             }
         }
     }
-    set.remove(target)
+    return set
+}
+
+/**
+ *获取方块平面 x*y 的所有方块
+ * @param target 起始方块
+ * @param rangeX 长度
+ * @param rangeY 宽度
+ * @return 所有方块的集合(除了 target)
+ */
+fun Player.getFlatBlocksByMatrix(target: Block, rangeX: Int, rangeY: Int): Set<Block> {
+    val halfRangeX = rangeX / 2
+    val halfRangeY = rangeY / 2
+    val location = target.location
+    val eyeYaw = eyeLocation.yaw / 180.0 * Math.PI
+    val world = world
+    //生成变换矩阵
+    val transformMatrix = getTransformMatrix(location.x + 0.5, location.y + 0.5, location.z + 0.5, 0.0, -eyeYaw)
+    val set = mutableSetOf<Block>()
+    for (x in -halfRangeX until rangeX - halfRangeX) {
+        for (y in -halfRangeY until rangeY - halfRangeY) {
+            set.add(Location(world, x.toDouble(), 0.0, y.toDouble()).transform(transformMatrix).block)
+        }
+    }
     return set
 }
 

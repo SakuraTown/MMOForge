@@ -7,15 +7,21 @@
 
 package top.iseason.mmoforge.uitls
 
+import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.util.Vector
 
 /**
- * 连锁相同的方块
+ * 连锁方块
  * @param start 开始的方块
+ * @param types 材质白名单，不设置则与本方块相同
  * @param maxSize 最大数量
+ *
+ * @return 符合条件的集合
  */
-fun getVeinBlocks(start: Block, maxSize: Int): Set<Block> = start.getVeinChainBlocks(limit = maxSize)
+fun getVeinBlocks(start: Block, maxSize: Int = 10, types: Set<Material>? = null): Set<Block> =
+    start.getVeinChainBlocks(limit = maxSize, types = types)
+
 
 /**
  * 获取半径一格内的同类方块,除了自己
@@ -39,15 +45,18 @@ fun Block.getNearBlocks(): Set<Block> {
  */
 fun Block.getVeinChainBlocks(
     start: Block = this,
+    types: Collection<Material>? = null,
     set: MutableSet<Block> = mutableSetOf(),
     limit: Int,
 ): MutableSet<Block> {
     for (relativeVector in relativeVectors) {
-        val relative = location.clone().add(relativeVector).block
+        val relative = location.add(relativeVector).block
         if (set.size >= limit) return set
-        if (type == relative.type && !set.contains(relative) && relative != start) {
+        if (set.contains(relative) || relative == start) continue
+        val rType = relative.type
+        if (rType == type || types?.contains(rType) == true) {
             set.add(relative)
-            relative.getVeinChainBlocks(start, set, limit)
+            relative.getVeinChainBlocks(start, types, set, limit)
         }
     }
     return set

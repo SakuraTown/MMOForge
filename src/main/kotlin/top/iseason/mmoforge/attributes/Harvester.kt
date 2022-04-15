@@ -1,7 +1,7 @@
 /*
  * Description:
  * @Author: Iseason2000
- * @Date: 2022/4/10 下午12:54
+ * @Date: 2022/4/15 下午11:14
  *
  */
 
@@ -16,18 +16,20 @@ import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import org.bukkit.Material
 import org.bukkit.Tag
+import org.bukkit.block.data.Ageable
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
-import top.iseason.mmoforge.uitls.*
+import top.iseason.mmoforge.uitls.checkMainHand
+import top.iseason.mmoforge.uitls.getFlatBlocksByMatrix
+import top.iseason.mmoforge.uitls.isHoe
 
-
-object ScopeMiner : MMOAttribute(
-    "SCOPE_MINER",
+object Harvester : MMOAttribute(
+    "HARVESTER",
     Material.IRON_PICKAXE,
-    "Scope Miner",
-    "&7■ &f范围挖掘: &a# x # &f",
-    arrayOf("挖掘更大的区域"),
+    "Harvester",
+    "&7■ &f播种机: &a# x # &f",
+    arrayOf("范围播种"),
     arrayOf("tool")
 ) {
     private val scopeSet = mutableSetOf<Player>()
@@ -38,19 +40,15 @@ object ScopeMiner : MMOAttribute(
         if (player in scopeSet) return
         val hdType = player.equipment.itemInMainHand.type
         //指定类型的工具只能挖指定类型的东西
-        val mineAbleBlocks: Set<Material> = when {
-            hdType.isPickaxe() -> Tag.MINEABLE_PICKAXE.values
-            hdType.isAxe() -> Tag.MINEABLE_AXE.values
-            hdType.isShovel() -> Tag.MINEABLE_SHOVEL.values
-            else -> return
-        }
+        if (!hdType.isHoe()) return
         val level = player.checkMainHand(stat) ?: return
         scopeSet += player
         val count = level.toInt() + 2
         val rangeX = count / 2
         val rangeY = count - rangeX
-        val scopeBlocks = player.getScopeBlocksByVector(event.block, rangeX, rangeY, 1)
+        val scopeBlocks = player.getFlatBlocksByMatrix(event.block, rangeX, rangeY)
         val iterator = scopeBlocks.iterator()
+        val mineAbleBlocks = Tag.CROPS.values
         submit(period = 1L) {
             repeat(10) {
                 if (!iterator.hasNext()) {
@@ -62,29 +60,24 @@ object ScopeMiner : MMOAttribute(
                 if (block.type !in mineAbleBlocks) {
                     return@repeat
                 }
+                val blockData = block.blockData
+                val drill: Material?
+                if (blockData is Ageable && blockData.age == blockData.maximumAge) {
+                    drill = block.type
+                } else return@repeat
                 player.breakBlock(block)
+                block.type = drill
+            }
+        }
+        val block = event.block
+        val bd = block.blockData
+        if (bd is Ageable && bd.age == bd.maximumAge) {
+            val type = block.type
+            submit {
+                block.type = type
             }
         }
     }
-//
-//    @EventHandler
-//    fun onBlockBreakEvent(event: BlockBreakEvent) {
-//        val block = event.block //方块
-//        val player = event.player //玩家
-//        var facing = player.facing // BlockFace ->NORTH,EAST,SOUTH,WEST
-//        val pitch = player.eyeLocation.pitch //0表示水平朝向.90表示向下,-90表示向上
-//        facing = if (pitch < -45.0) BlockFace.DOWN else if (pitch > 45.0) BlockFace.UP else facing
-//        //需要移动的坐标
-//        val blockX = 0
-//        val blockY = 0
-//        val blockZ = 0
-//        for (y in 1..3) {
-//            for (z in 1..2) {
-//                player.world.getBlockAt(0 + blockX, y + blockY, z + blockZ)
-//            }
-//        }
-//    }
-
 
     override val stat: EnchantStat = object : EnchantStat() {
         override fun whenApplied(item: ItemStackBuilder, data: StatData) {

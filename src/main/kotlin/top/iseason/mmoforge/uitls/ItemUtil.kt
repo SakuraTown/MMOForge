@@ -18,12 +18,9 @@ import net.Indyuce.mmoitems.stat.data.EnchantListData
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.data.type.UpgradeInfo
 import net.Indyuce.mmoitems.stat.type.*
-import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.Item
 import org.bukkit.inventory.ItemStack
-import org.bukkit.util.Vector
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import java.util.*
@@ -251,40 +248,79 @@ fun formatForgeString(value: String): Double? {
 }
 
 inline fun <reified T : StatData> ItemStack.getMMOData(stat: ItemStat): T? {
+    if (type.isAir) return null
     val nbt = NBTItem.get(this)
     return if (!nbt.hasType()) null else LiveMMOItem(nbt).getData(stat) as? T
 }
 
-fun Material.isTool() = when (this) {
+/**
+ * 判断是否是工具
+ */
+fun Material.isTool() = when {
+    isPickaxe() -> true
+    isAxe() -> true
+    isShovel() -> true
+    isHoe() -> true
+    isOtherTool() -> true
+    else -> false
+}
 
-    Material.WOODEN_SHOVEL,
-    Material.STONE_SHOVEL,
-    Material.IRON_SHOVEL,
-    Material.GOLDEN_SHOVEL,
-    Material.DIAMOND_SHOVEL,
-    Material.NETHERITE_SHOVEL,
-
+/**
+ * 是否是镐子
+ */
+fun Material.isPickaxe() = when (this) {
     Material.WOODEN_PICKAXE,
     Material.STONE_PICKAXE,
     Material.IRON_PICKAXE,
     Material.GOLDEN_PICKAXE,
     Material.DIAMOND_PICKAXE,
-    Material.NETHERITE_PICKAXE,
+    Material.NETHERITE_PICKAXE -> true
+    else -> false
+}
 
-    Material.WOODEN_HOE,
-    Material.STONE_HOE,
-    Material.IRON_HOE,
-    Material.GOLDEN_HOE,
-    Material.DIAMOND_HOE,
-    Material.NETHERITE_HOE,
-
+/**
+ * 是否是斧子
+ */
+fun Material.isAxe() = when (this) {
     Material.WOODEN_AXE,
     Material.STONE_AXE,
     Material.IRON_AXE,
     Material.GOLDEN_AXE,
     Material.DIAMOND_AXE,
-    Material.NETHERITE_AXE,
+    Material.NETHERITE_AXE -> true
+    else -> false
+}
 
+/**
+ * 是否是铲子
+ */
+fun Material.isShovel() = when (this) {
+    Material.WOODEN_SHOVEL,
+    Material.STONE_SHOVEL,
+    Material.IRON_SHOVEL,
+    Material.GOLDEN_SHOVEL,
+    Material.DIAMOND_SHOVEL,
+    Material.NETHERITE_SHOVEL -> true
+    else -> false
+}
+
+/**
+ * 是否是锄头
+ */
+fun Material.isHoe() = when (this) {
+    Material.WOODEN_HOE,
+    Material.STONE_HOE,
+    Material.IRON_HOE,
+    Material.GOLDEN_HOE,
+    Material.DIAMOND_HOE,
+    Material.NETHERITE_HOE -> true
+    else -> false
+}
+
+/**
+ * 是否是除了镐子、斧子、铲子、锄头之外的工具
+ */
+fun Material.isOtherTool() = when (this) {
     Material.FISHING_ROD,
     Material.FLINT_AND_STEEL,
     Material.COMPASS,
@@ -318,12 +354,4 @@ fun Material.isOre() = when (this) {
     Material.ANCIENT_DEBRIS,
     Material.AMETHYST_CLUSTER -> true
     else -> false
-}
-
-// 掉落物品 并且有初始速度，类似于原版挖方块
-fun dropItemNaturally(loc: Location, stack: ItemStack?): Item {
-    val dx = (RANDOM.nextDouble() - 0.5) * 0.2
-    val dy = RANDOM.nextDouble() * 0.1 + 0.15
-    val dz = (RANDOM.nextDouble() - 0.5) * 0.2
-    return loc.world.dropItem(loc.add(0.5, 0.5, 0.5), stack!!).apply { velocity = Vector(dx, dy, dz) }
 }

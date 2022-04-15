@@ -17,7 +17,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import top.iseason.mmoforge.uitls.dropBlock
 import top.iseason.mmoforge.uitls.getMMOData
 
-object SilkTouch : MMOEnchant(
+object SilkTouch : MMOAttribute(
     "SILK_TOUCH",
     Material.IRON_PICKAXE,
     "Silk Touch",
@@ -30,7 +30,6 @@ object SilkTouch : MMOEnchant(
         if (event.isCancelled) return
         val player = event.player
         val itemInMainHand = player.equipment.itemInMainHand
-        if (itemInMainHand.type.isAir) return
         val level = itemInMainHand.getMMOData<DoubleData>(stat)?.value ?: return
         if (RandomUtils.checkPercentage(level)) return
         if (event.player.gameMode == GameMode.CREATIVE) return

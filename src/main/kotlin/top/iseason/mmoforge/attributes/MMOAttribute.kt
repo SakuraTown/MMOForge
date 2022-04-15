@@ -19,7 +19,7 @@ import top.iseason.mmoforge.MMOForge
 /**
  * types see https://git.lumine.io/mythiccraft/mmoitems/-/blob/master/src/main/java/net/Indyuce/mmoitems/api/Type.java
  */
-abstract class MMOEnchant(
+abstract class MMOAttribute(
     val mID: String,
     val mMaterial: Material,
     val mName: String,

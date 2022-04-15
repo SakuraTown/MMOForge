@@ -52,7 +52,7 @@ tasks {
     processResources {
         val p = "${project.group}.${rootProject.name.toLowerCase()}"
         include("plugin.yml").expand(
-            "name" to rootProject.name,
+            "name" to mainClass,
             "main" to "$p.$mainClass",
             "version" to project.version,
             "author" to author,
