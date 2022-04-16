@@ -58,6 +58,7 @@ class MMOForge : SimplePlugin() {
         SmeltOre.register()
         SmeltShovel.register()
         Harvester.register()
+        AutoTorch.register()
     }
 
 

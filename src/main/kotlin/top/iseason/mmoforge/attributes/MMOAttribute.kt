@@ -18,6 +18,7 @@ import net.Indyuce.mmoitems.api.item.build.ItemStackBuilder
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
+import net.Indyuce.mmoitems.stat.type.ItemStat
 import org.bukkit.Material
 import org.bukkit.event.Listener
 import top.iseason.mmoforge.MMOForge
@@ -62,7 +63,7 @@ abstract class MMOAttribute(
         )
     }
 
-    val stat: DoubleStat = object : DoubleStat(mID, mMaterial, mName, mLore, mTypes) {
+    open val stat: ItemStat = object : DoubleStat(mID, mMaterial, mName, mLore, mTypes) {
         override fun whenApplied(item: ItemStackBuilder, data: StatData) {
             val value = (data as DoubleData).value
             if (value < 0 && !handleNegativeStats()) {
