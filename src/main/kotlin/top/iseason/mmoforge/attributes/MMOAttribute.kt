@@ -11,6 +11,12 @@ import com.entiv.core.config.Comment
 import com.entiv.core.config.ConfigState
 import com.entiv.core.config.Key
 import com.entiv.core.config.SimpleYAMLConfig
+import io.lumine.mythic.lib.MythicLib
+import net.Indyuce.mmoitems.MMOItems
+import net.Indyuce.mmoitems.api.UpgradeTemplate
+import net.Indyuce.mmoitems.api.item.build.ItemStackBuilder
+import net.Indyuce.mmoitems.stat.data.DoubleData
+import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
 import org.bukkit.Material
 import org.bukkit.event.Listener
@@ -39,15 +45,52 @@ abstract class MMOAttribute(
     @Comment("格式字符，负责翻译lore")
     @Key("loreFormat")
     var loreFormat: String = format
-    open val stat = EnchantStat()
 
     override val onLoad: (ConfigState) -> Unit = {
         MMOForge.instance.setStatLore(this)
         MMOForge.instance.setStatLoreFormat(this)
     }
 
-    open inner class EnchantStat : DoubleStat(
-        mID, mMaterial, mName,
-        mLore, mTypes
-    )
+    /**
+     * 用于将字符模板转换为字符
+     */
+    open val loreAction: DoubleStat.(DoubleData) -> String = {
+        DoubleStat.formatPath(
+            MMOItems.plugin.language.getStatFormat(path),
+            moreIsBetter(),
+            it.value * multiplyWhenDisplaying()
+        )
+    }
+
+    val stat: DoubleStat = object : DoubleStat(mID, mMaterial, mName, mLore, mTypes) {
+        override fun whenApplied(item: ItemStackBuilder, data: StatData) {
+            val value = (data as DoubleData).value
+            if (value < 0 && !handleNegativeStats()) {
+                return
+            }
+            var upgradeShift = 0.0
+            if (UpgradeTemplate.isDisplayingUpgrades() && item.mmoItem.upgradeLevel != 0) {
+                val hist = item.mmoItem.getStatHistory(this)
+                if (hist != null) {
+                    val uData = hist.recalculateUnupgraded() as DoubleData
+                    upgradeShift = value - uData.value
+                }
+            }
+            if (value != 0.0 || upgradeShift != 0.0) {
+                var loreInsert: String? = loreAction.invoke(this, data)
+                if (upgradeShift != 0.0) loreInsert += MythicLib.plugin.parseColors(
+                    UpgradeTemplate.getUpgradeChangeSuffix(
+                        if (upgradeShift * multiplyWhenDisplaying() >= 0.0) "+" else "" + MythicLib.plugin.mmoConfig.decimals.format(
+                            upgradeShift * multiplyWhenDisplaying()
+                        ),
+                        !isGood(upgradeShift * multiplyWhenDisplaying())
+                    )
+                )
+                item.lore.insert(path, loreInsert)
+            }
+            if (data.value != 0.0) {
+                item.addItemTag(getAppliedNBT(data))
+            }
+        }
+    }
 }
