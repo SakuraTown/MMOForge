@@ -29,7 +29,7 @@ object AutoTorch : MMOAttribute(
         val player = event.player
         if (player.equipment.itemInMainHand.getMMOData<BooleanData>(stat)?.isEnabled != true) return
         val location = player.location
-        val floor = location.clone().apply { y -= 1 }
+        val floor = location.clone().apply { y -= 1.0 }
         val floorType = floor.block.type
         if (!floorType.isOccluding) return
         if (location.block.lightLevel > 7) return
@@ -42,7 +42,6 @@ object AutoTorch : MMOAttribute(
             inventory.getItem(index)?.subtract() ?: return
         }
         block.type = Material.TORCH
-
     }
 
     override val stat = BooleanStat(mID, mMaterial, mName, mLore, mTypes)
