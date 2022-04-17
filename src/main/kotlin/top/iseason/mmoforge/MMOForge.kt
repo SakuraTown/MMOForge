@@ -42,7 +42,6 @@ class MMOForge : SimplePlugin() {
         setStatsLoreFormat(statLoreFormats)
         setStatsLore(statLoreFormats)
         registerEnchants(statLoreFormats)
-
     }
 
     override fun onDisabled() {

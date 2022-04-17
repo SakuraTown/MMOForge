@@ -12,7 +12,6 @@ import com.entiv.core.config.ConfigState
 import com.entiv.core.config.Key
 import com.entiv.core.config.SimpleYAMLConfig
 import io.lumine.mythic.lib.MythicLib
-import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.UpgradeTemplate
 import net.Indyuce.mmoitems.api.item.build.ItemStackBuilder
 import net.Indyuce.mmoitems.stat.data.DoubleData
@@ -57,7 +56,7 @@ abstract class MMOAttribute(
      */
     open val loreAction: DoubleStat.(DoubleData) -> String = {
         DoubleStat.formatPath(
-            MMOItems.plugin.language.getStatFormat(path),
+            ItemStat.translate(path),
             moreIsBetter(),
             it.value * multiplyWhenDisplaying()
         )

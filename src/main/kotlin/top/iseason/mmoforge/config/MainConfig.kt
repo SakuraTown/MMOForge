@@ -17,14 +17,38 @@ package top.iseason.mmoforge.config
 import com.entiv.core.config.*
 import com.entiv.core.debug.warn
 import net.Indyuce.mmoitems.MMOItems
+import net.Indyuce.mmoitems.stat.Enchants
+import net.Indyuce.mmoitems.stat.data.type.UpgradeInfo
+import net.Indyuce.mmoitems.stat.type.DoubleStat
+import net.Indyuce.mmoitems.stat.type.ItemStat
 import net.Indyuce.mmoitems.stat.type.Upgradable
+import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
+import top.iseason.mmoforge.uitls.formatForgeString
 import java.util.*
 
 //配置保存路径
 @FilePath("config.yml")
 object MainConfig : SimpleYAMLConfig() {
+    @Comment(
+        "", "所有加成的格式：基础值为200",
+        " +5 => 205",
+        " -5 => 195",
+        "  5 => 5",
+        " n5 => -5",
+        " 5% => 10",
+        "+5% => 210",
+        "-5% => 190",
+        " n5% => -10",
+        " [3,5] => 203 - 205 的高斯分布区间"
+    )
+    @Key
+    var AHEAD = "属性加成格式"
+
+    @Comment("物品星级标签，储存在物品NBT")
+    @Key("quality_tag")
+    var QUALITY_TAG = "SAKURA_QUALITY"
 
     @Comment("强化标签，储存在物品NBT")
     @Key("foreg-tag")
@@ -57,9 +81,6 @@ object MainConfig : SimpleYAMLConfig() {
     @Key("max_limit_tag")
     var MAX_LIMIT = 5
 
-    @Comment("", "物品星级标签，储存在物品NBT")
-    @Key("quality_tag")
-    var QUALITY_TAG = "SAKURA_QUALITY"
 
     @Comment("", "材料拥有的强化经验，储存在物品NBT")
     @Key("material_forge_tag")
@@ -69,29 +90,17 @@ object MainConfig : SimpleYAMLConfig() {
     @Key("material_limit_tag")
     var MATERIAL_LIMIT_TAG = "SAKURA_MATERIAL_LIMIT"
 
+
     @Comment("", "强化每级增加的属性，支持小数及范围")
     @Key("forge-map")
     var ForgeMap: MemorySection = YamlConfiguration().apply {
-        set("ATTACK_DAMAGE", "[3,5]")
+        createSection("10").set("ATTACK_DAMAGE", "[3,5]")
+        createSection("20").set("ATTACK_DAMAGE", "[4,6]")
     }
 
-    @Comment(
-        "", "所有加成的格式：基础值为200",
-        " +5 => 205",
-        " -5 => 195",
-        "  5 => 5",
-        " n5 => -5",
-        " 5% => 10",
-        "+5% => 210",
-        "-5% => 190",
-        " n5% => -10",
-        " [3,5] => 203 - 205 的高斯分布区间"
-    )
-    @Key
-    var AHEAD = "属性加成格式"
-
     //实际使用的
-    val forgeMap = mutableMapOf<Upgradable, String>()
+    var forgeMap: Map<Int, Map<ItemStat, UpgradeInfo>> = mutableMapOf()
+        private set
 
     @Comment("", "强化每级所需的经验公式")
     @Comment("{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ")
@@ -100,7 +109,7 @@ object MainConfig : SimpleYAMLConfig() {
         set("10", "2*{star}+5*{forge}")
         set("20", "2*{star}+5.1*{forge}")
     }
-    val forgeLevelMap = HashMap<Int, String>()
+    val forgeLevelMap: MutableMap<Int, String> = mutableMapOf()
 
     @Comment("", "强化突破属性增加，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("forge-limit-map")
@@ -111,12 +120,14 @@ object MainConfig : SimpleYAMLConfig() {
         createSection("4").set("ATTACK_DAMAGE", "4%")
         createSection("5").set("ATTACK_DAMAGE", "5%")
     }
-    val forgeLimitMap: MutableMap<Int, Map<Upgradable, String>> = mutableMapOf()
+    var forgeLimitMap: Map<Int, Map<ItemStat, UpgradeInfo>> = mutableMapOf()
+        private set
 
     @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("refine-map")
     var RefineSection: MemorySection = ForgeLimitSection
-    val refineMap: MutableMap<Int, Map<Upgradable, String>> = mutableMapOf()
+    var refineMap: Map<Int, Map<ItemStat, UpgradeInfo>> = mutableMapOf()
+        private set
 
     @Comment("", "金币公式")
     @Comment("{forge}:增加的强化经验 {limit}:增加的突破等级 {refine}:增加的精炼等级 ")
@@ -133,9 +144,9 @@ object MainConfig : SimpleYAMLConfig() {
     }
     override val onLoad: (ConfigState) -> Unit = {
         //加载配置后调用
-        resetForge()
-        reset(RefineSection, refineMap)
-        reset(ForgeLimitSection, forgeLimitMap)
+        forgeMap = getStatGain(ForgeMap)
+        refineMap = getStatGain(RefineSection)
+        forgeLimitMap = getStatGain(ForgeLimitSection)
         restForgeLevelMap()
     }
 
@@ -147,46 +158,58 @@ object MainConfig : SimpleYAMLConfig() {
         //保存配置后调用
     }
 
-    private fun resetForge() {
-        forgeMap.clear()
-        ForgeMap.getKeys(false).forEach {
-            val stat = MMOItems.plugin.stats.get(it)
-            if (stat == null || stat !is Upgradable) {
-                warn("Attribute no found! :${it}")
+    fun getStatGain(config: ConfigurationSection): Map<Int, Map<ItemStat, UpgradeInfo>> {
+        val mutableMapOf = mutableMapOf<Int, Map<ItemStat, UpgradeInfo>>()
+        config.getKeys(false).forEach { levelStr ->
+            val level = try {
+                levelStr.toInt()
+            } catch (e: Exception) {
                 return@forEach
             }
-            forgeMap[stat] = ForgeMap.getString(it)!!
-        }
-    }
-
-    private fun reset(section: MemorySection, map: MutableMap<Int, Map<Upgradable, String>>) {
-        map.clear()
-        for (key in section.getKeys(false)) {
-            val level = try {
-                key.toInt()
-            } catch (e: NumberFormatException) {
-                continue
-            }
-            val configurationSection = section.getConfigurationSection(key) ?: continue
-            var mutableMapOf = mutableMapOf<Upgradable, String>()
-            configurationSection.getKeys(false).forEach {
-                mutableMapOf = mutableMapOf()
-                val stat = MMOItems.plugin.stats.get(it)
-                if (stat == null || stat !is Upgradable) {
-                    warn("Attribute no found! :${it}")
-                    return@forEach
+            val section = ForgeMap.getConfigurationSection(levelStr) ?: return@forEach
+            val statWithUpgrade = mutableMapOf<ItemStat, UpgradeInfo>()
+            for (statStr in section.getKeys(false)) {
+                val stat = MMOItems.plugin.stats.get(statStr) ?: continue
+                val upStr = section.getString(statStr)!!
+                if (stat is Enchants) {
+                    try {
+                        val info = Enchants.EnchantUpgradeInfo.GetFrom(upStr.split(',').toList())
+                        statWithUpgrade[stat] = info
+                    } catch (e: IllegalArgumentException) {
+                        warn("Enchants stats error! :${upStr} ${e.message}")
+                        continue
+                    }
+                    continue
                 }
-                mutableMapOf[stat] = configurationSection.getString(it)!!
+                if (stat !is Upgradable) {
+                    warn("Stat $statStr is not Upgradable!")
+                    continue
+                }
+                val areaValue = formatForgeString(upStr)
+                var temp = upStr
+                if (areaValue != null) {
+                    temp = upStr.replace(Regex("\\[(.+),(.+)]"), areaValue.toString())
+                }
+                try {
+                    val info = DoubleStat.DoubleUpgradeInfo.GetFrom(temp)
+                    statWithUpgrade[stat] = info
+                } catch (e: Exception) {
+                    warn("Stats error! :${upStr} ${e.message}")
+                }
             }
-            map[level] = mutableMapOf
+            mutableMapOf[level] = statWithUpgrade
         }
+        return mutableMapOf
     }
 
-    fun restForgeLevelMap() {
+
+    private fun restForgeLevelMap() {
         forgeLevelMap.clear()
         ForgeLevelSection.getKeys(false).forEach {
             forgeLevelMap[it.toInt()] = ForgeLevelSection.getString(it) ?: return@forEach
         }
     }
 
+
 }
+
