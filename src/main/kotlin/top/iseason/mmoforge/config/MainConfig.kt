@@ -15,7 +15,6 @@
 package top.iseason.mmoforge.config
 
 import com.entiv.core.config.*
-import com.entiv.core.debug.warn
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.stat.Enchants
 import net.Indyuce.mmoitems.stat.data.type.UpgradeInfo
@@ -99,7 +98,7 @@ object MainConfig : SimpleYAMLConfig() {
     }
 
     //实际使用的
-    var forgeMap: Map<Int, Map<ItemStat, UpgradeInfo>> = mutableMapOf()
+    var forgeMap: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = LinkedHashMap()
         private set
 
     @Comment("", "强化每级所需的经验公式")
@@ -120,13 +119,13 @@ object MainConfig : SimpleYAMLConfig() {
         createSection("4").set("ATTACK_DAMAGE", "4%")
         createSection("5").set("ATTACK_DAMAGE", "5%")
     }
-    var forgeLimitMap: Map<Int, Map<ItemStat, UpgradeInfo>> = mutableMapOf()
+    var forgeLimitMap: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = LinkedHashMap()
         private set
 
     @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("refine-map")
     var RefineSection: MemorySection = ForgeLimitSection
-    var refineMap: Map<Int, Map<ItemStat, UpgradeInfo>> = mutableMapOf()
+    var refineMap: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = LinkedHashMap()
         private set
 
     @Comment("", "金币公式")
@@ -158,8 +157,8 @@ object MainConfig : SimpleYAMLConfig() {
         //保存配置后调用
     }
 
-    fun getStatGain(config: ConfigurationSection): Map<Int, Map<ItemStat, UpgradeInfo>> {
-        val mutableMapOf = mutableMapOf<Int, Map<ItemStat, UpgradeInfo>>()
+    fun getStatGain(config: ConfigurationSection): LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> {
+        val mutableMapOf = LinkedHashMap<Int, LinkedHashMap<ItemStat, String>>()
         config.getKeys(false).forEach { levelStr ->
             val level = try {
                 levelStr.toInt()
@@ -167,39 +166,30 @@ object MainConfig : SimpleYAMLConfig() {
                 return@forEach
             }
             val section = ForgeMap.getConfigurationSection(levelStr) ?: return@forEach
-            val statWithUpgrade = mutableMapOf<ItemStat, UpgradeInfo>()
+            val statWithUpgrade = LinkedHashMap<ItemStat, String>()
             for (statStr in section.getKeys(false)) {
                 val stat = MMOItems.plugin.stats.get(statStr) ?: continue
-                val upStr = section.getString(statStr)!!
-                if (stat is Enchants) {
-                    try {
-                        val info = Enchants.EnchantUpgradeInfo.GetFrom(upStr.split(',').toList())
-                        statWithUpgrade[stat] = info
-                    } catch (e: IllegalArgumentException) {
-                        warn("Enchants stats error! :${upStr} ${e.message}")
-                        continue
-                    }
-                    continue
-                }
-                if (stat !is Upgradable) {
-                    warn("Stat $statStr is not Upgradable!")
-                    continue
-                }
-                val areaValue = formatForgeString(upStr)
-                var temp = upStr
-                if (areaValue != null) {
-                    temp = upStr.replace(Regex("\\[(.+),(.+)]"), areaValue.toString())
-                }
-                try {
-                    val info = DoubleStat.DoubleUpgradeInfo.GetFrom(temp)
-                    statWithUpgrade[stat] = info
-                } catch (e: Exception) {
-                    warn("Stats error! :${upStr} ${e.message}")
-                }
+                if (stat !is Upgradable) continue
+                statWithUpgrade[stat] = statStr
             }
             mutableMapOf[level] = statWithUpgrade
         }
         return mutableMapOf
+    }
+
+    /**
+     * 根据Stat的类型及提供的公式返回对应的UpgradeInfo
+     */
+    fun Upgradable.getUpgradeInfoByString(string: String): UpgradeInfo {
+        if (this is Enchants) {
+            return Enchants.EnchantUpgradeInfo.GetFrom(string.split(',').toList())
+        }
+        val areaValue = formatForgeString(string)
+        var temp = string
+        if (areaValue != null) {
+            temp = string.replace(Regex("\\[(.+),(.+)]"), areaValue.toString())
+        }
+        return DoubleStat.DoubleUpgradeInfo.GetFrom(temp)
     }
 
 

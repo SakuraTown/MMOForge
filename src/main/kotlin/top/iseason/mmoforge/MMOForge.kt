@@ -15,6 +15,7 @@ import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
 import top.iseason.mmoforge.attributes.*
 import top.iseason.mmoforge.command.UICommand
+import top.iseason.mmoforge.config.ForgeStat
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.listener.EventListener
 
@@ -49,6 +50,7 @@ class MMOForge : SimplePlugin() {
     }
 
     private fun registerEnchants() {
+        MMOItems.plugin.stats.register(ForgeStat)
         SilkTouch.register()
         FortuneOre.register()
         VeinOre.register()

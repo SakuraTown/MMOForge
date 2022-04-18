@@ -27,7 +27,7 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import java.util.*
 
 // 物品星级
-object ForgeAttribute : ItemStat(
+object ForgeStat : ItemStat(
     "FORGE_ATTRIBUTE",
     Material.PAPER,
     "Forge Attribute",
@@ -38,7 +38,7 @@ object ForgeAttribute : ItemStat(
         require(config is ConfigurationSection) { "Must specify a valid config section" }
         val star = config.getInt("star")
         require(star != 0) { "config \"star\" must be declared" }
-        val attributeData = AttributeData(star)
+        val attributeData = ForgeData(star)
         if (config.contains("max-refine")) {
             attributeData.maxRefine = config.getInt("max-refine")
         }
@@ -65,7 +65,15 @@ object ForgeAttribute : ItemStat(
     }
 
     override fun getAppliedNBT(data: StatData): ArrayList<ItemTag> {
-        TODO("Not yet implemented")
+        require(data is ForgeData) { "data type error ${data}" }
+        return arrayListOf(ItemTag(nbtPath, data.toJson().toString()))
+    }
+
+    override fun getLoadedNBT(list: ArrayList<ItemTag>): StatData? {
+        val tag = ItemTag.getTagAtPath(nbtPath, list) ?: return null
+        val value = tag.value
+        if (value !is String) return null
+        return ForgeData.fromString(value)
     }
 
     override fun whenClicked(inventory: EditionInventory, event: InventoryClickEvent) {
@@ -80,9 +88,6 @@ object ForgeAttribute : ItemStat(
         TODO("Not yet implemented")
     }
 
-    override fun getLoadedNBT(p0: ArrayList<ItemTag>): StatData? {
-        TODO("Not yet implemented")
-    }
 
     override fun whenDisplayed(p0: MutableList<String>?, p1: Optional<RandomStatData>?) {
         TODO("Not yet implemented")

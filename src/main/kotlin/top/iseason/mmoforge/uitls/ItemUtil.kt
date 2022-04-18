@@ -16,7 +16,6 @@ import net.Indyuce.mmoitems.stat.Enchants
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.EnchantListData
 import net.Indyuce.mmoitems.stat.data.type.StatData
-import net.Indyuce.mmoitems.stat.data.type.UpgradeInfo
 import net.Indyuce.mmoitems.stat.type.ItemStat
 import net.Indyuce.mmoitems.stat.type.NameData
 import net.Indyuce.mmoitems.stat.type.StatHistory
@@ -25,6 +24,7 @@ import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
+import top.iseason.mmoforge.config.MainConfig.getUpgradeInfoByString
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import java.util.*
 import java.util.regex.Pattern
@@ -73,7 +73,7 @@ fun ItemStack.addRefine(level: Int) =
         statHistory.registerModifierBonus(MainConfig.RefineUUID, originalData)
         it.setStatHistory(ItemStats.NAME, statHistory)
         for (i in 1..level) {
-            it.addAttribute(MainConfig.RefineUUID, MainConfig.refineMap.getLevelMap(rawLevel + i))
+            it.addAttribute(MainConfig.RefineUUID, MainConfig.refineMap.getLevelMap(rawLevel + i), 1)
         }
     }
 
@@ -84,7 +84,7 @@ fun ItemStack.addRefine(level: Int) =
 fun ItemStack.addForge(level: Int) =
     setRPGData(MainConfig.FORGE_TAG, getRPGData(MainConfig.FORGE_TAG) + level) {
         for (i in 1..level) {
-            it.addAttribute(MainConfig.ForgeUUID, MainConfig.forgeMap.getLevelMap(i).toTypeMap())
+            it.addAttribute(MainConfig.ForgeUUID, MainConfig.forgeMap.getLevelMap(i), 1)
         }
     }
 
@@ -95,7 +95,7 @@ fun ItemStack.addLimit(level: Int): ItemStack {
     val rawLevel = getRPGData(MainConfig.LIMIT_TAG)
     return setRPGData(MainConfig.LIMIT_TAG, rawLevel + level) {
         for (i in 1..level) {
-            it.addAttribute(MainConfig.LimitUUID, MainConfig.forgeLimitMap.getLevelMap(rawLevel + i))
+            it.addAttribute(MainConfig.LimitUUID, MainConfig.forgeLimitMap.getLevelMap(rawLevel + i), 1)
         }
     }
 }
@@ -168,15 +168,18 @@ fun ItemStack.addExp(value: Int): ItemStack {
     return nbtItem.toItem()
 }
 
-fun Map<Int, Map<ItemStat, UpgradeInfo>>.getLevelMap(level: Int): Map<ItemStat, UpgradeInfo> {
-    val attributes = mutableMapOf<ItemStat, UpgradeInfo>()
+fun Map<Int, Map<ItemStat, String>>.getLevelMap(level: Int): Map<ItemStat, String> {
+    val attributes = mutableMapOf<ItemStat, String>()
     forEach { (l, dataMap) ->
         if (l > level) return@forEach
-        attributes.putAll(dataMap.toTypeMap())
+        attributes.putAll(dataMap)
     }
     return attributes
 }
 
+/**
+ * 方便地转换map
+ */
 inline fun <T, U, reified C> Map<T, U>.toTypeMap(): Map<C, U> {
     val mutableMapOf = mutableMapOf<C, U>()
     forEach { (k, v) ->
@@ -185,7 +188,7 @@ inline fun <T, U, reified C> Map<T, U>.toTypeMap(): Map<C, U> {
     return mutableMapOf
 }
 
-fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, UpgradeInfo>) {
+fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, times: Int) {
     attributes.forEach { (itemStat, upgradeInfo) ->
         //没有该属性退出
         val statData = this.getData(itemStat) ?: return@forEach
@@ -194,13 +197,14 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, UpgradeInfo>)
         val mData: StatData
 //        val upgradeInfo: UpgradeInfo
         // 附魔将会忽略不存在的
+        val info = (itemStat as Upgradable).getUpgradeInfoByString(upgradeInfo)
         if (itemStat is Enchants) {
             mData = statData
             var enchants: Set<Enchantment> = emptySet()
             if (statData is EnchantListData) {
                 enchants = (statData.cloneData() as EnchantListData).enchants
             }
-            val apply = (itemStat as Upgradable).apply(mData, upgradeInfo, 1) as EnchantListData
+            val apply = (itemStat as Upgradable).apply(mData, info, times) as EnchantListData
             val enchants1 = apply.enchants
             val temp = enchants1.filter { !enchants.contains(it) }
             temp.forEach {
@@ -210,9 +214,8 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, UpgradeInfo>)
             setData(itemStat, apply)
             return
         }
-        if (itemStat !is Upgradable) return@forEach
         mData = statHistory.getModifiersBonus(uuid) ?: DoubleData(0.0)
-        val raw = (itemStat as Upgradable).apply(mData, upgradeInfo, 1)
+        val raw = (itemStat as Upgradable).apply(mData, info, times)
         statHistory.registerModifierBonus(uuid, raw)
         this.setStatHistory(itemStat, statHistory)
     }
