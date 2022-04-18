@@ -21,6 +21,7 @@ import net.Indyuce.mmoitems.gui.edition.EditionInventory
 import net.Indyuce.mmoitems.stat.data.random.RandomStatData
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.ItemStat
+import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -61,7 +62,7 @@ object ForgeStat : ItemStat(
     }
 
     override fun whenApplied(item: ItemStackBuilder, data: StatData) {
-        TODO("Not yet implemented")
+        item.addItemTag(getAppliedNBT(data))
     }
 
     override fun getAppliedNBT(data: StatData): ArrayList<ItemTag> {
@@ -77,25 +78,31 @@ object ForgeStat : ItemStat(
     }
 
     override fun whenClicked(inventory: EditionInventory, event: InventoryClickEvent) {
-        TODO("Not yet implemented")
+
     }
 
     override fun whenInput(inventory: EditionInventory, message: String, vararg info: Any?) {
-        TODO("Not yet implemented")
+
     }
 
-    override fun whenLoaded(p0: ReadMMOItem) {
-        TODO("Not yet implemented")
+    override fun whenLoaded(mmoitem: ReadMMOItem) {
+        //不需要实时读取
+//        val itemTag = ItemTag.getTagAtPath(nbtPath, mmoitem.nbt, SupportedNBTTagValues.STRING) ?: return
+//        val stat = getLoadedNBT(arrayListOf(itemTag)) ?: return
+//        mmoitem.setData(this, stat)
     }
 
-
-    override fun whenDisplayed(p0: MutableList<String>?, p1: Optional<RandomStatData>?) {
-        TODO("Not yet implemented")
+    override fun whenDisplayed(lore: MutableList<String>, data: Optional<RandomStatData>) {
+        val forgeData = data.get() as ForgeData
+        lore.add("${ChatColor.GRAY}Current Forge Abilities: ")
+        lore.add("${ChatColor.WHITE}Star: ${forgeData.star}")
+        lore.add("${ChatColor.WHITE}Max Refine: ${forgeData.maxRefine}")
+        lore.add("${ChatColor.WHITE}Max Limit: ${forgeData.maxLimit}")
+        lore.add("${ChatColor.WHITE}Max Forge: ${forgeData.maxForge}")
+        lore.add("${ChatColor.YELLOW} Please edit through config!")
     }
 
-    override fun getClearStatData(): StatData {
-        TODO("Not yet implemented")
-    }
+    override fun getClearStatData(): StatData = ForgeData(3)
 
 
 }

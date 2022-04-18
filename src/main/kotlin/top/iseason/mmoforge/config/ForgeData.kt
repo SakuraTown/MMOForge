@@ -7,8 +7,8 @@
 
 package top.iseason.mmoforge.config
 
-import io.lumine.mythic.lib.MythicLib
 import io.lumine.mythic.utils.gson.JsonObject
+import io.lumine.mythic.utils.gson.JsonParser
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.item.build.MMOItemBuilder
 import net.Indyuce.mmoitems.stat.data.random.RandomStatData
@@ -42,13 +42,13 @@ data class ForgeData(
     var maxForge: Int = MainConfig.MAX_LIMIT * MainConfig.LimitRate,
 
     // 精炼增益
-    var refineGain: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = MainConfig.refineMap,
+    var refineGain: ForgeParserMap = MainConfig.refineMap,
 
     // 突破增益
-    var limitGain: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = MainConfig.forgeLimitMap,
+    var limitGain: ForgeParserMap = MainConfig.forgeLimitMap,
 
     // 强化增益
-    var forgeGain: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = MainConfig.forgeMap
+    var forgeGain: ForgeParserMap = MainConfig.forgeMap
 ) : StatData, Mergeable, RandomStatData {
 
 
@@ -87,7 +87,7 @@ data class ForgeData(
     }
 
     companion object {
-        fun fromString(string: String) = fromJson(MythicLib.plugin.json.parse(string, JsonObject::class.java))
+        fun fromString(string: String) = fromJson(JsonParser().parse(string).asJsonObject)
 
         fun fromJson(json: JsonObject): ForgeData {
             val star = json.get("star").asInt
@@ -125,7 +125,10 @@ data class ForgeData(
 
 }
 
-fun LinkedHashMap<Int, LinkedHashMap<ItemStat, String>>.toJson(): JsonObject {
+/**
+ * 强化公式表转Json
+ */
+fun ForgeParserMap.toJson(): JsonObject {
     val jsonObject = JsonObject()
     forEach { (level, lMap) ->
         val temp = JsonObject()
@@ -137,7 +140,10 @@ fun LinkedHashMap<Int, LinkedHashMap<ItemStat, String>>.toJson(): JsonObject {
     return jsonObject
 }
 
-fun JsonObject.toForgeMap(): LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> {
+/**
+ * JsonObject转强化公式表
+ */
+fun JsonObject.toForgeMap(): ForgeParserMap {
     val map = LinkedHashMap<Int, LinkedHashMap<ItemStat, String>>()
     this.entrySet().forEach {
         val linkedHashMap = LinkedHashMap<ItemStat, String>()
@@ -149,3 +155,7 @@ fun JsonObject.toForgeMap(): LinkedHashMap<Int, LinkedHashMap<ItemStat, String>>
     }
     return map
 }
+/**
+ * 改个名字，太长了，因为主要是用于遍历，所以用LinkedHashMap
+ */
+typealias ForgeParserMap = LinkedHashMap<Int, LinkedHashMap<ItemStat, String>>

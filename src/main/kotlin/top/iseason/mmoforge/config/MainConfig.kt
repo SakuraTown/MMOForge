@@ -93,12 +93,15 @@ object MainConfig : SimpleYAMLConfig() {
     @Comment("", "强化每级增加的属性，支持小数及范围")
     @Key("forge-map")
     var ForgeMap: MemorySection = YamlConfiguration().apply {
-        createSection("10").set("ATTACK_DAMAGE", "[3,5]")
-        createSection("20").set("ATTACK_DAMAGE", "[4,6]")
+        createSection("1").set("ATTACK_DAMAGE", "1%")
+        createSection("2").set("ATTACK_DAMAGE", "2%")
+        createSection("3").set("ATTACK_DAMAGE", "3%")
+        createSection("4").set("ATTACK_DAMAGE", "4%")
+        createSection("5").set("ATTACK_DAMAGE", "5%")
     }
 
     //实际使用的
-    var forgeMap: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = LinkedHashMap()
+    var forgeMap: ForgeParserMap = LinkedHashMap()
         private set
 
     @Comment("", "强化每级所需的经验公式")
@@ -119,13 +122,14 @@ object MainConfig : SimpleYAMLConfig() {
         createSection("4").set("ATTACK_DAMAGE", "4%")
         createSection("5").set("ATTACK_DAMAGE", "5%")
     }
-    var forgeLimitMap: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = LinkedHashMap()
+    var forgeLimitMap: ForgeParserMap = LinkedHashMap()
         private set
 
     @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("refine-map")
     var RefineSection: MemorySection = ForgeLimitSection
-    var refineMap: LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> = LinkedHashMap()
+
+    var refineMap: ForgeParserMap = LinkedHashMap()
         private set
 
     @Comment("", "金币公式")
@@ -157,7 +161,7 @@ object MainConfig : SimpleYAMLConfig() {
         //保存配置后调用
     }
 
-    fun getStatGain(config: ConfigurationSection): LinkedHashMap<Int, LinkedHashMap<ItemStat, String>> {
+    fun getStatGain(config: ConfigurationSection): ForgeParserMap {
         val mutableMapOf = LinkedHashMap<Int, LinkedHashMap<ItemStat, String>>()
         config.getKeys(false).forEach { levelStr ->
             val level = try {

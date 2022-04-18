@@ -31,8 +31,9 @@ abstract class MMOAttribute(
     val mName: String,
     val format: String,
     val mLore: Array<out String>,
-    val mTypes: Array<out String>
-) : SimpleYAMLConfig(defaultPath = "enchants/${mID.lowercase()}.yml"), Listener {
+    val mTypes: Array<out String>,
+    defaultPath: String = "enchants/${mID.lowercase()}.yml"
+) : SimpleYAMLConfig(defaultPath = defaultPath), Listener {
 
     @Comment("识别标签，储存在物品NBT")
     @Key("nbtKey")
@@ -63,6 +64,7 @@ abstract class MMOAttribute(
     }
 
     open val stat: ItemStat = object : DoubleStat(mID, mMaterial, mName, mLore, mTypes) {
+
         override fun whenApplied(item: ItemStackBuilder, data: StatData) {
             val value = (data as DoubleData).value
             if (value < 0 && !handleNegativeStats()) {

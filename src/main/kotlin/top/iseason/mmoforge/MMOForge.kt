@@ -18,6 +18,8 @@ import top.iseason.mmoforge.command.UICommand
 import top.iseason.mmoforge.config.ForgeStat
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.listener.EventListener
+import top.iseason.mmoforge.material.ForgeExp
+import top.iseason.mmoforge.material.LimitLevel
 
 class MMOForge : SimplePlugin() {
     private val statLoreFormats = mutableListOf<MMOAttribute>()
@@ -29,7 +31,7 @@ class MMOForge : SimplePlugin() {
 
     override fun onLoad() {
         instance = this
-        registerEnchants()
+        registerStats()
         super.onLoad()
 //        debug = true
     }
@@ -42,15 +44,20 @@ class MMOForge : SimplePlugin() {
         MainConfig.init(instance)
         setStatsLoreFormat(statLoreFormats)
         setStatsLore(statLoreFormats)
-        registerEnchants(statLoreFormats)
+        registerStats(statLoreFormats)
     }
 
     override fun onDisabled() {
 
     }
 
-    private fun registerEnchants() {
+    /**
+     * 注册所有属性
+     */
+    private fun registerStats() {
         MMOItems.plugin.stats.register(ForgeStat)
+        ForgeExp.register()
+        LimitLevel.register()
         SilkTouch.register()
         FortuneOre.register()
         VeinOre.register()
@@ -124,7 +131,7 @@ class MMOForge : SimplePlugin() {
         MMOItems.plugin.stats.register(mmoEnchant.stat)
     }
 
-    private fun registerEnchants(mmoEnchants: List<MMOAttribute>) {
+    private fun registerStats(mmoEnchants: List<MMOAttribute>) {
         for (mmoEnchant in mmoEnchants) {
             mmoEnchant.init(this)
             registerListener(mmoEnchant)

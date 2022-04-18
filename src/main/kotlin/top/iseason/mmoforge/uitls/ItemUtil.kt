@@ -30,7 +30,7 @@ import java.util.*
 import java.util.regex.Pattern
 
 val parser = ExpressionParser()
-val RANDOM = Random()
+
 
 /**
  * 获取ItemStack某个RPG NBT
