@@ -1,7 +1,7 @@
 plugins {
     java
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
 }
 group = "top.iseason"
 version = "1.0.0"
@@ -32,7 +32,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT")
     compileOnly(fileTree("lib"))
     implementation("com.entiv:insekicore:1.0.7")
-    compileOnly(kotlin("stdlib"))
+    compileOnly(kotlin("stdlib-jdk8"))
     compileOnly(kotlin("reflect"))
     compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 }
@@ -40,10 +40,7 @@ tasks {
     shadowJar {
         relocate("com.entiv.core", "${project.group}.${mainClass.toLowerCase()}.lib.core")
         relocate("org.bstats", "${project.group}.${mainClass.toLowerCase()}.lib.bstats")
-        mergeServiceFiles()
-        manifest {
-            attributes(mapOf("Main-Class" to "top.iseason.mmoforge.MMOForge"))
-        }
+
         minimize()
         project.findProperty("outputPath")?.let {
             destinationDirectory.set(file(it.toString()))
@@ -56,7 +53,7 @@ tasks {
             "main" to "$p.$mainClass",
             "version" to project.version,
             "author" to author,
-            "kotlin" to "1.6.10"
+            "kotlin" to "1.6.20"
         )
     }
     compileJava {

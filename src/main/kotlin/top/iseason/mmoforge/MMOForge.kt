@@ -10,16 +10,17 @@ package top.iseason.mmoforge
 
 import com.entiv.core.command.DefaultCommand
 import com.entiv.core.plugin.SimplePlugin
+import com.entiv.core.ui.UIListener
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
-import top.iseason.mmoforge.attributes.*
 import top.iseason.mmoforge.command.UICommand
-import top.iseason.mmoforge.config.ForgeStat
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.listener.EventListener
-import top.iseason.mmoforge.material.ForgeExp
-import top.iseason.mmoforge.material.LimitLevel
+import top.iseason.mmoforge.stats.ForgeStat
+import top.iseason.mmoforge.stats.material.ForgeExp
+import top.iseason.mmoforge.stats.material.LimitLevel
+import top.iseason.mmoforge.stats.tools.*
 
 class MMOForge : SimplePlugin() {
     private val statLoreFormats = mutableListOf<MMOAttribute>()
@@ -36,10 +37,13 @@ class MMOForge : SimplePlugin() {
 //        debug = true
     }
 
+
     override fun onEnabled() {
         val defaultCommand = DefaultCommand()
+        defaultCommand.aliases = listOf("mf")
         defaultCommand.addSubcommand(UICommand(defaultCommand))
         defaultCommand.register()
+        registerListener(UIListener)
         registerListener(EventListener)
         MainConfig.init(instance)
         setStatsLoreFormat(statLoreFormats)
@@ -47,8 +51,12 @@ class MMOForge : SimplePlugin() {
         registerStats(statLoreFormats)
     }
 
-    override fun onDisabled() {
+    override fun reload() {
+//        this.pluginLoader.enablePlugin(this)
 
+    }
+
+    override fun onDisabled() {
     }
 
     /**

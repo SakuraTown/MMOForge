@@ -21,9 +21,9 @@ import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
-import top.iseason.mmoforge.config.ForgeData
-import top.iseason.mmoforge.config.ForgeStat
 import top.iseason.mmoforge.config.MainConfig
+import top.iseason.mmoforge.stats.ForgeData
+import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.uitls.*
 
 class ForgeUI : ChestUI("强化/精炼/突破") {
