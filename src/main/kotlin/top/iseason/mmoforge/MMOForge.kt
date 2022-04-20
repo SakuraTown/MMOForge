@@ -52,11 +52,11 @@ class MMOForge : SimplePlugin() {
     }
 
     override fun reload() {
-//        this.pluginLoader.enablePlugin(this)
 
     }
 
     override fun onDisabled() {
+//        println(1)
     }
 
     /**

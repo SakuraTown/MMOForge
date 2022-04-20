@@ -25,6 +25,8 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.config.MainConfig.getUpgradeInfoByString
+import top.iseason.mmoforge.stats.ForgeData
+import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import java.util.*
 import java.util.regex.Pattern
@@ -355,4 +357,15 @@ fun Material.isOre() = when (this) {
     Material.ANCIENT_DEBRIS,
     Material.AMETHYST_CLUSTER -> true
     else -> false
+}
+
+fun NBTItem.getForgeData(): ForgeData? {
+    if (!hasType()) return null
+    if (!hasTag(ForgeStat.nbtPath)) return null
+    val string = getString(ForgeStat.nbtPath)!!
+    return try {
+        ForgeData.fromString(string)
+    } catch (_: Exception) {
+        null
+    }
 }

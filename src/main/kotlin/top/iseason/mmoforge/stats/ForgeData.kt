@@ -102,9 +102,9 @@ data class ForgeData(
             val attributeData = ForgeData(star)
             with(attributeData) {
                 refine = json.get("refine").asInt
-                refine = json.get("limit").asInt
-                refine = json.get("forge").asInt
-                refine = json.get("totalExp").asInt
+                limit = json.get("limit").asInt
+                forge = json.get("forge").asInt
+                totalExp = json.get("totalExp").asDouble
             }
             if (json.has("max-refine")) {
                 attributeData.maxRefine = json.get("max-refine").asInt
