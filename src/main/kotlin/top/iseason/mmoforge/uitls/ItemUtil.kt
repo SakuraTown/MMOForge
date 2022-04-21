@@ -12,9 +12,8 @@ import io.lumine.mythic.lib.api.item.ItemTag
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.ItemStats
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
-import net.Indyuce.mmoitems.stat.Enchants
-import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.EnchantListData
+import net.Indyuce.mmoitems.stat.data.type.Mergeable
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.ItemStat
 import net.Indyuce.mmoitems.stat.type.NameData
@@ -25,8 +24,8 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.config.MainConfig.getUpgradeInfoByString
-import top.iseason.mmoforge.stats.ForgeData
 import top.iseason.mmoforge.stats.ForgeStat
+import top.iseason.mmoforge.stats.MMOForgeData
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import java.util.*
 import java.util.regex.Pattern
@@ -75,7 +74,7 @@ fun ItemStack.addRefine(level: Int) =
         statHistory.registerModifierBonus(MainConfig.RefineUUID, originalData)
         it.setStatHistory(ItemStats.NAME, statHistory)
         for (i in 1..level) {
-            it.addAttribute(MainConfig.RefineUUID, MainConfig.refineMap.getLevelMap(rawLevel + i), 1)
+            it.addAttribute(MainConfig.RefineUUID, MainConfig.refineGain.getLevelMap(rawLevel + i), 1)
         }
     }
 
@@ -86,7 +85,7 @@ fun ItemStack.addRefine(level: Int) =
 fun ItemStack.addForge(level: Int) =
     setRPGData(MainConfig.FORGE_TAG, getRPGData(MainConfig.FORGE_TAG) + level) {
         for (i in 1..level) {
-            it.addAttribute(MainConfig.ForgeUUID, MainConfig.forgeMap.getLevelMap(i), 1)
+            it.addAttribute(MainConfig.ForgeUUID, MainConfig.forgeGain.getLevelMap(i), 1)
         }
     }
 
@@ -97,7 +96,7 @@ fun ItemStack.addLimit(level: Int): ItemStack {
     val rawLevel = getRPGData(MainConfig.LIMIT_TAG)
     return setRPGData(MainConfig.LIMIT_TAG, rawLevel + level) {
         for (i in 1..level) {
-            it.addAttribute(MainConfig.LimitUUID, MainConfig.forgeLimitMap.getLevelMap(rawLevel + i), 1)
+            it.addAttribute(MainConfig.LimitUUID, MainConfig.limitGain.getLevelMap(rawLevel + i), 1)
         }
     }
 }
@@ -190,37 +189,94 @@ inline fun <T, U, reified C> Map<T, U>.toTypeMap(): Map<C, U> {
     return mutableMapOf
 }
 
-fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, times: Int) {
+/**
+ * 根据内容更新属性
+ * @param uuid 历史标签，用于区别其他途径增加的属性
+ * @param attributes 属性更新公式
+ * @param times 更新次数
+ * @param isAppend 是否添加不存在的属性
+ *
+ */
+fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, times: Int, isAppend: Boolean = false) {
     attributes.forEach { (itemStat, upgradeInfo) ->
-        //没有该属性退出
-        val statData = this.getData(itemStat) ?: return@forEach
-        val statHistory = getStatHistory(itemStat) ?: StatHistory(this, itemStat, statData)
-//
-        val mData: StatData
-//        val upgradeInfo: UpgradeInfo
-        // 附魔将会忽略不存在的
+        //是否追加
+        if (!isAppend && !this.hasData(itemStat)) return
+        val statHistory = StatHistory.from(this, itemStat)
+        val originalData = statHistory.originalData
+        val forgeData = statHistory.getModifiersBonus(MainConfig.ForgeUUID) ?: itemStat.clearStatData
         val info = (itemStat as Upgradable).getUpgradeInfoByString(upgradeInfo)
-        if (itemStat is Enchants) {
-            mData = statData
-            var enchants: Set<Enchantment> = emptySet()
-            if (statData is EnchantListData) {
-                enchants = (statData.cloneData() as EnchantListData).enchants
+        if (originalData is EnchantListData) {
+            val enchantListData = originalData.cloneData() as EnchantListData
+            enchantListData.merge(forgeData)
+            val enchants: Set<Enchantment> = enchantListData.enchants
+            val apply = (itemStat as Upgradable).apply(enchantListData, info, times) as EnchantListData
+            if (!isAppend) {
+                val enchants1 = apply.enchants
+                val temp = enchants1.filter { !enchants.contains(it) }
+                temp.forEach {
+                    apply.addEnchant(it, 0)
+                }
             }
-            val apply = (itemStat as Upgradable).apply(mData, info, times) as EnchantListData
-            val enchants1 = apply.enchants
-            val temp = enchants1.filter { !enchants.contains(it) }
-            temp.forEach {
-                apply.addEnchant(it, 0)
-            }
-            //附魔没有历史,直接设置
-            setData(itemStat, apply)
+            statHistory.registerModifierBonus(uuid, apply)
+            this.setStatHistory(itemStat, statHistory)
+//            setData(itemStat, apply)
             return
         }
-        mData = statHistory.getModifiersBonus(uuid) ?: DoubleData(0.0)
-        val raw = (itemStat as Upgradable).apply(mData, info, times)
+        val rawData = (originalData as Mergeable).cloneData() as Mergeable
+        rawData.merge(forgeData)
+        val raw = (itemStat as Upgradable).apply(rawData, info, times)
         statHistory.registerModifierBonus(uuid, raw)
         this.setStatHistory(itemStat, statHistory)
     }
+}
+
+/**
+ * 根据数据精炼物品
+ * @param data 数据，主要提供精炼的内容和星级
+ * @param times 精炼的次数
+ */
+fun LiveMMOItem.refine(data: MMOForgeData, times: Int) {
+    val refineGain = data.refineGain[data.star] ?: MainConfig.refineGain[data.star] ?: emptyMap()
+    addAttribute(
+        MainConfig.RefineUUID,
+        refineGain,
+        times,
+        data.refineGain != MainConfig.refineGain
+    )
+
+}
+
+/**
+ * 根据数据突破物品
+ * @param data 数据，主要提供突破的内容和星级
+ * @param times 突破的次数
+ */
+fun LiveMMOItem.breach(data: MMOForgeData, times: Int) {
+    val limitGain = data.limitGain[data.star] ?: MainConfig.limitGain[data.star] ?: emptyMap()
+    addAttribute(
+        MainConfig.LimitUUID,
+        limitGain,
+        times,
+        data.limitGain != MainConfig.limitGain
+    )
+
+}
+
+
+/**
+ * 根据数据强化物品
+ * @param data 数据，主要提供突破的内容和星级
+ * @param times 强化的次数
+ */
+fun LiveMMOItem.forge(data: MMOForgeData, times: Int) {
+    val forgeGain = data.forgeGain[data.star] ?: MainConfig.forgeGain[data.star] ?: emptyMap()
+    addAttribute(
+        MainConfig.ForgeUUID,
+        forgeGain,
+        times,
+        data.forgeGain != MainConfig.forgeGain
+    )
+
 }
 
 
@@ -359,12 +415,12 @@ fun Material.isOre() = when (this) {
     else -> false
 }
 
-fun NBTItem.getForgeData(): ForgeData? {
+fun NBTItem.getForgeData(): MMOForgeData? {
     if (!hasType()) return null
     if (!hasTag(ForgeStat.nbtPath)) return null
     val string = getString(ForgeStat.nbtPath)!!
     return try {
-        ForgeData.fromString(string)
+        MMOForgeData.fromString(string)
     } catch (_: Exception) {
         null
     }

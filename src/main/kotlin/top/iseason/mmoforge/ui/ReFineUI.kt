@@ -15,15 +15,16 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
-import top.iseason.mmoforge.stats.ForgeData
 import top.iseason.mmoforge.stats.ForgeStat
+import top.iseason.mmoforge.stats.MMOForgeData
+import top.iseason.mmoforge.uitls.addAttribute
 import top.iseason.mmoforge.uitls.getForgeData
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import top.iseason.mmoforge.uitls.takeMoney
 
 class ReFineUI : ChestUI("物品精炼") {
-    private var toolForgeData: ForgeData? = null
-    private var materialForgeData: ForgeData? = null
+    private var toolMMOForgeData: MMOForgeData? = null
+    private var materialMMOForgeData: MMOForgeData? = null
     private var toolType: String? = null
     private var gold = 0.0
 
@@ -36,8 +37,8 @@ class ReFineUI : ChestUI("物品精炼") {
     private val forgeButton = Button(Material.ANVIL, "${ChatColor.RED}无法精炼", index = 23).onClicked {
         if (gold == 0.0) return@onClicked
         if (!(it.whoClicked as Player).takeMoney(gold)) return@onClicked
-        toolForgeData = null
-        materialForgeData = null
+        toolMMOForgeData = null
+        materialMMOForgeData = null
         toolType = null
         gold = 0.0
         toolSlot.reset()
@@ -50,15 +51,15 @@ class ReFineUI : ChestUI("物品精炼") {
 
     private val toolSlot = IOSlot(19).inputFilter {
         val nbtItem = NBTItem.get(it) ?: return@inputFilter false
-        toolForgeData = nbtItem.getForgeData() ?: return@inputFilter false
+        toolMMOForgeData = nbtItem.getForgeData() ?: return@inputFilter false
         toolType = nbtItem.getString("MMOITEMS_ITEM_ID")
         true
     }.onInput {
-        val data = toolForgeData ?: return@onInput
+        val data = toolMMOForgeData ?: return@onInput
         showRefineInfo(toolInfo, itemStack!!, data)
         updateResult()
     }.onOutput {
-        toolForgeData = null
+        toolMMOForgeData = null
         toolType = null
         toolInfo.reset()
         updateResult()
@@ -69,21 +70,21 @@ class ReFineUI : ChestUI("物品精炼") {
             if (toolType == null) return@inputFilter false
             val nbtItem = NBTItem.get(it) ?: return@inputFilter false
             if (nbtItem.getString("MMOITEMS_ITEM_ID") != toolType) return@inputFilter false
-            materialForgeData = nbtItem.getForgeData() ?: return@inputFilter false
+            materialMMOForgeData = nbtItem.getForgeData() ?: return@inputFilter false
             true
         }.onInput {
-            val data = materialForgeData ?: return@onInput
+            val data = materialMMOForgeData ?: return@onInput
             showRefineInfo(materialInfo, itemStack!!, data)
             updateResult()
         }.onOutput {
-            materialForgeData = null
+            materialMMOForgeData = null
             materialInfo.reset()
             updateResult()
         }.setUI(this)
 
     private val resultSlot = IOSlot(25).inputAble(false).setUI(this)
 
-    private fun showRefineInfo(button: Button, itemStack: ItemStack, data: ForgeData) {
+    private fun showRefineInfo(button: Button, itemStack: ItemStack, data: MMOForgeData) {
         button.displayName = "${ChatColor.GOLD}物品信息 -> ${ChatColor.RESET}${itemStack.itemMeta.displayName}"
         button.lore = listOf(
             "${ChatColor.LIGHT_PURPLE}星级: ${ChatColor.YELLOW}${data.star}",
@@ -103,10 +104,16 @@ class ReFineUI : ChestUI("物品精炼") {
         }
         val mmoItem = LiveMMOItem(toolSlot.itemStack)
         val forgeData = NBTItem.get(toolSlot.itemStack).getForgeData() ?: return
-        val add = materialForgeData!!.refine + 1
+        val add = materialMMOForgeData!!.refine + 1
         forgeData.refine += add
         mmoItem.setData(ForgeStat, forgeData)
-        //todo: 应用精炼增值
+        val refineGain = forgeData.refineGain[forgeData.star] ?: MainConfig.refineGain[forgeData.star] ?: emptyMap()
+        mmoItem.addAttribute(
+            MainConfig.RefineUUID,
+            refineGain,
+            add,
+            forgeData.refineGain != MainConfig.refineGain
+        )
         val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
         val express = expression.replace("{forge}", "0").replace("{limit}", "0").replace("{refine}", add.toString())
         gold = ExpressionParser().evaluate(express)

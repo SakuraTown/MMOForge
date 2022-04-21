@@ -22,8 +22,8 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import top.iseason.mmoforge.config.MainConfig
-import top.iseason.mmoforge.stats.ForgeData
 import top.iseason.mmoforge.stats.ForgeStat
+import top.iseason.mmoforge.stats.MMOForgeData
 import top.iseason.mmoforge.uitls.*
 
 class ForgeUI : ChestUI("强化/精炼/突破") {
@@ -60,15 +60,15 @@ class ForgeUI : ChestUI("强化/精炼/突破") {
         }.onInput {
             val nbtItem = NBTItem.get(itemStack)
             val dataString = nbtItem.getString(ForgeStat.nbtPath)
-            val forgeData = ForgeData.fromString(dataString)
-            quality = forgeData.star
+            val MMOForgeData = MMOForgeData.fromString(dataString)
+            quality = MMOForgeData.star
             toolInfo.displayName = "${ChatColor.GOLD}物品信息 -> ${ChatColor.RESET}${itemStack?.itemMeta?.displayName}"
             toolInfo.lore = listOf(
                 "${ChatColor.LIGHT_PURPLE}星级: ${ChatColor.YELLOW}${quality}",
-                "${ChatColor.GREEN}精炼等级: ${ChatColor.YELLOW}${forgeData.refine}",
-                "${ChatColor.RED}突破次数: ${ChatColor.YELLOW}${forgeData.limit}",
-                "${ChatColor.AQUA}强化等级: ${ChatColor.YELLOW}${forgeData.forge}",
-                "${ChatColor.YELLOW}强化经验: ${ChatColor.RED}${forgeData.totalExp}"
+                "${ChatColor.GREEN}精炼等级: ${ChatColor.YELLOW}${MMOForgeData.refine}",
+                "${ChatColor.RED}突破次数: ${ChatColor.YELLOW}${MMOForgeData.limit}",
+                "${ChatColor.AQUA}强化等级: ${ChatColor.YELLOW}${MMOForgeData.forge}",
+                "${ChatColor.YELLOW}强化经验: ${ChatColor.RED}${MMOForgeData.totalExp}"
             )
             updateResult()
         }.onOutput {

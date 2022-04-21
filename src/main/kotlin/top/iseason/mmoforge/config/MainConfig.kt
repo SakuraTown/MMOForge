@@ -102,7 +102,7 @@ object MainConfig : SimpleYAMLConfig() {
     }
 
     //实际使用的
-    var forgeMap: ForgeParserMap = LinkedHashMap()
+    var forgeGain: ForgeParserMap = LinkedHashMap()
         private set
 
     @Comment("", "强化每级所需的经验公式")
@@ -115,7 +115,7 @@ object MainConfig : SimpleYAMLConfig() {
     val forgeLevelMap: MutableMap<Int, String> = mutableMapOf()
 
     @Comment("", "强化突破属性增加，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
-    @Key("forge-limit-map")
+    @Key("limit-map")
     var ForgeLimitSection: MemorySection = YamlConfiguration().apply {
         createSection("1").set("ATTACK_DAMAGE", "1%")
         createSection("2").set("ATTACK_DAMAGE", "2%")
@@ -123,14 +123,26 @@ object MainConfig : SimpleYAMLConfig() {
         createSection("4").set("ATTACK_DAMAGE", "4%")
         createSection("5").set("ATTACK_DAMAGE", "5%")
     }
-    var forgeLimitMap: ForgeParserMap = LinkedHashMap()
+
+    @Comment("", "强化突破属性增加，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
+    @Key("limit-type-map")
+    var LimitTypeSection: MemorySection = YamlConfiguration().apply {
+        set("1", arrayListOf("STEEL_INGOT"))
+        set("2", arrayListOf("STEEL_INGOT"))
+        set("3", arrayListOf("STEEL_INGOT"))
+        set("4", arrayListOf("STEEL_INGOT"))
+        set("5", arrayListOf("STEEL_INGOT", "UNCOMMON_WEAPON_ESSENCE"))
+    }
+
+    var limitType: LinkedHashMap<Int, List<String>> = LinkedHashMap()
+    var limitGain: ForgeParserMap = LinkedHashMap()
         private set
 
     @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("refine-map")
     var RefineSection: MemorySection = ForgeLimitSection
 
-    var refineMap: ForgeParserMap = LinkedHashMap()
+    var refineGain: ForgeParserMap = LinkedHashMap()
         private set
 
     @Comment("", "金币公式")
@@ -148,10 +160,15 @@ object MainConfig : SimpleYAMLConfig() {
     }
     override val onLoad: (ConfigState) -> Unit = {
         //加载配置后调用
-        forgeMap = getStatGain(ForgeMap)
-        refineMap = getStatGain(RefineSection)
-        forgeLimitMap = getStatGain(ForgeLimitSection)
+        forgeGain = getStatGain(ForgeMap)
+        refineGain = getStatGain(RefineSection)
+        limitGain = getStatGain(ForgeLimitSection)
         restForgeLevelMap()
+        val linkedHashMap = LinkedHashMap<Int, List<String>>()
+        LimitTypeSection.getKeys(false).forEach {
+            linkedHashMap[it.toInt()] = LimitTypeSection.getStringList(it)
+        }
+        limitType = linkedHashMap
     }
 
     override val onPreSave: (ConfigState) -> Boolean = {

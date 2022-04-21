@@ -14,6 +14,7 @@
 
 package top.iseason.mmoforge.stats
 
+import io.lumine.mythic.utils.gson.JsonArray
 import io.lumine.mythic.utils.gson.JsonObject
 import io.lumine.mythic.utils.gson.JsonParser
 import net.Indyuce.mmoitems.MMOItems
@@ -24,7 +25,7 @@ import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.ItemStat
 import top.iseason.mmoforge.config.MainConfig
 
-data class ForgeData(
+data class MMOForgeData(
     // 物品星级
     val star: Int,
 
@@ -50,24 +51,26 @@ data class ForgeData(
     var maxForge: Int = MainConfig.MAX_LIMIT * MainConfig.LimitRate,
 
     // 精炼增益
-    var refineGain: ForgeParserMap = MainConfig.refineMap,
+    var refineGain: ForgeParserMap = MainConfig.refineGain,
 
     // 突破增益
-    var limitGain: ForgeParserMap = MainConfig.forgeLimitMap,
+    var limitGain: ForgeParserMap = MainConfig.limitGain,
 
     // 强化增益
-    var forgeGain: ForgeParserMap = MainConfig.forgeMap
+    var forgeGain: ForgeParserMap = MainConfig.forgeGain,
+
+    var limitType: LinkedHashMap<Int, List<String>> = MainConfig.limitType
 ) : StatData, Mergeable, RandomStatData {
 
 
     override fun merge(data: StatData?) {
-        require(data is ForgeData) { "Cannot merge two different stat data types!" }
+        require(data is MMOForgeData) { "Cannot merge two different stat data types!" }
         require(data.star == star) { "Cannot merge two stat data with different star!" }
         //仅合并精炼等级
         refine += data.refine
     }
 
-    override fun cloneData(): ForgeData =
+    override fun cloneData(): MMOForgeData =
         copy(
             refineGain = LinkedHashMap(refineGain),
             limitGain = LinkedHashMap(limitGain),
@@ -86,20 +89,29 @@ data class ForgeData(
             addProperty("maxLimit", maxLimit)
         if (maxForge != MainConfig.MAX_LIMIT * MainConfig.LimitRate)
             addProperty("maxForge", maxForge)
-        if (refineGain != MainConfig.refineMap)
+        if (refineGain != MainConfig.refineGain)
             add("gain-refine", refineGain.toJson())
-        if (limitGain != MainConfig.forgeLimitMap)
+        if (limitGain != MainConfig.limitGain)
             add("gain-limit", limitGain.toJson())
-        if (forgeGain != MainConfig.forgeMap)
+        if (forgeGain != MainConfig.forgeGain)
             add("gain-forge", forgeGain.toJson())
+        if (limitType != MainConfig.limitType) {
+            val jsonObject = JsonObject()
+            limitType.forEach { (level, list) ->
+                val temp = JsonArray()
+                list.forEach { temp.add(it) }
+                jsonObject.add(level.toString(), temp)
+            }
+            add("limit-type", jsonObject)
+        }
     }
 
     companion object {
         fun fromString(string: String) = fromJson(JsonParser().parse(string).asJsonObject)
 
-        fun fromJson(json: JsonObject): ForgeData {
+        fun fromJson(json: JsonObject): MMOForgeData {
             val star = json.get("star").asInt
-            val attributeData = ForgeData(star)
+            val attributeData = MMOForgeData(star)
             with(attributeData) {
                 refine = json.get("refine").asInt
                 limit = json.get("limit").asInt
@@ -116,13 +128,25 @@ data class ForgeData(
                 attributeData.maxForge = json.get("max-forge").asInt
             }
             if (json.has("gain-refine")) {
-                attributeData.refineGain = json.get("gain-refine").asJsonObject.toForgeMap()
+                attributeData.refineGain = json.getAsJsonObject("gain-refine").toForgeMap()
             }
             if (json.has("gain-limit")) {
-                attributeData.limitGain = json.get("gain-limit").asJsonObject.toForgeMap()
+                attributeData.limitGain = json.getAsJsonObject("gain-limit").toForgeMap()
             }
             if (json.has("gain-forge")) {
-                attributeData.forgeGain = json.get("gain-forge").asJsonObject.toForgeMap()
+                attributeData.forgeGain = json.getAsJsonObject("gain-forge").toForgeMap()
+            }
+            if (json.has("limit-type")) {
+                val linkedHashMap = LinkedHashMap<Int, List<String>>()
+                val jsonObject = json.get("limit-type").asJsonObject
+                jsonObject.keySet().forEach {
+                    val arrayListOf = arrayListOf<String>()
+                    val jsonArray = jsonObject.getAsJsonArray(it)
+                    jsonArray.forEach { s ->
+                        arrayListOf.add(s.asString)
+                    }
+                    linkedHashMap[it.toInt()] = arrayListOf
+                }
             }
             return attributeData
         }

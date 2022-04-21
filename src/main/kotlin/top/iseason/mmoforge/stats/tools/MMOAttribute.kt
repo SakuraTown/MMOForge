@@ -34,13 +34,6 @@ abstract class MMOAttribute(
     val mTypes: Array<out String>,
     defaultPath: String = "enchants/${mID.lowercase()}.yml"
 ) : SimpleYAMLConfig(defaultPath = defaultPath), Listener {
-
-    @Comment("识别标签，储存在物品NBT")
-    @Key("nbtKey")
-    var nbtKey: String = "MMOFORGE_${mID}"
-
-    @Comment("lore的占位符，将由格式字符格式化")
-    @Key("loreKey")
     var loreKey: String = mID.lowercase().replace('_', '-')
 
     @Comment("格式字符，负责翻译lore")
