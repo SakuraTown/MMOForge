@@ -90,7 +90,7 @@ class ReFineUI : ChestUI("物品精炼") {
             "${ChatColor.GREEN}精炼等级: ${ChatColor.YELLOW}${data.refine}",
             "${ChatColor.RED}突破次数: ${ChatColor.YELLOW}${data.limit}",
             "${ChatColor.AQUA}强化等级: ${ChatColor.YELLOW}${data.forge}",
-            "${ChatColor.YELLOW}强化经验: ${ChatColor.RED}${data.totalExp}"
+            "${ChatColor.YELLOW}强化经验: ${ChatColor.RED}${data.currentExp}"
         )
     }
 
@@ -118,3 +118,5 @@ class ReFineUI : ChestUI("物品精炼") {
     }
 
 }
+// 仅为了一个概念，Icon不应该有点击动作
+typealias Icon = Button

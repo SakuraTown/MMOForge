@@ -14,6 +14,7 @@
 
 package top.iseason.mmoforge.config
 
+import com.entiv.core.common.toColor
 import com.entiv.core.config.*
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.stat.Enchants
@@ -25,7 +26,11 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
 import top.iseason.mmoforge.stats.ForgeParserMap
+import top.iseason.mmoforge.stats.MMOForgeData
 import top.iseason.mmoforge.uitls.formatForgeString
+import top.iseason.mmoforge.uitls.getProcessBar
+import top.iseason.mmoforge.uitls.getStarCount
+import top.iseason.mmoforge.uitls.kparser.ExpressionParser
 import java.util.*
 
 //配置保存路径
@@ -109,10 +114,35 @@ object MainConfig : SimpleYAMLConfig() {
     @Comment("{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ")
     @Key("forge-level-map")
     var ForgeLevelSection: MemorySection = YamlConfiguration().apply {
-        set("10", "2*{star}+5*{forge}")
-        set("20", "2*{star}+5.1*{forge}")
+        set("20", "2*{star}+5*{forge}")
+        set("40", "2*{star}+5.1*{forge}")
     }
     val forgeLevelMap: MutableMap<Int, String> = mutableMapOf()
+
+    /**
+     * 根据目前强化等级获得对应的经验公式
+     */
+    fun getForgeExpression(level: Int): String {
+        var formula = "2*{star}+5*{forge}"
+        forgeLevelMap.forEach { (l, f) ->
+            formula = f
+            if (level >= l) return formula
+        }
+        return formula
+    }
+
+    fun getValueByFormula(formula: String, star: Int, forge: Int, limit: Int, refine: Int): Double {
+        val express = formula.replace("{star}", star.toString())
+            .replace("{forge}", forge.toString())
+            .replace("{limit}", limit.toString())
+            .replace("{refine}", refine.toString())
+        return try {
+            ExpressionParser().evaluate(express)
+        } catch (e: Exception) {
+            0.0
+        }
+    }
+
 
     @Comment("", "强化突破属性增加，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("limit-map")
@@ -159,6 +189,35 @@ object MainConfig : SimpleYAMLConfig() {
         set("5", "({forge}*10+{limit}*200+{refine}*500)*2.475")
     }
 
+    @Comment("", "数据在物品lore的显示")
+    @Key("item-lore")
+    var itemLore: List<String> = listOf(
+        "",
+        "&7■ &f星级：&5{star}",
+        "&7■ &f精炼：&6{refine}",
+        "&7■ &f突破：&a{limit}",
+        "&7■ &f强化：&b+{forge}",
+        "&7■ 强化经验：&b{progress}"
+    )
+
+    fun getItemLore(forgeData: MMOForgeData): List<String> {
+        val lore = mutableListOf<String>()
+        itemLore.forEach {
+            lore.add(
+                it
+                    .replace("{star}", getStarCount(forgeData.star))
+                    .replace("{refine}", forgeData.refine.toString())
+                    .replace("{limit}", forgeData.limit.toString())
+                    .replace("{forge}", forgeData.star.toString())
+                    .replace(
+                        "{progress}",
+                        getProcessBar(10, forgeData.currentExp, forgeData.getForgeUpdateExp())
+                    ).toColor()
+            )
+        }
+        return lore
+    }
+
     override val onPreLoad: (ConfigState) -> Boolean = {
         //加载配置前调用
         true
@@ -174,6 +233,7 @@ object MainConfig : SimpleYAMLConfig() {
             linkedHashMap[it.toInt()] = LimitTypeSection.getStringList(it)
         }
         limitType = linkedHashMap
+        MMOItems.plugin.upgrades.reload()
     }
 
     override val onPreSave: (ConfigState) -> Boolean = {

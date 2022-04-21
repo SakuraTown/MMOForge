@@ -14,7 +14,8 @@ import com.entiv.core.ui.UIListener
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
-import top.iseason.mmoforge.command.UICommand
+import top.iseason.mmoforge.command.ForgeCommand
+import top.iseason.mmoforge.command.RefineCommand
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.listener.EventListener
 import top.iseason.mmoforge.stats.ForgeStat
@@ -41,7 +42,8 @@ class MMOForge : SimplePlugin() {
     override fun onEnabled() {
         val defaultCommand = DefaultCommand()
         defaultCommand.aliases = listOf("mf")
-        defaultCommand.addSubcommand(UICommand(defaultCommand))
+        RefineCommand(defaultCommand).register()
+        ForgeCommand(defaultCommand).register()
         defaultCommand.register()
         registerListener(UIListener)
         registerListener(EventListener)

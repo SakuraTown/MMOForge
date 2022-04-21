@@ -38,8 +38,8 @@ data class MMOForgeData(
     // 强化等级
     var forge: Int = 0,
 
-    //总经验
-    var totalExp: Double = 0.0,
+    //当前强化经验
+    var currentExp: Double = 0.0,
 
     // 最大精炼等级
     var maxRefine: Int = MainConfig.MAX_REFINE,
@@ -82,7 +82,7 @@ data class MMOForgeData(
         addProperty("refine", refine)
         addProperty("limit", limit)
         addProperty("forge", forge)
-        addProperty("totalExp", totalExp)
+        addProperty("totalExp", currentExp)
         if (maxRefine != MainConfig.MAX_REFINE)
             addProperty("maxRefine", maxRefine)
         if (maxLimit != MainConfig.MAX_LIMIT)
@@ -116,7 +116,7 @@ data class MMOForgeData(
                 refine = json.get("refine").asInt
                 limit = json.get("limit").asInt
                 forge = json.get("forge").asInt
-                totalExp = json.get("totalExp").asDouble
+                currentExp = json.get("totalExp").asDouble
             }
             if (json.has("max-refine")) {
                 attributeData.maxRefine = json.get("max-refine").asInt
@@ -152,7 +152,40 @@ data class MMOForgeData(
         }
     }
 
-    override fun isClear(): Boolean = refine == 0 && limit == 0 && forge == 0 && totalExp == 0.0
+    /**
+     * 获取当前强化等级升级所需要的经验
+     */
+    fun getForgeUpdateExp() =
+        MainConfig.getValueByFormula(MainConfig.getForgeExpression(forge), star, forge, limit, refine)
+
+    /**
+     * 获取升级所需的经验
+     */
+    fun getRequireUpdateExp() = getForgeUpdateExp() - currentExp
+
+    /**
+     * 获取给与的经验可以升的等级数及剩余的经验
+     * @return 可升的等级${first} 与 剩余的经验${second}
+     */
+    fun getLevelByExtraExp(exp: Double): Pair<Int, Double> {
+        var level = 0
+        var remainExp = exp
+        while (true) {
+            val currentExp = MainConfig.getValueByFormula(
+                MainConfig.getForgeExpression(forge + level),
+                star,
+                forge + level,
+                limit,
+                refine
+            )
+            if (remainExp < currentExp) break
+            remainExp -= currentExp
+            level++
+        }
+        return Pair(level, remainExp)
+    }
+
+    override fun isClear(): Boolean = refine == 0 && limit == 0 && forge == 0 && currentExp == 0.0
     override fun randomize(p0: MMOItemBuilder?) = this
 
 }

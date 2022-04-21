@@ -88,11 +88,14 @@ object ForgeStat : ItemStat(
         val mmoForgeData = data as MMOForgeData
         nameData.addSuffix(mmoForgeData.refine.toRoman())
         item.meta.setDisplayName(MythicLib.plugin.parseColors(nameData.bake()))
+        MainConfig.getItemLore(mmoForgeData).forEach {
+            item.lore.end(it)
+        }
         item.addItemTag(getAppliedNBT(data))
     }
 
     override fun getAppliedNBT(data: StatData): ArrayList<ItemTag> {
-        require(data is MMOForgeData) { "data type error ${data}" }
+        require(data is MMOForgeData) { "data type error $data" }
         return arrayListOf(ItemTag(nbtPath, data.toJson().toString()))
     }
 
@@ -119,12 +122,12 @@ object ForgeStat : ItemStat(
     }
 
     override fun whenDisplayed(lore: MutableList<String>, data: Optional<RandomStatData>) {
-        val MMOForgeData = data.get() as MMOForgeData
+        val mmoForgeData = data.get() as MMOForgeData
         lore.add("${ChatColor.GRAY}物品强化属性: ")
-        lore.add("${ChatColor.WHITE}星级: ${MMOForgeData.star}")
-        lore.add("${ChatColor.WHITE}最大精炼次数: ${MMOForgeData.maxRefine}")
-        lore.add("${ChatColor.WHITE}最大突破次数: ${MMOForgeData.maxLimit}")
-        lore.add("${ChatColor.WHITE}最大强化次数: ${MMOForgeData.maxForge}")
+        lore.add("${ChatColor.WHITE}星级: ${mmoForgeData.star}")
+        lore.add("${ChatColor.WHITE}最大精炼次数: ${mmoForgeData.maxRefine}")
+        lore.add("${ChatColor.WHITE}最大突破次数: ${mmoForgeData.maxLimit}")
+        lore.add("${ChatColor.WHITE}最大强化次数: ${mmoForgeData.maxForge}")
         lore.add("${ChatColor.YELLOW}请从配置文件修改!")
     }
 

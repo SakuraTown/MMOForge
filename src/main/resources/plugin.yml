@@ -1,7 +1,7 @@
 name: ${name}
 main: ${main}
 version: ${version}
-authors: [${author}]
+authors: [ ${ author } ]
 api-version: 1.13
 libraries:
   - org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin}

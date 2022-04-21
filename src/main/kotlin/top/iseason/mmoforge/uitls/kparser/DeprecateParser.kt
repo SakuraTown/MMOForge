@@ -104,8 +104,7 @@ class DeprecateParser {
             "TANH", "tanh", "Tanh" -> tanh(value)
 
 
-            else -> throw
-            ArithmeticException("Function cannot be determined $funString")
+            else -> throw ArithmeticException("Function cannot be determined $funString")
         }
     }
 
