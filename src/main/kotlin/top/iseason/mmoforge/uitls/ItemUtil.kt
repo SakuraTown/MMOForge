@@ -12,13 +12,10 @@ import io.lumine.mythic.lib.api.item.ItemTag
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.ItemStats
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
+import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.EnchantListData
-import net.Indyuce.mmoitems.stat.data.type.Mergeable
 import net.Indyuce.mmoitems.stat.data.type.StatData
-import net.Indyuce.mmoitems.stat.type.ItemStat
-import net.Indyuce.mmoitems.stat.type.NameData
-import net.Indyuce.mmoitems.stat.type.StatHistory
-import net.Indyuce.mmoitems.stat.type.Upgradable
+import net.Indyuce.mmoitems.stat.type.*
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
@@ -209,7 +206,7 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, time
             val enchantListData = originalData.cloneData() as EnchantListData
             enchantListData.merge(forgeData)
             val enchants: Set<Enchantment> = enchantListData.enchants
-            val apply = (itemStat as Upgradable).apply(enchantListData, info, times) as EnchantListData
+            val apply = (itemStat as Upgradable).apply(enchantListData.cloneData(), info, times) as EnchantListData
             if (!isAppend) {
                 val enchants1 = apply.enchants
                 val temp = enchants1.filter { !enchants.contains(it) }
@@ -217,14 +214,16 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, time
                     apply.addEnchant(it, 0)
                 }
             }
-            statHistory.registerModifierBonus(uuid, apply)
-            this.setStatHistory(itemStat, statHistory)
-//            setData(itemStat, apply)
+            //附魔没有历史
+//            statHistory.registerModifierBonus(uuid, apply)
+//            this.setStatHistory(itemStat, statHistory)
+            setData(itemStat, apply)
             return
         }
-        val rawData = (originalData as Mergeable).cloneData() as Mergeable
+        val rawData = (originalData as DoubleData).cloneData() as DoubleData
         rawData.merge(forgeData)
-        val raw = (itemStat as Upgradable).apply(rawData, info, times)
+        val raw = (itemStat as DoubleStat).apply(rawData, info, times) as DoubleData
+        raw.value -= originalData.value
         statHistory.registerModifierBonus(uuid, raw)
         this.setStatHistory(itemStat, statHistory)
     }
@@ -235,15 +234,13 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, time
  * @param data 数据，主要提供精炼的内容和星级
  * @param times 精炼的次数
  */
-fun LiveMMOItem.refine(data: MMOForgeData, times: Int) {
-    val refineGain = data.refineGain[data.star] ?: MainConfig.refineGain[data.star] ?: emptyMap()
-    addAttribute(
-        MainConfig.RefineUUID,
-        refineGain,
-        times,
-        data.refineGain != MainConfig.refineGain
-    )
-
+fun LiveMMOItem.refine(data: MMOForgeData, level: Int) {
+    val refine = data.refine
+    for (i in refine + 1..refine + level) {
+        addAttribute(MainConfig.RefineUUID, data.refineGain.getLevelMap(i), 1, data.refineGain != MainConfig.refineGain)
+    }
+    data.refine += level
+    setData(ForgeStat, data)
 }
 
 /**

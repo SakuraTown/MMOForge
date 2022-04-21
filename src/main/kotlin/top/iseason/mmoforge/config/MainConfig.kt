@@ -35,7 +35,7 @@ object MainConfig : SimpleYAMLConfig() {
         "", "所有加成的格式：基础值为200",
         " +5 => 205",
         " -5 => 195",
-        "  5 => 5",
+        "  s5 => 5",
         " n5 => -5",
         " 5% => 10",
         "+5% => 210",
@@ -124,7 +124,7 @@ object MainConfig : SimpleYAMLConfig() {
         createSection("5").set("ATTACK_DAMAGE", "5%")
     }
 
-    @Comment("", "强化突破属性增加，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
+    @Comment("", "突破材料，如果某个等级没有声明将不能进行突破")
     @Key("limit-type-map")
     var LimitTypeSection: MemorySection = YamlConfiguration().apply {
         set("1", arrayListOf("STEEL_INGOT"))
@@ -140,8 +140,13 @@ object MainConfig : SimpleYAMLConfig() {
 
     @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("refine-map")
-    var RefineSection: MemorySection = ForgeLimitSection
-
+    var RefineSection: MemorySection = YamlConfiguration().apply {
+        createSection("1").set("ATTACK_DAMAGE", "1%")
+        createSection("2").set("ATTACK_DAMAGE", "2%")
+        createSection("3").set("ATTACK_DAMAGE", "3%")
+        createSection("4").set("ATTACK_DAMAGE", "4%")
+        createSection("5").set("ATTACK_DAMAGE", "5%")
+    }
     var refineGain: ForgeParserMap = LinkedHashMap()
         private set
 
@@ -187,12 +192,12 @@ object MainConfig : SimpleYAMLConfig() {
             } catch (e: Exception) {
                 return@forEach
             }
-            val section = ForgeMap.getConfigurationSection(levelStr) ?: return@forEach
+            val section = config.getConfigurationSection(levelStr) ?: return@forEach
             val statWithUpgrade = LinkedHashMap<ItemStat, String>()
             for (statStr in section.getKeys(false)) {
                 val stat = MMOItems.plugin.stats.get(statStr) ?: continue
                 if (stat !is Upgradable) continue
-                statWithUpgrade[stat] = statStr
+                statWithUpgrade[stat] = section.getString(statStr)!!
             }
             mutableMapOf[level] = statWithUpgrade
         }

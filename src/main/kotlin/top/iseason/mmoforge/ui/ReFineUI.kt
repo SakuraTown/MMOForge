@@ -15,11 +15,10 @@ import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
-import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.stats.MMOForgeData
-import top.iseason.mmoforge.uitls.addAttribute
 import top.iseason.mmoforge.uitls.getForgeData
 import top.iseason.mmoforge.uitls.kparser.ExpressionParser
+import top.iseason.mmoforge.uitls.refine
 import top.iseason.mmoforge.uitls.takeMoney
 
 class ReFineUI : ChestUI("物品精炼") {
@@ -102,24 +101,20 @@ class ReFineUI : ChestUI("物品精炼") {
             gold = 0.0
             return
         }
+
         val mmoItem = LiveMMOItem(toolSlot.itemStack)
         val forgeData = NBTItem.get(toolSlot.itemStack).getForgeData() ?: return
-        val add = materialMMOForgeData!!.refine + 1
-        forgeData.refine += add
-        mmoItem.setData(ForgeStat, forgeData)
-        val refineGain = forgeData.refineGain[forgeData.star] ?: MainConfig.refineGain[forgeData.star] ?: emptyMap()
-        mmoItem.addAttribute(
-            MainConfig.RefineUUID,
-            refineGain,
-            add,
-            forgeData.refineGain != MainConfig.refineGain
-        )
+        var add = materialMMOForgeData!!.refine + 1
+        add = if (forgeData.refine + add > forgeData.maxRefine) forgeData.maxRefine - forgeData.refine else add
+        if (add == 0) return
+        mmoItem.refine(forgeData, add)
         val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
         val express = expression.replace("{forge}", "0").replace("{limit}", "0").replace("{refine}", add.toString())
         gold = ExpressionParser().evaluate(express)
         forgeButton.displayName = "${ChatColor.GREEN}点击精炼武器: ${ChatColor.GOLD}$gold ￥"
         resultSlot.itemStack = mmoItem.newBuilder().buildNBT().toItem()
         resultSlot.outputAble(false)
+
     }
 
 }
