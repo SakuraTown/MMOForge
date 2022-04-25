@@ -171,8 +171,10 @@ data class MMOForgeData(
         var level = 0
         var remainExp = exp
         while (true) {
+            val fl = forge + level
+            if (fl >= maxForge) break
             val currentExp = MainConfig.getValueByFormula(
-                MainConfig.getForgeExpression(forge + level),
+                MainConfig.getForgeExpression(fl),
                 star,
                 forge + level,
                 limit,

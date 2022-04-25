@@ -117,7 +117,7 @@ object MainConfig : SimpleYAMLConfig() {
         set("20", "2*{star}+5*{forge}")
         set("40", "2*{star}+5.1*{forge}")
     }
-    val forgeLevelMap: MutableMap<Int, String> = mutableMapOf()
+    val forgeLevelMap: LinkedHashMap<Int, String> = LinkedHashMap()
 
     /**
      * 根据目前强化等级获得对应的经验公式
@@ -126,7 +126,7 @@ object MainConfig : SimpleYAMLConfig() {
         var formula = "2*{star}+5*{forge}"
         forgeLevelMap.forEach { (l, f) ->
             formula = f
-            if (level >= l) return formula
+            if (level <= l) return formula
         }
         return formula
     }
@@ -194,7 +194,6 @@ object MainConfig : SimpleYAMLConfig() {
     var itemLore: List<String> = listOf(
         "",
         "&7■ &f星级：&5{star}",
-        "&7■ &f精炼：&6{refine}",
         "&7■ &f突破：&a{limit}",
         "&7■ &f强化：&b+{forge}",
         "&7■ 强化经验：&b{progress}"
@@ -206,7 +205,7 @@ object MainConfig : SimpleYAMLConfig() {
             lore.add(
                 it
                     .replace("{star}", getStarCount(forgeData.star))
-                    .replace("{refine}", forgeData.refine.toString())
+//                    .replace("{refine}", forgeData.refine.toString())
                     .replace("{limit}", forgeData.limit.toString())
                     .replace("{forge}", forgeData.star.toString())
                     .replace(

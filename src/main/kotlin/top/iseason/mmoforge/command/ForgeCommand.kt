@@ -12,7 +12,7 @@ import com.entiv.core.command.SimpleSubcommand
 import com.entiv.core.plugin.SimplePlugin
 import com.entiv.core.ui.openUI
 import org.bukkit.entity.Player
-import top.iseason.mmoforge.ui.ReFineUI
+import top.iseason.mmoforge.ui.ForgeUI
 
 class ForgeCommand(parent: CompositeCommand) : SimpleSubcommand(
     plugin = SimplePlugin.instance,
@@ -23,6 +23,6 @@ class ForgeCommand(parent: CompositeCommand) : SimpleSubcommand(
     description = "打开强化界面",
 ) {
     override fun onCommand() {
-        (sender as? Player)?.openUI<ReFineUI>()
+        (sender as? Player)?.openUI<ForgeUI>()
     }
 }

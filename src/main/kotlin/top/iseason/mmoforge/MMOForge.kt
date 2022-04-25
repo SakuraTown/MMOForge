@@ -10,7 +10,6 @@ package top.iseason.mmoforge
 
 import com.entiv.core.command.DefaultCommand
 import com.entiv.core.plugin.SimplePlugin
-import com.entiv.core.ui.UIListener
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
@@ -45,7 +44,6 @@ class MMOForge : SimplePlugin() {
         RefineCommand(defaultCommand).register()
         ForgeCommand(defaultCommand).register()
         defaultCommand.register()
-        registerListener(UIListener)
         registerListener(EventListener)
         MainConfig.init(instance)
         setStatsLoreFormat(statLoreFormats)
