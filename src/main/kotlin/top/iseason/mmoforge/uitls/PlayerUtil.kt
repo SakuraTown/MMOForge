@@ -7,11 +7,10 @@
 
 package top.iseason.mmoforge.uitls
 
-import com.entiv.core.hook.VaultEconomyHook
-import com.entiv.core.utils.sendErrorMessage
+import com.entiv.core.utils.bukkit.getNormalX
+import com.entiv.core.utils.bukkit.getNormalZ
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.type.ItemStat
-import net.milkbowl.vault.economy.EconomyResponse
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.block.Block
@@ -21,29 +20,11 @@ import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
 
-/**
- * 扣除玩家一定金额
- * @param money 金额
- * @return true 为成功 false 为失败
- */
-fun Player.takeMoney(money: Double): Boolean {
-    if (VaultEconomyHook.has(this, money) == true) {
-        val response = VaultEconomyHook.withdraw(this, money)
-        if (response?.type != EconomyResponse.ResponseType.SUCCESS) {
-            sendErrorMessage(this, "余额不足!")
-            return false
-        }
-    } else {
-        sendErrorMessage(this, "余额不足!")
-        return false
-    }
-    return true
-}
 
-fun Player.checkMainHand(stat: ItemStat): Double? = equipment.itemInMainHand.getMMOData<DoubleData>(stat)?.value
+fun Player.checkMainHandData(stat: ItemStat): Double? = equipment.itemInMainHand.getMMOData<DoubleData>(stat)?.value
 
 /**
- * 在方块处掉落该方块相应的掉落物(使用指定工具)
+ * 在方块处掉落该方块相应的掉落物(使用指定工具),不包括破坏方块
  */
 fun Player.dropBlock(block: Block, tool: ItemStack?) {
     val drops = block.getDrops(tool)

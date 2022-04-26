@@ -16,6 +16,7 @@ package top.iseason.mmoforge.config
 
 import com.entiv.core.common.toColor
 import com.entiv.core.config.*
+import com.entiv.core.utils.toRoman
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.stat.Enchants
 import net.Indyuce.mmoitems.stat.data.type.UpgradeInfo
@@ -131,7 +132,16 @@ object MainConfig : SimpleYAMLConfig() {
         return formula
     }
 
-    fun getValueByFormula(formula: String, star: Int, forge: Int, limit: Int, refine: Int): Double {
+    /**
+     * 根据公式填入数字并计算结果
+     */
+    fun getValueByFormula(
+        formula: String,
+        star: Number = 3,
+        forge: Number = 0.0,
+        limit: Number = 0,
+        refine: Number = 0
+    ): Double {
         val express = formula.replace("{star}", star.toString())
             .replace("{forge}", forge.toString())
             .replace("{limit}", limit.toString())
@@ -184,9 +194,9 @@ object MainConfig : SimpleYAMLConfig() {
     @Comment("{forge}:增加的强化经验 {limit}:增加的突破等级 {refine}:增加的精炼等级 ")
     @Key("gold-require-map")
     var goldForgeExpression: MemorySection = YamlConfiguration().apply {
-        set("3", "{forge}*10+{limit}*200+{refine}*500")
-        set("4", "({forge}*10+{limit}*200+{refine}*500)*1.5")
-        set("5", "({forge}*10+{limit}*200+{refine}*500)*2.475")
+        set("3", "{forge}*1+{limit}*200+{refine}*500")
+        set("4", "({forge}*1.1+{limit}*200+{refine}*500)*1.5")
+        set("5", "({forge}*1.2+{limit}*200+{refine}*500)*2.475")
     }
 
     @Comment("", "数据在物品lore的显示")
@@ -194,20 +204,23 @@ object MainConfig : SimpleYAMLConfig() {
     var itemLore: List<String> = listOf(
         "",
         "&7■ &f星级：&5{star}",
+        "&7■ &f精炼：&6{refine}",
         "&7■ &f突破：&a{limit}",
-        "&7■ &f强化：&b+{forge}",
+        "&7■ &f强化：&b{forge}",
         "&7■ 强化经验：&b{progress}"
     )
 
+    /**
+     * 由强化数据得lore
+     */
     fun getItemLore(forgeData: MMOForgeData): List<String> {
         val lore = mutableListOf<String>()
         itemLore.forEach {
             lore.add(
-                it
-                    .replace("{star}", getStarCount(forgeData.star))
-//                    .replace("{refine}", forgeData.refine.toString())
+                it.replace("{star}", getStarCount(forgeData.star))
+                    .replace("{refine}", forgeData.refine.toRoman())
                     .replace("{limit}", forgeData.limit.toString())
-                    .replace("{forge}", forgeData.star.toString())
+                    .replace("{forge}", forgeData.forge.toString())
                     .replace(
                         "{progress}",
                         getProcessBar(10, forgeData.currentExp, forgeData.getForgeUpdateExp())

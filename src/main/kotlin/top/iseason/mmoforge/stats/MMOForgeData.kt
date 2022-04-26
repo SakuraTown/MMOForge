@@ -30,7 +30,7 @@ data class MMOForgeData(
     val star: Int,
 
     //精炼等级
-    var refine: Int = 0,
+    var refine: Int = 1,
 
     // 限制等级
     var limit: Int = 0,
@@ -61,7 +61,10 @@ data class MMOForgeData(
 
     var limitType: LinkedHashMap<Int, List<String>> = MainConfig.limitType
 ) : StatData, Mergeable, RandomStatData {
-
+    /**
+     * 获取当前最大强化等级
+     */
+    fun getCurrentMaxForge() = (limit + 1) * MainConfig.LimitRate
 
     override fun merge(data: StatData?) {
         require(data is MMOForgeData) { "Cannot merge two different stat data types!" }
@@ -74,7 +77,8 @@ data class MMOForgeData(
         copy(
             refineGain = LinkedHashMap(refineGain),
             limitGain = LinkedHashMap(limitGain),
-            forgeGain = LinkedHashMap(forgeGain)
+            forgeGain = LinkedHashMap(forgeGain),
+            limitType = LinkedHashMap(limitType),
         )
 
     fun toJson(): JsonObject = JsonObject().apply {
@@ -105,6 +109,54 @@ data class MMOForgeData(
             add("limit-type", jsonObject)
         }
     }
+
+
+    /**
+     * 获取当前强化等级升级所需要的经验
+     */
+    fun getForgeUpdateExp() =
+        MainConfig.getValueByFormula(MainConfig.getForgeExpression(forge), star, forge, limit, refine)
+
+    /**
+     * 获取升级所需的经验
+     */
+    fun getRequireUpdateExp() = getForgeUpdateExp() - currentExp
+
+    /**
+     * 获取给与的经验可以升的强化等级、当前经验与剩余经验
+     * @return 增加的等级${first} 、剩余的经验${second} 溢出的经验${third}
+     */
+    fun getLevelByExtraExp(exp: Double): Triple<Int, Double, Double> {
+        var level = 0
+        var remainExp = exp
+        var current = currentExp
+        val max = getCurrentMaxForge()
+        while (true) {
+            val fl = forge + level
+            if (fl >= max) break
+            //升级需要的经验
+            val requireExp = MainConfig.getValueByFormula(
+                MainConfig.getForgeExpression(fl),
+                star,
+                fl,
+                limit,
+                refine
+            )
+            //剩余的经验加上本身拥有的 是否能够升级
+            if (remainExp + current < requireExp) {
+                current += remainExp
+                remainExp = 0.0
+                break
+            }
+            remainExp -= (requireExp - current)
+            current = 0.0
+            level++
+        }
+        return Triple(level, current, remainExp)
+    }
+
+    override fun isClear(): Boolean = refine == 0 && limit == 0 && forge == 0 && currentExp == 0.0
+    override fun randomize(p0: MMOItemBuilder?) = this
 
     companion object {
         fun fromString(string: String) = fromJson(JsonParser().parse(string).asJsonObject)
@@ -151,44 +203,6 @@ data class MMOForgeData(
             return attributeData
         }
     }
-
-    /**
-     * 获取当前强化等级升级所需要的经验
-     */
-    fun getForgeUpdateExp() =
-        MainConfig.getValueByFormula(MainConfig.getForgeExpression(forge), star, forge, limit, refine)
-
-    /**
-     * 获取升级所需的经验
-     */
-    fun getRequireUpdateExp() = getForgeUpdateExp() - currentExp
-
-    /**
-     * 获取给与的经验可以升的等级数及剩余的经验
-     * @return 可升的等级${first} 与 剩余的经验${second}
-     */
-    fun getLevelByExtraExp(exp: Double): Pair<Int, Double> {
-        var level = 0
-        var remainExp = exp
-        while (true) {
-            val fl = forge + level
-            if (fl >= maxForge) break
-            val currentExp = MainConfig.getValueByFormula(
-                MainConfig.getForgeExpression(fl),
-                star,
-                forge + level,
-                limit,
-                refine
-            )
-            if (remainExp < currentExp) break
-            remainExp -= currentExp
-            level++
-        }
-        return Pair(level, remainExp)
-    }
-
-    override fun isClear(): Boolean = refine == 0 && limit == 0 && forge == 0 && currentExp == 0.0
-    override fun randomize(p0: MMOItemBuilder?) = this
 
 }
 

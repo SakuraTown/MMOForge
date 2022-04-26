@@ -8,11 +8,13 @@
 package top.iseason.mmoforge.stats.tools
 
 import com.entiv.core.utils.RandomUtils
+import com.entiv.core.utils.bukkit.isOre
+
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockDropItemEvent
-import top.iseason.mmoforge.uitls.checkMainHand
-import top.iseason.mmoforge.uitls.isOre
+import top.iseason.mmoforge.uitls.checkMainHandData
+
 
 object FortuneOre : MMOAttribute(
     "ORE_FORTUNE",
@@ -27,11 +29,12 @@ object FortuneOre : MMOAttribute(
         if (event.isCancelled) return
         val type = event.blockState.type
         if (!type.isOre()) return
-        val level = event.player.checkMainHand(stat) ?: return
+        val level = event.player.checkMainHandData(stat) ?: return
         for (item in event.items) {
             val itemStack = item.itemStack
             if (type == itemStack.type) continue
             itemStack.amount *= RandomUtils.calculateFortune(level.toInt())
         }
+        event.player.facing
     }
 }

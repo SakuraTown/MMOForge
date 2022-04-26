@@ -13,7 +13,7 @@ import org.bukkit.Tag
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
-import top.iseason.mmoforge.uitls.checkMainHand
+import top.iseason.mmoforge.uitls.checkMainHandData
 import top.iseason.mmoforge.uitls.getVeinBlocks
 
 object VeinLog : MMOAttribute(
@@ -36,7 +36,7 @@ object VeinLog : MMOAttribute(
         if (veiningSet.contains(player)) return
         val type = event.block.type
         if (type !in veinSet) return
-        val level = player.checkMainHand(stat) ?: return
+        val level = player.checkMainHandData(stat) ?: return
         val veinBlocksIterator = getVeinBlocks(event.block, level.toInt()).iterator()
         veiningSet.add(player)
         //降低负担,每tick处理10个

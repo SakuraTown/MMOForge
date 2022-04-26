@@ -29,9 +29,9 @@ abstract class MMOAttribute(
     val mID: String,
     val mMaterial: Material,
     val mName: String,
-    val format: String,
-    val mLore: Array<out String>,
-    val mTypes: Array<out String>,
+    format: String,
+    val mLore: Array<String>,
+    val mTypes: Array<String>,
     defaultPath: String = "enchants/${mID.lowercase()}.yml"
 ) : SimpleYAMLConfig(defaultPath = defaultPath), Listener {
     var loreKey: String = mID.lowercase().replace('_', '-')

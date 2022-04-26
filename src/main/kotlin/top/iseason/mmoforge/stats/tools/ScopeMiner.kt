@@ -8,6 +8,9 @@
 package top.iseason.mmoforge.stats.tools
 
 import com.entiv.core.common.submit
+import com.entiv.core.utils.bukkit.isAxe
+import com.entiv.core.utils.bukkit.isPickaxe
+import com.entiv.core.utils.bukkit.isShovel
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
@@ -16,7 +19,8 @@ import org.bukkit.Tag
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
-import top.iseason.mmoforge.uitls.*
+import top.iseason.mmoforge.uitls.checkMainHandData
+import top.iseason.mmoforge.uitls.getScopeBlocksByVector
 
 
 object ScopeMiner : MMOAttribute(
@@ -41,7 +45,7 @@ object ScopeMiner : MMOAttribute(
             hdType.isShovel() -> Tag.MINEABLE_SHOVEL.values
             else -> return
         }
-        val level = player.checkMainHand(stat) ?: return
+        val level = player.checkMainHandData(stat) ?: return
         scopeSet += player
         val count = level.toInt() + 2
         val rangeX = count / 2

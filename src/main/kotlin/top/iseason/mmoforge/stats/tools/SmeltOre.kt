@@ -11,6 +11,7 @@ import com.entiv.core.config.Comment
 import com.entiv.core.config.ConfigState
 import com.entiv.core.config.Key
 import com.entiv.core.utils.RandomUtils
+import com.entiv.core.utils.bukkit.isPickaxe
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import org.bukkit.Material
 import org.bukkit.configuration.MemorySection
@@ -19,7 +20,6 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockDropItemEvent
 import top.iseason.mmoforge.uitls.getMMOData
-import top.iseason.mmoforge.uitls.isPickaxe
 
 object SmeltOre : MMOAttribute(
     "SMELT_ORE",

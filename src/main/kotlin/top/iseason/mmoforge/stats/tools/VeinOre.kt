@@ -8,13 +8,13 @@
 package top.iseason.mmoforge.stats.tools
 
 import com.entiv.core.common.submit
+import com.entiv.core.utils.bukkit.isOre
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
-import top.iseason.mmoforge.uitls.checkMainHand
+import top.iseason.mmoforge.uitls.checkMainHandData
 import top.iseason.mmoforge.uitls.getVeinBlocks
-import top.iseason.mmoforge.uitls.isOre
 
 object VeinOre : MMOAttribute(
     "VEIN_ORE",
@@ -31,7 +31,7 @@ object VeinOre : MMOAttribute(
         val player = event.player
         if (veiningSet.contains(player)) return
         if (!event.block.type.isOre()) return
-        val level = player.checkMainHand(stat) ?: return
+        val level = player.checkMainHandData(stat) ?: return
         val veinBlocksIterator = getVeinBlocks(event.block, level.toInt()).iterator()
         veiningSet.add(player)
         //降低负担,每tick处理10个

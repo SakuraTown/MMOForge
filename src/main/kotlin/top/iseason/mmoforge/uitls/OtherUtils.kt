@@ -18,3 +18,12 @@ fun getProcessBar(size: Int, current: Double, max: Double): String {
 fun getStarCount(star: Int): String {
     return "✪ ".repeat(star)
 }
+
+inline fun <T, reified U> List<T>.toType(): List<U> {
+    val list = mutableListOf<U>()
+    forEach {
+        if (it is U)
+            list.add(it)
+    }
+    return list
+}

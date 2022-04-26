@@ -21,22 +21,18 @@
 
 package top.iseason.mmoforge.stats
 
-import io.lumine.mythic.lib.MythicLib
 import io.lumine.mythic.lib.api.item.ItemTag
-import net.Indyuce.mmoitems.ItemStats
 import net.Indyuce.mmoitems.api.item.build.ItemStackBuilder
 import net.Indyuce.mmoitems.api.item.mmoitem.ReadMMOItem
 import net.Indyuce.mmoitems.gui.edition.EditionInventory
 import net.Indyuce.mmoitems.stat.data.random.RandomStatData
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.ItemStat
-import net.Indyuce.mmoitems.stat.type.NameData
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.event.inventory.InventoryClickEvent
 import top.iseason.mmoforge.config.MainConfig
-import top.iseason.mmoforge.uitls.toRoman
 import java.util.*
 
 // 物品星级
@@ -52,6 +48,15 @@ object ForgeStat : ItemStat(
         val star = config.getInt("star")
         require(star != 0) { "config \"star\" must be declared" }
         val attributeData = MMOForgeData(star)
+        if (config.contains("refine")) {
+            attributeData.refine = config.getInt("refine")
+        }
+        if (config.contains("limit")) {
+            attributeData.limit = config.getInt("limit")
+        }
+        if (config.contains("forge")) {
+            attributeData.forge = config.getInt("forge")
+        }
         if (config.contains("max-refine")) {
             attributeData.maxRefine = config.getInt("max-refine")
         }
@@ -83,11 +88,10 @@ object ForgeStat : ItemStat(
 
     override fun whenApplied(item: ItemStackBuilder, data: StatData) {
         val mmoItem = item.mmoItem
-//        println(history.externalData)
-        val nameData = mmoItem.getData(ItemStats.NAME) as NameData
         val mmoForgeData = data as MMOForgeData
-        nameData.addSuffix(mmoForgeData.refine.toRoman())
-        item.meta.setDisplayName(MythicLib.plugin.parseColors(nameData.bake()))
+//        val nameData = mmoItem.getData(ItemStats.NAME) as NameData
+//        nameData.addSuffix(mmoForgeData.refine.toRoman())
+//        item.meta.setDisplayName(MythicLib.plugin.parseColors(nameData.toString()))
         MainConfig.getItemLore(mmoForgeData).forEach {
             item.lore.end(it)
         }

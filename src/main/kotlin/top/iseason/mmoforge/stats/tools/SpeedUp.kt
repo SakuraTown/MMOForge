@@ -12,7 +12,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import top.iseason.mmoforge.uitls.checkMainHand
+import top.iseason.mmoforge.uitls.checkMainHandData
 
 object SpeedUp : MMOAttribute(
     "SPEED_UP",
@@ -26,7 +26,7 @@ object SpeedUp : MMOAttribute(
     fun onBlockBreakEvent(event: BlockBreakEvent) {
         if (event.isCancelled) return
         val player = event.player
-        val level = player.checkMainHand(stat)?.toInt()?.minus(1) ?: return
+        val level = player.checkMainHandData(stat)?.toInt()?.minus(1) ?: return
         if (level < 0) return
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, level))
     }

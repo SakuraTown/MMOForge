@@ -8,6 +8,7 @@
 package top.iseason.mmoforge.stats.tools
 
 import com.entiv.core.common.submit
+import com.entiv.core.utils.bukkit.isHoe
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
@@ -17,9 +18,8 @@ import org.bukkit.block.data.Ageable
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.block.BlockBreakEvent
-import top.iseason.mmoforge.uitls.checkMainHand
+import top.iseason.mmoforge.uitls.checkMainHandData
 import top.iseason.mmoforge.uitls.getFlatBlocksByMatrix
-import top.iseason.mmoforge.uitls.isHoe
 
 object Harvester : MMOAttribute(
     "HARVESTER",
@@ -38,7 +38,7 @@ object Harvester : MMOAttribute(
         val hdType = player.equipment.itemInMainHand.type
         //指定类型的工具只能挖指定类型的东西
         if (!hdType.isHoe()) return
-        val level = player.checkMainHand(stat) ?: return
+        val level = player.checkMainHandData(stat) ?: return
         scopeSet += player
         val count = level.toInt() + 2
         val rangeX = count / 2

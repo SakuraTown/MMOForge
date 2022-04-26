@@ -17,7 +17,6 @@ package top.iseason.mmoforge.command
 import com.entiv.core.command.CompositeCommand
 import com.entiv.core.command.SimpleSubcommand
 import com.entiv.core.plugin.SimplePlugin
-import com.entiv.core.ui.openUI
 import org.bukkit.entity.Player
 import top.iseason.mmoforge.ui.ReFineUI
 
@@ -31,7 +30,7 @@ class RefineCommand(parent: CompositeCommand) : SimpleSubcommand(
     description = "打开精炼界面",
 ) {
     override fun onCommand() {
-        (sender as? Player)?.openUI<ReFineUI>()
+        (sender as? Player)?.openInventory(ReFineUI().inventory)
     }
 }
 
