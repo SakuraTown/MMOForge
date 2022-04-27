@@ -7,6 +7,7 @@
 
 package top.iseason.mmoforge.uitls
 
+import com.entiv.core.common.toColor
 import com.entiv.core.utils.RandomUtils
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
@@ -19,6 +20,7 @@ import net.Indyuce.mmoitems.stat.type.StatHistory
 import net.Indyuce.mmoitems.stat.type.Upgradable
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.ItemMeta
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.config.MainConfig.getUpgradeInfoByString
 import top.iseason.mmoforge.stats.ForgeStat
@@ -104,7 +106,7 @@ fun LiveMMOItem.refine(data: MMOForgeData, times: Int) {
  * @param data 数据，主要提供突破的内容和星级
  * @param times 突破的次数
  */
-fun LiveMMOItem.breach(data: MMOForgeData, times: Int) {
+fun LiveMMOItem.breakthrough(data: MMOForgeData, times: Int) {
     val limit = data.limit
     for (i in limit + 1..limit + times) {
         addAttribute(MainConfig.LimitUUID, data.limitGain.getLevelMap(i), 1, data.limitGain != MainConfig.limitGain)
@@ -163,5 +165,9 @@ fun NBTItem.getForgeData(): MMOForgeData? {
     } catch (_: Exception) {
         null
     }
+}
+
+fun ItemMeta.setName(name: String) {
+    setDisplayName(name.toColor())
 }
 

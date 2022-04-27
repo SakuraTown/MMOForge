@@ -86,16 +86,15 @@ object ForgeStat : ItemStat(
         return attributeData
     }
 
-    override fun whenApplied(item: ItemStackBuilder, data: StatData) {
-        val mmoItem = item.mmoItem
-        val mmoForgeData = data as MMOForgeData
-//        val nameData = mmoItem.getData(ItemStats.NAME) as NameData
-//        nameData.addSuffix(mmoForgeData.refine.toRoman())
-//        item.meta.setDisplayName(MythicLib.plugin.parseColors(nameData.toString()))
+    override fun whenApplied(item: ItemStackBuilder, statData: StatData) {
+//        val mmoItem = item.mmoItem
+        val mmoForgeData = statData as MMOForgeData
+        //设置精炼后缀 存在奇怪的bug 有时候重置并没有
+
         MainConfig.getItemLore(mmoForgeData).forEach {
             item.lore.end(it)
         }
-        item.addItemTag(getAppliedNBT(data))
+        item.addItemTag(getAppliedNBT(statData))
     }
 
     override fun getAppliedNBT(data: StatData): ArrayList<ItemTag> {

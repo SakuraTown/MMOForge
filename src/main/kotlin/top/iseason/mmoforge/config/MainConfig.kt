@@ -167,11 +167,11 @@ object MainConfig : SimpleYAMLConfig() {
     @Comment("", "突破材料，如果某个等级没有声明将不能进行突破")
     @Key("limit-type-map")
     var LimitTypeSection: MemorySection = YamlConfiguration().apply {
-        set("1", arrayListOf("STEEL_INGOT"))
-        set("2", arrayListOf("STEEL_INGOT"))
-        set("3", arrayListOf("STEEL_INGOT"))
-        set("4", arrayListOf("STEEL_INGOT"))
-        set("5", arrayListOf("STEEL_INGOT", "UNCOMMON_WEAPON_ESSENCE"))
+        set("1", arrayListOf("material:STEEL_INGOT"))
+        set("2", arrayListOf("material:STEEL_INGOT"))
+        set("3", arrayListOf("material:STEEL_INGOT"))
+        set("4", arrayListOf("material:STEEL_INGOT"))
+        set("5", arrayListOf("material:STEEL_INGOT", "material:UNCOMMON_WEAPON_ESSENCE"))
     }
 
     var limitType: LinkedHashMap<Int, List<String>> = LinkedHashMap()
@@ -204,7 +204,7 @@ object MainConfig : SimpleYAMLConfig() {
     var itemLore: List<String> = listOf(
         "",
         "&7■ &f星级：&5{star}",
-        "&7■ &f精炼：&6{refine}",
+//        "&7■ &f精炼：&6{refine}",
         "&7■ &f突破：&a{limit}",
         "&7■ &f强化：&b{forge}",
         "&7■ 强化经验：&b{progress}"

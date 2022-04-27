@@ -25,6 +25,7 @@ import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.stats.MMOForgeData
 import top.iseason.mmoforge.uitls.getForgeData
 import top.iseason.mmoforge.uitls.refine
+import top.iseason.mmoforge.uitls.setName
 
 
 class ReFineUI : ChestUI("物品精炼") {
@@ -35,11 +36,11 @@ class ReFineUI : ChestUI("物品精炼") {
 
 
     init {//设置占位符
-        setBackGround(Icon(ItemStack(Material.GRAY_STAINED_GLASS_PANE).applyMeta { setDisplayName(" ") }, 0))
+        setBackGround(Icon(ItemStack(Material.GRAY_STAINED_GLASS_PANE).applyMeta { setName(" ") }, 0))
     }
 
     private val refineButton =
-        Button(ItemStack(Material.ANVIL).applyMeta { setDisplayName("${ChatColor.RED}无法精炼") }, index = 23).onClicked {
+        Button(ItemStack(Material.ANVIL).applyMeta { setName("${ChatColor.RED}无法精炼") }, index = 23).onClicked {
             if (gold == 0.0) return@onClicked
             if (!(it.whoClicked as Player).takeMoney(gold)) return@onClicked
             toolMMOForgeData = null
@@ -53,7 +54,7 @@ class ReFineUI : ChestUI("物品精炼") {
         }.setUI(this)
     private val toolSlot = IOSlot(19,
         ItemStack(Material.RED_STAINED_GLASS_PANE).applyMeta {
-            setDisplayName("${ChatColor.RED} 请放入待精炼的物品")
+            setName("${ChatColor.RED} 请放入待精炼的物品")
         }).inputFilter {
         val nbtItem = NBTItem.get(it) ?: return@inputFilter false
         toolMMOForgeData = nbtItem.getForgeData() ?: return@inputFilter false
@@ -68,7 +69,7 @@ class ReFineUI : ChestUI("物品精炼") {
 
     private val materialSlot = IOSlot(21,
         ItemStack(Material.RED_STAINED_GLASS_PANE).applyMeta {
-            setDisplayName("${ChatColor.RED} 请放入相同的物品，将会被消耗")
+            setName("${ChatColor.RED} 请放入相同的物品，将会被消耗")
         }).inputFilter {
         if (toolType == null) return@inputFilter false
         val nbtItem = NBTItem.get(it) ?: return@inputFilter false
@@ -100,7 +101,7 @@ class ReFineUI : ChestUI("物品精炼") {
             }
             return
         }
-        submit(async = true) {
+        submit {
             val toolNBT = NBTItem.get(toolM)
             if (!toolNBT.hasType()) {
                 resultSlot.reset()
@@ -123,7 +124,7 @@ class ReFineUI : ChestUI("物品精炼") {
                 addEnchant(Enchantment.BINDING_CURSE, 1, true)
                 addItemFlags(ItemFlag.HIDE_ENCHANTS)
             }
-            resultSlot.itemStack = mmoItem.newBuilder().buildNBT().toItem()
+            resultSlot.itemStack = mmoItem.newBuilder().build()
             resultSlot.outputAble(false)
         }
     }

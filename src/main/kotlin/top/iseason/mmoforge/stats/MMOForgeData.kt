@@ -199,6 +199,7 @@ data class MMOForgeData(
                     }
                     linkedHashMap[it.toInt()] = arrayListOf
                 }
+                attributeData.limitType = linkedHashMap
             }
             return attributeData
         }

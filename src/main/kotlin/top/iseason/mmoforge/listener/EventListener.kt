@@ -15,22 +15,39 @@
 
 package top.iseason.mmoforge.listener
 
+import com.entiv.core.utils.bukkit.applyMeta
+import com.entiv.core.utils.toRoman
+import io.lumine.mythic.lib.api.item.NBTItem
+import net.Indyuce.mmoitems.api.event.ItemBuildEvent
 import org.bukkit.Color
 import org.bukkit.Location
 import org.bukkit.Particle
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.scheduler.BukkitRunnable
+import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.uitls.getRelativeCoordinate
 import top.iseason.mmoforge.uitls.getTransformMatrix
+import top.iseason.mmoforge.uitls.setName
 import top.iseason.mmoforge.uitls.transform
 
 object EventListener : Listener {
 
     @EventHandler
-    fun test(event: PlayerJoinEvent) {
+    fun onItemBuildEvent(event: ItemBuildEvent) {
+        val itemStack = event.itemStack ?: return
+        val item = NBTItem.get(itemStack) ?: return
+        val string = item.getString(ForgeStat.nbtPath)
+        val result = Regex("\"refine\":(.?),").find(string) ?: return
+        val refine = result.groupValues[1].toInt()
+        itemStack.applyMeta {
+            setName("$displayName ${refine.toRoman()}")
+        }
+    }
+
+    @EventHandler
+    fun test(event: ItemBuildEvent) {
 //        ScopeTester(event.player, 5, 5, 1).runTaskTimer(MMOForge.instance, 0L, 5L)
     }
 

@@ -24,10 +24,7 @@ import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.stats.MMOForgeData
 import top.iseason.mmoforge.stats.material.ForgeExp
-import top.iseason.mmoforge.uitls.forge
-import top.iseason.mmoforge.uitls.getForgeData
-import top.iseason.mmoforge.uitls.getMMODouble
-import top.iseason.mmoforge.uitls.toType
+import top.iseason.mmoforge.uitls.*
 
 
 class ForgeUI : ChestUI("物品强化", 6) {
@@ -38,7 +35,9 @@ class ForgeUI : ChestUI("物品强化", 6) {
     private var costExp = 0.0
 
     //强化材料槽
-    private val materials = IOSlot(29).inputFilter {
+    private val materials = IOSlot(29, ItemStack(Material.YELLOW_STAINED_GLASS_PANE).applyMeta {
+        setName("&6 请放入强化材料")
+    }).inputFilter {
         val nbtItem = NBTItem.get(it) ?: return@inputFilter false
         if (!nbtItem.hasType()) return@inputFilter false
         val double = nbtItem.getDouble(ForgeExp.stat.nbtPath)
@@ -48,8 +47,8 @@ class ForgeUI : ChestUI("物品强化", 6) {
 
     init {
         //设置背景
-        setBackGround(Icon(ItemStack(Material.GRAY_STAINED_GLASS_PANE).apply {
-            itemMeta = itemMeta.apply { setDisplayName(" ") }
+        setBackGround(Icon(ItemStack(Material.GRAY_STAINED_GLASS_PANE).applyMeta {
+            setName(" ")
         }, 1))
     }
 
@@ -57,7 +56,7 @@ class ForgeUI : ChestUI("物品强化", 6) {
 
     //输入槽
     private val inputSlot = IOSlot(13, ItemStack(Material.RED_STAINED_GLASS_PANE).applyMeta {
-        setDisplayName("${ChatColor.RED} 请放入待强化的物品")
+        setName("${ChatColor.RED} 请放入待强化的物品")
     }).inputFilter {
         val nbtItem = NBTItem.get(it) ?: return@inputFilter false
         inputData = nbtItem.getForgeData() ?: return@inputFilter false
@@ -72,7 +71,7 @@ class ForgeUI : ChestUI("物品强化", 6) {
     private val resultSlot = IOSlot(49).lockable(true).setUI(this)
 
     private val forgeButton =
-        Button(ItemStack(Material.ANVIL).applyMeta { setDisplayName("${ChatColor.RED}无法强化") }, index = 40)
+        Button(ItemStack(Material.ANVIL).applyMeta { setName("${ChatColor.RED}无法强化") }, index = 40)
             .onClicked {
                 if (!canForge) return@onClicked
                 if (!(it.whoClicked as Player).takeMoney(gold)) {
@@ -137,7 +136,8 @@ class ForgeUI : ChestUI("物品强化", 6) {
         }
         liveMMOItem.setData(ForgeStat, forgeData)
         gold = MainConfig.getValueByFormula(expression, forgeData.star, forge = costExp)
-        resultSlot.itemStack = liveMMOItem.newBuilder().buildNBT().toItem()
+        submit { resultSlot.itemStack = liveMMOItem.newBuilder().build() }
+
         forgeButton.displayName = "${ChatColor.GREEN}点击精炼武器: ${ChatColor.GOLD}$gold ￥"
         forgeButton.itemStack!!.applyMeta {
             addEnchant(Enchantment.BINDING_CURSE, 1, true)

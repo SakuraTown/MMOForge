@@ -13,6 +13,7 @@ import com.entiv.core.plugin.SimplePlugin
 import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
+import top.iseason.mmoforge.command.BreakThroughCommand
 import top.iseason.mmoforge.command.ForgeCommand
 import top.iseason.mmoforge.command.RefineCommand
 import top.iseason.mmoforge.config.MainConfig
@@ -43,6 +44,7 @@ class MMOForge : SimplePlugin() {
         defaultCommand.aliases = listOf("mf")
         RefineCommand(defaultCommand).register()
         ForgeCommand(defaultCommand).register()
+        BreakThroughCommand(defaultCommand).register()
         defaultCommand.register()
         registerListener(EventListener)
         MainConfig.init(instance)
