@@ -128,6 +128,7 @@ class ForgeUI : ChestUI("物品强化", 6) {
         }
         costExp = totalExp - overflow
         val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
+        gold = MainConfig.getValueByFormula(expression, forgeData.star, forge = costExp)
         val liveMMOItem = LiveMMOItem(inputItem)
         liveMMOItem.forge(forgeData, level)
         forgeData.apply {
@@ -135,10 +136,13 @@ class ForgeUI : ChestUI("物品强化", 6) {
             currentExp = remain
         }
         liveMMOItem.setData(ForgeStat, forgeData)
-        gold = MainConfig.getValueByFormula(expression, forgeData.star, forge = costExp)
-        submit { resultSlot.itemStack = liveMMOItem.newBuilder().build() }
 
-        forgeButton.displayName = "${ChatColor.GREEN}点击精炼武器: ${ChatColor.GOLD}$gold ￥"
+        submit {
+            resultSlot.outputAble(false)
+            resultSlot.itemStack = liveMMOItem.newBuilder().build()
+        }
+
+        forgeButton.displayName = "${ChatColor.GREEN}点击强化物品: ${ChatColor.GOLD}$gold ￥"
         forgeButton.itemStack!!.applyMeta {
             addEnchant(Enchantment.BINDING_CURSE, 1, true)
             addItemFlags(ItemFlag.HIDE_ENCHANTS)

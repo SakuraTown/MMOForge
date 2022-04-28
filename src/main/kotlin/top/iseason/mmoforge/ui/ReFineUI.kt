@@ -101,31 +101,32 @@ class ReFineUI : ChestUI("物品精炼") {
             }
             return
         }
+
+        val toolNBT = NBTItem.get(toolM)
+        if (!toolNBT.hasType()) {
+            resultSlot.reset()
+            refineButton.reset()
+            gold = 0.0
+            return
+        }
+        val mmoItem = LiveMMOItem(toolNBT)
+        val forgeData = NBTItem.get(toolSlot.itemStack).getForgeData() ?: return
+        var add = materialMMOForgeData!!.refine + 1
+        add = if (forgeData.refine + add > forgeData.maxRefine) forgeData.maxRefine - forgeData.refine else add
+        if (add == 0) return
+        mmoItem.refine(forgeData, add)
+        forgeData.refine += add
+        mmoItem.setData(ForgeStat, forgeData)
+        val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
+        gold = MainConfig.getValueByFormula(expression, forgeData.star, refine = add)
+        refineButton.displayName = "${ChatColor.GREEN}点击精炼物品: ${ChatColor.GOLD}$gold ￥"
+        refineButton.itemStack!!.applyMeta {
+            addEnchant(Enchantment.BINDING_CURSE, 1, true)
+            addItemFlags(ItemFlag.HIDE_ENCHANTS)
+        }
         submit {
-            val toolNBT = NBTItem.get(toolM)
-            if (!toolNBT.hasType()) {
-                resultSlot.reset()
-                refineButton.reset()
-                gold = 0.0
-                return@submit
-            }
-            val mmoItem = LiveMMOItem(toolNBT)
-            val forgeData = NBTItem.get(toolSlot.itemStack).getForgeData() ?: return@submit
-            var add = materialMMOForgeData!!.refine + 1
-            add = if (forgeData.refine + add > forgeData.maxRefine) forgeData.maxRefine - forgeData.refine else add
-            if (add == 0) return@submit
-            mmoItem.refine(forgeData, add)
-            forgeData.refine += add
-            mmoItem.setData(ForgeStat, forgeData)
-            val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return@submit
-            gold = MainConfig.getValueByFormula(expression, forgeData.star, refine = add)
-            refineButton.displayName = "${ChatColor.GREEN}点击精炼武器: ${ChatColor.GOLD}$gold ￥"
-            refineButton.itemStack!!.applyMeta {
-                addEnchant(Enchantment.BINDING_CURSE, 1, true)
-                addItemFlags(ItemFlag.HIDE_ENCHANTS)
-            }
-            resultSlot.itemStack = mmoItem.newBuilder().build()
             resultSlot.outputAble(false)
+            resultSlot.itemStack = mmoItem.newBuilder().build()
         }
     }
 
