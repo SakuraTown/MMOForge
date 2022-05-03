@@ -21,8 +21,8 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
-import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.stats.MMOForgeData
+import top.iseason.mmoforge.stats.MMOForgeStat
 import top.iseason.mmoforge.stats.material.ForgeExp
 import top.iseason.mmoforge.uitls.*
 
@@ -135,7 +135,7 @@ class ForgeUI : ChestUI("物品强化", 6) {
             forge += level
             currentExp = remain
         }
-        liveMMOItem.setData(ForgeStat, forgeData)
+        liveMMOItem.setData(MMOForgeStat, forgeData)
 
         submit {
             resultSlot.outputAble(false)

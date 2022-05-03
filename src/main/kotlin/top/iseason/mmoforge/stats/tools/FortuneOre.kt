@@ -9,11 +9,10 @@ package top.iseason.mmoforge.stats.tools
 
 import com.entiv.core.utils.RandomUtils
 import com.entiv.core.utils.bukkit.isOre
-
+import net.Indyuce.mmoitems.stat.data.DoubleData
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
-import org.bukkit.event.block.BlockDropItemEvent
-import top.iseason.mmoforge.uitls.checkMainHandData
+import top.iseason.mmoforge.event.MMOBlockDropItemEvent
 
 
 object FortuneOre : MMOAttribute(
@@ -24,12 +23,11 @@ object FortuneOre : MMOAttribute(
     arrayOf("挖掘矿物时有概率凋落物增加"),
     arrayOf("tool")
 ) {
-    @EventHandler
-    fun onBlockDropItemEvent(event: BlockDropItemEvent) {
-        if (event.isCancelled) return
+    @EventHandler(ignoreCancelled = true)
+    fun onMMOBlockDropItemEvent(event: MMOBlockDropItemEvent) {
         val type = event.blockState.type
         if (!type.isOre()) return
-        val level = event.player.checkMainHandData(stat) ?: return
+        val level = event.getMMOData<DoubleData>(stat)?.value ?: return
         for (item in event.items) {
             val itemStack = item.itemStack
             if (type == itemStack.type) continue

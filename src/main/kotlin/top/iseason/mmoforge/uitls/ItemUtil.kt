@@ -23,8 +23,8 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
 import top.iseason.mmoforge.config.MainConfig
 import top.iseason.mmoforge.config.MainConfig.getUpgradeInfoByString
-import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.stats.MMOForgeData
+import top.iseason.mmoforge.stats.MMOForgeStat
 import java.util.*
 import java.util.regex.Pattern
 
@@ -57,10 +57,10 @@ fun Map<Int, Map<ItemStat, String>>.getLevelMap(level: Int): Map<ItemStat, Strin
 fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, times: Int, isAppend: Boolean = false) {
     attributes.forEach { (itemStat, upgradeInfo) ->
         //是否追加
-        if (!isAppend && !this.hasData(itemStat)) return
+        if (!isAppend && !this.hasData(itemStat)) return@forEach
         val statHistory = StatHistory.from(this, itemStat)
         val originalData = statHistory.originalData
-        val forgeData = statHistory.getModifiersBonus(MainConfig.ForgeUUID) ?: itemStat.clearStatData
+        val forgeData = statHistory.getModifiersBonus(uuid) ?: itemStat.clearStatData
         val info = (itemStat as Upgradable).getUpgradeInfoByString(upgradeInfo)
         if (originalData is EnchantListData) {
             val enchantListData = originalData.cloneData() as EnchantListData
@@ -107,11 +107,12 @@ fun LiveMMOItem.refine(data: MMOForgeData, times: Int) {
  * @param times 突破的次数
  */
 fun LiveMMOItem.breakthrough(data: MMOForgeData, times: Int) {
-    val limit = data.limit
-    for (i in limit + 1..limit + times) {
-        addAttribute(MainConfig.LimitUUID, data.limitGain.getLevelMap(i), 1, data.limitGain != MainConfig.limitGain)
-    }
-
+    addAttribute(
+        MainConfig.LimitUUID,
+        data.limitGain.getLevelMap(data.star),
+        times,
+        data.limitGain != MainConfig.limitGain
+    )
 }
 
 
@@ -121,10 +122,12 @@ fun LiveMMOItem.breakthrough(data: MMOForgeData, times: Int) {
  * @param times 强化的次数
  */
 fun LiveMMOItem.forge(data: MMOForgeData, times: Int) {
-    val forge = data.forge
-    for (i in forge + 1..forge + times) {
-        addAttribute(MainConfig.ForgeUUID, data.forgeGain.getLevelMap(i), 1, data.forgeGain != MainConfig.forgeGain)
-    }
+    addAttribute(
+        MainConfig.ForgeUUID,
+        data.forgeGain.getLevelMap(data.star),
+        times,
+        data.forgeGain != MainConfig.forgeGain
+    )
 }
 
 /**
@@ -158,8 +161,8 @@ inline fun <reified T : StatData> ItemStack.getMMOData(stat: ItemStat): T? {
  */
 fun NBTItem.getForgeData(): MMOForgeData? {
     if (!hasType()) return null
-    if (!hasTag(ForgeStat.nbtPath)) return null
-    val string = getString(ForgeStat.nbtPath)!!
+    if (!hasTag(MMOForgeStat.nbtPath)) return null
+    val string = getString(MMOForgeStat.nbtPath)!!
     return try {
         MMOForgeData.fromString(string)
     } catch (_: Exception) {

@@ -17,8 +17,7 @@ import org.bukkit.Tag
 import org.bukkit.block.data.Ageable
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import org.bukkit.event.block.BlockBreakEvent
-import top.iseason.mmoforge.uitls.checkMainHandData
+import top.iseason.mmoforge.event.MMOBlockBreakEvent
 import top.iseason.mmoforge.uitls.getFlatBlocksByMatrix
 
 object Harvester : MMOAttribute(
@@ -31,14 +30,14 @@ object Harvester : MMOAttribute(
 ) {
     private val scopeSet = mutableSetOf<Player>()
 
-    @EventHandler
-    fun onBlockBreakEvent(event: BlockBreakEvent) {
+    @EventHandler(ignoreCancelled = true)
+    fun onMMOBlockBreakEvent(event: MMOBlockBreakEvent) {
         val player = event.player
         if (player in scopeSet) return
-        val hdType = player.equipment.itemInMainHand.type
+        val hdType = event.handItem.type
         //指定类型的工具只能挖指定类型的东西
         if (!hdType.isHoe()) return
-        val level = player.checkMainHandData(stat) ?: return
+        val level = event.getMMOData<DoubleData>(stat)?.value ?: return
         scopeSet += player
         val count = level.toInt() + 2
         val rangeX = count / 2

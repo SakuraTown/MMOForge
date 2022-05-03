@@ -18,8 +18,7 @@ import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
-import org.bukkit.event.block.BlockDropItemEvent
-import top.iseason.mmoforge.uitls.getMMOData
+import top.iseason.mmoforge.event.MMOBlockDropItemEvent
 
 
 object SmeltShovel : MMOAttribute(
@@ -30,13 +29,11 @@ object SmeltShovel : MMOAttribute(
     arrayOf("挖掘时有概率熔炼物品"),
     arrayOf("tool")
 ) {
-    @EventHandler(priority = EventPriority.HIGH)
-    fun onBlockDropItemEvent(event: BlockDropItemEvent) {
-        val player = event.player
-        val itemInMainHand = player.equipment.itemInMainHand
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun onMMOBlockDropItemEvent(event: MMOBlockDropItemEvent) {
         //铲子专属
-        if (!itemInMainHand.type.isShovel()) return
-        val percentage = itemInMainHand.getMMOData<DoubleData>(stat)?.value ?: return
+        if (!event.handItem.type.isShovel()) return
+        val percentage = event.getMMOData<DoubleData>(stat)?.value ?: return
         if (RandomUtils.checkPercentage(percentage)) return
         val type = event.blockState.type
         val ingot = smeltDrops[type] ?: return

@@ -12,8 +12,8 @@ import net.Indyuce.mmoitems.stat.type.BooleanStat
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
-import org.bukkit.event.block.BlockBreakEvent
-import top.iseason.mmoforge.uitls.getMMOData
+import top.iseason.mmoforge.event.MMOBlockBreakEvent
+
 
 object AutoTorch : MMOAttribute(
     "AUTO_TORCH",
@@ -23,11 +23,10 @@ object AutoTorch : MMOAttribute(
     arrayOf("自动插火把"),
     arrayOf("tool")
 ) {
-    @EventHandler
-    fun onBlockBreakEvent(event: BlockBreakEvent) {
-        if (event.isCancelled) return
+    @EventHandler(ignoreCancelled = true)
+    fun onMMOBlockBreakEvent(event: MMOBlockBreakEvent) {
         val player = event.player
-        if (player.equipment.itemInMainHand.getMMOData<BooleanData>(stat)?.isEnabled != true) return
+        if (event.getMMOData<BooleanData>(stat)?.isEnabled != true) return
         val location = player.location
         val floor = location.clone().apply { y -= 1.0 }
         val floorType = floor.block.type
