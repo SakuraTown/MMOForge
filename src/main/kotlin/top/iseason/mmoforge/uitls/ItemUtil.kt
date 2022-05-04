@@ -60,11 +60,9 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, time
         if (!isAppend && !this.hasData(itemStat)) return@forEach
         val statHistory = StatHistory.from(this, itemStat)
         val originalData = statHistory.originalData
-        val forgeData = statHistory.getModifiersBonus(uuid) ?: itemStat.clearStatData
         val info = (itemStat as Upgradable).getUpgradeInfoByString(upgradeInfo)
         if (originalData is EnchantListData) {
             val enchantListData = originalData.cloneData() as EnchantListData
-            enchantListData.merge(forgeData)
             val enchants: Set<Enchantment> = enchantListData.enchants
             val apply = (itemStat as Upgradable).apply(enchantListData.cloneData(), info, times) as EnchantListData
             if (!isAppend) {
@@ -81,7 +79,13 @@ fun LiveMMOItem.addAttribute(uuid: UUID, attributes: Map<ItemStat, String>, time
             return
         }
         val rawData = (originalData as DoubleData).cloneData() as DoubleData
+        val forgeData = statHistory.getModifiersBonus(MainConfig.ForgeUUID) ?: itemStat.clearStatData
         rawData.merge(forgeData)
+        if (uuid != MainConfig.ForgeUUID) {
+            val sd = statHistory.getModifiersBonus(uuid)
+            if (sd != null)
+                rawData.merge(sd)
+        }
         val raw = (itemStat as DoubleStat).apply(rawData, info, times) as DoubleData
         raw.value -= originalData.value
         statHistory.registerModifierBonus(uuid, raw)

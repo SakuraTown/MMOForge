@@ -93,13 +93,13 @@ data class MMOForgeData(
             addProperty("maxLimit", maxLimit)
         if (maxForge != MainConfig.MAX_LIMIT * MainConfig.LimitRate)
             addProperty("maxForge", maxForge)
-        if (refineGain != MainConfig.refineGain)
+        if (refineGain != MainConfig.refineGain && refineGain.isNotEmpty())
             add("gain-refine", refineGain.toJson())
-        if (limitGain != MainConfig.limitGain)
+        if (limitGain != MainConfig.limitGain && limitGain.isNotEmpty())
             add("gain-limit", limitGain.toJson())
-        if (forgeGain != MainConfig.forgeGain)
+        if (forgeGain != MainConfig.forgeGain && forgeGain.isNotEmpty())
             add("gain-forge", forgeGain.toJson())
-        if (limitType != MainConfig.limitType) {
+        if (limitType != MainConfig.limitType && limitType.isNotEmpty()) {
             val jsonObject = JsonObject()
             limitType.forEach { (level, list) ->
                 val temp = JsonArray()
@@ -180,26 +180,29 @@ data class MMOForgeData(
                 attributeData.maxForge = json.get("max-forge").asInt
             }
             if (json.has("gain-refine")) {
-                attributeData.refineGain = json.getAsJsonObject("gain-refine").toForgeMap()
+                attributeData.refineGain = json.getAsJsonObject("gain-refine").toForgeMap() ?: MainConfig.refineGain
             }
             if (json.has("gain-limit")) {
-                attributeData.limitGain = json.getAsJsonObject("gain-limit").toForgeMap()
+                attributeData.limitGain = json.getAsJsonObject("gain-limit").toForgeMap() ?: MainConfig.limitGain
             }
             if (json.has("gain-forge")) {
-                attributeData.forgeGain = json.getAsJsonObject("gain-forge").toForgeMap()
+                attributeData.forgeGain = json.getAsJsonObject("gain-forge").toForgeMap() ?: MainConfig.forgeGain
             }
             if (json.has("limit-type")) {
-                val linkedHashMap = LinkedHashMap<Int, List<String>>()
                 val jsonObject = json.get("limit-type").asJsonObject
-                jsonObject.keySet().forEach {
-                    val arrayListOf = arrayListOf<String>()
-                    val jsonArray = jsonObject.getAsJsonArray(it)
-                    jsonArray.forEach { s ->
-                        arrayListOf.add(s.asString)
+                val keySet = jsonObject.keySet()
+                if (keySet.isNotEmpty()) {
+                    val linkedHashMap = LinkedHashMap<Int, List<String>>()
+                    jsonObject.keySet().forEach {
+                        val arrayListOf = arrayListOf<String>()
+                        val jsonArray = jsonObject.getAsJsonArray(it)
+                        jsonArray.forEach { s ->
+                            arrayListOf.add(s.asString)
+                        }
+                        linkedHashMap[it.toInt()] = arrayListOf
                     }
-                    linkedHashMap[it.toInt()] = arrayListOf
+                    attributeData.limitType = linkedHashMap
                 }
-                attributeData.limitType = linkedHashMap
             }
             return attributeData
         }
@@ -225,9 +228,11 @@ fun ForgeParserMap.toJson(): JsonObject {
 /**
  * JsonObject转强化公式表
  */
-fun JsonObject.toForgeMap(): ForgeParserMap {
+fun JsonObject.toForgeMap(): ForgeParserMap? {
     val map = LinkedHashMap<Int, LinkedHashMap<ItemStat, String>>()
-    this.entrySet().forEach {
+    val entrySet = this.entrySet()
+    if (entrySet.isEmpty()) return null
+    entrySet.forEach {
         val linkedHashMap = LinkedHashMap<ItemStat, String>()
         it.value.asJsonObject.entrySet().forEach { d ->
             val stat = MMOItems.plugin.stats.get(d.key)
