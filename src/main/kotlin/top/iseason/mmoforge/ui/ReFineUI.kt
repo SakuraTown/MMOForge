@@ -11,6 +11,7 @@ import com.entiv.core.common.submit
 import com.entiv.core.ui.*
 import com.entiv.core.utils.bukkit.applyMeta
 import com.entiv.core.utils.bukkit.takeMoney
+import com.entiv.core.utils.toRoman
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
 import org.bukkit.ChatColor
@@ -127,7 +128,7 @@ class ReFineUI : ChestUI("物品精炼") {
             resultSlot.outputAble(false)
             val buildSilently = mmoItem.newBuilder().buildSilently()
             buildSilently.applyMeta {
-                setName("$displayName ${forgeData.refine}")
+                setName("$displayName ${forgeData.refine.toRoman()}")
             }
             resultSlot.itemStack = buildSilently
         }
