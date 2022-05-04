@@ -19,6 +19,7 @@ import com.entiv.core.utils.bukkit.applyMeta
 import com.entiv.core.utils.toRoman
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.api.event.ItemBuildEvent
+import net.Indyuce.mmoitems.api.event.item.ApplyGemStoneEvent
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
 import org.bukkit.Bukkit
 import org.bukkit.event.Event
@@ -97,6 +98,12 @@ object MMOListener : Listener {
         itemStack.applyMeta {
             setName("$displayName ${refine.toRoman()}")
         }
+    }
+
+    @EventHandler
+    fun onApplyGemStoneEvent(event: ApplyGemStoneEvent) {
+        val targetItem = event.targetItem
+        println(targetItem.hasData(MMOForgeStat))
     }
 
 //    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)

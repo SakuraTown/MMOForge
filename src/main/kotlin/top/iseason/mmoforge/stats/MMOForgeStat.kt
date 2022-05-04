@@ -33,6 +33,7 @@ import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.event.inventory.InventoryClickEvent
 import top.iseason.mmoforge.config.MainConfig
+import top.iseason.mmoforge.uitls.getForgeData
 import java.util.*
 
 // 物品星级
@@ -89,8 +90,6 @@ object MMOForgeStat : ItemStat(
     override fun whenApplied(item: ItemStackBuilder, statData: StatData) {
 //        val mmoItem = item.mmoItem
         val mmoForgeData = statData as MMOForgeData
-        //设置精炼后缀 存在奇怪的bug 有时候重置并没有
-
         MainConfig.getItemLore(mmoForgeData).forEach {
             item.lore.end(it)
         }
@@ -118,7 +117,8 @@ object MMOForgeStat : ItemStat(
     }
 
     override fun whenLoaded(mmoitem: ReadMMOItem) {
-        //不需要实时读取
+        val forgeData = mmoitem.nbt.getForgeData() ?: return
+        mmoitem.setData(MMOForgeStat, forgeData)
     }
 
     override fun whenDisplayed(lore: MutableList<String>, data: Optional<RandomStatData>) {

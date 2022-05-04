@@ -49,7 +49,6 @@ class MMOForge : SimplePlugin() {
         BreakThroughCommand(defaultCommand).register()
         defaultCommand.register()
         MainConfig.init(instance)
-
         setStatsLoreFormat(statLoreFormats)
         setStatsLore(statLoreFormats)
         registerStats(statLoreFormats)

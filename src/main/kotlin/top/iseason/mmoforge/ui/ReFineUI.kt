@@ -111,7 +111,7 @@ class ReFineUI : ChestUI("物品精炼") {
                 return@submit
             }
             val mmoItem = LiveMMOItem(toolNBT)
-            val forgeData = NBTItem.get(toolSlot.itemStack).getForgeData() ?: return@submit
+            val forgeData = mmoItem.getData(MMOForgeStat) as? MMOForgeData ?: return@submit
             var add = materialMMOForgeData!!.refine + 1
             add = if (forgeData.refine + add > forgeData.maxRefine) forgeData.maxRefine - forgeData.refine else add
             if (add == 0) return@submit
