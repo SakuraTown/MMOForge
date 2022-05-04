@@ -13,9 +13,8 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.event.EventHandler
-import org.bukkit.event.block.BlockBreakEvent
+import top.iseason.mmoforge.event.MMOBlockBreakEvent
 import top.iseason.mmoforge.uitls.dropBlock
-import top.iseason.mmoforge.uitls.getMMOData
 
 object SilkTouch : MMOAttribute(
     "SILK_TOUCH",
@@ -25,12 +24,11 @@ object SilkTouch : MMOAttribute(
     arrayOf("挖掘方块时有概率触发精准采集效果"),
     arrayOf("tool")
 ) {
-    @EventHandler
-    fun onBlockBreakEvent(event: BlockBreakEvent) {
-        if (event.isCancelled) return
+    @EventHandler(ignoreCancelled = true)
+    fun onMMOBlockBreakEvent(event: MMOBlockBreakEvent) {
         val player = event.player
-        val itemInMainHand = player.equipment.itemInMainHand
-        val level = itemInMainHand.getMMOData<DoubleData>(stat)?.value ?: return
+        val itemInMainHand = event.handItem
+        val level = event.getMMOData<DoubleData>(stat)?.value ?: return
         if (RandomUtils.checkPercentage(level)) return
         if (event.player.gameMode == GameMode.CREATIVE) return
         player.dropBlock(event.block, itemInMainHand.clone().apply {

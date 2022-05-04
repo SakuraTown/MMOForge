@@ -16,9 +16,10 @@ import net.Indyuce.mmoitems.manager.ConfigManager
 import top.iseason.mmoforge.command.BreakThroughCommand
 import top.iseason.mmoforge.command.ForgeCommand
 import top.iseason.mmoforge.command.RefineCommand
+import top.iseason.mmoforge.command.SoulBindCommand
 import top.iseason.mmoforge.config.MainConfig
-import top.iseason.mmoforge.listener.EventListener
-import top.iseason.mmoforge.stats.ForgeStat
+import top.iseason.mmoforge.listener.MMOListener
+import top.iseason.mmoforge.stats.MMOForgeStat
 import top.iseason.mmoforge.stats.material.ForgeExp
 import top.iseason.mmoforge.stats.material.LimitLevel
 import top.iseason.mmoforge.stats.tools.*
@@ -44,13 +45,15 @@ class MMOForge : SimplePlugin() {
         defaultCommand.aliases = listOf("mf")
         RefineCommand(defaultCommand).register()
         ForgeCommand(defaultCommand).register()
+        SoulBindCommand(defaultCommand).register()
         BreakThroughCommand(defaultCommand).register()
         defaultCommand.register()
-        registerListener(EventListener)
         MainConfig.init(instance)
+
         setStatsLoreFormat(statLoreFormats)
         setStatsLore(statLoreFormats)
         registerStats(statLoreFormats)
+        registerListener(MMOListener)
     }
 
     override fun reload() {
@@ -58,14 +61,14 @@ class MMOForge : SimplePlugin() {
     }
 
     override fun onDisabled() {
-//        println(1)
+
     }
 
     /**
      * 注册所有属性
      */
     private fun registerStats() {
-        MMOItems.plugin.stats.register(ForgeStat)
+        MMOItems.plugin.stats.register(MMOForgeStat)
         ForgeExp.register()
         LimitLevel.register()
         SilkTouch.register()
@@ -78,6 +81,7 @@ class MMOForge : SimplePlugin() {
         Harvester.register()
         AutoTorch.register()
         SpeedUp.register()
+        SakuraSoulBound.register()
     }
 
 

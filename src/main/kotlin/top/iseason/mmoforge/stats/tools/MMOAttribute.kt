@@ -21,6 +21,7 @@ import net.Indyuce.mmoitems.stat.type.ItemStat
 import org.bukkit.Material
 import org.bukkit.event.Listener
 import top.iseason.mmoforge.MMOForge
+import java.io.File
 
 /**
  * types see https://git.lumine.io/mythiccraft/mmoitems/-/blob/master/src/main/java/net/Indyuce/mmoitems/api/Type.java
@@ -32,7 +33,7 @@ abstract class MMOAttribute(
     format: String,
     val mLore: Array<String>,
     val mTypes: Array<String>,
-    defaultPath: String = "enchants/${mID.lowercase()}.yml"
+    defaultPath: String = "enchants${File.separatorChar}${mID.lowercase()}.yml"
 ) : SimpleYAMLConfig(defaultPath = defaultPath), Listener {
     var loreKey: String = mID.lowercase().replace('_', '-')
 
