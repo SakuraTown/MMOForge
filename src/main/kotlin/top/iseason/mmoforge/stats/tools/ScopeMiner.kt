@@ -16,9 +16,10 @@ import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.type.DoubleStat
 import org.bukkit.Material
 import org.bukkit.Tag
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import top.iseason.mmoforge.event.MMOBlockBreakEvent
-import top.iseason.mmoforge.listener.MMOListener
+import org.bukkit.event.block.BlockBreakEvent
+import top.iseason.mmoforge.uitls.checkMainHandData
 import top.iseason.mmoforge.uitls.getScopeBlocksByVector
 
 
@@ -30,10 +31,13 @@ object ScopeMiner : MMOAttribute(
     arrayOf("挖掘更大的区域"),
     arrayOf("tool")
 ) {
-    @EventHandler(ignoreCancelled = true)
-    fun onMMOBlockBreakEvent(event: MMOBlockBreakEvent) {
+    private val scopeSet = mutableSetOf<Player>()
+
+    @EventHandler
+    fun onBlockBreakEvent(event: BlockBreakEvent) {
         val player = event.player
-        val hdType = event.handItem.type
+        if (player in scopeSet) return
+        val hdType = player.equipment.itemInMainHand.type
         //指定类型的工具只能挖指定类型的东西
         val mineAbleBlocks: Set<Material> = when {
             hdType.isPickaxe() -> Tag.MINEABLE_PICKAXE.values
@@ -41,7 +45,8 @@ object ScopeMiner : MMOAttribute(
             hdType.isShovel() -> Tag.MINEABLE_SHOVEL.values
             else -> return
         }
-        val level = event.getMMOData<DoubleData>(stat)?.value ?: return
+        val level = player.checkMainHandData(stat) ?: return
+        scopeSet += player
         val count = level.toInt() + 2
         val rangeX = count / 2
         val rangeY = count - rangeX
@@ -50,6 +55,7 @@ object ScopeMiner : MMOAttribute(
         submit(period = 1L) {
             repeat(10) {
                 if (!iterator.hasNext()) {
+                    scopeSet -= player
                     cancel()
                     return@submit
                 }
@@ -57,9 +63,7 @@ object ScopeMiner : MMOAttribute(
                 if (block.type !in mineAbleBlocks) {
                     return@repeat
                 }
-                MMOListener.lockEvent(event.parent, block)
                 player.breakBlock(block)
-                MMOListener.unLockEvent(event.parent, block)
             }
         }
     }

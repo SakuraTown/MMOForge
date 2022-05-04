@@ -21,8 +21,8 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
+import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.stats.MMOForgeData
-import top.iseason.mmoforge.stats.MMOForgeStat
 import top.iseason.mmoforge.uitls.getForgeData
 import top.iseason.mmoforge.uitls.refine
 import top.iseason.mmoforge.uitls.setName
@@ -116,7 +116,7 @@ class ReFineUI : ChestUI("物品精炼") {
         if (add == 0) return
         mmoItem.refine(forgeData, add)
         forgeData.refine += add
-        mmoItem.setData(MMOForgeStat, forgeData)
+        mmoItem.setData(ForgeStat, forgeData)
         val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
         gold = MainConfig.getValueByFormula(expression, forgeData.star, refine = add)
         refineButton.displayName = "${ChatColor.GREEN}点击精炼物品: ${ChatColor.GOLD}$gold ￥"

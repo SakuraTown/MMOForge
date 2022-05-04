@@ -36,7 +36,7 @@ import top.iseason.mmoforge.config.MainConfig
 import java.util.*
 
 // 物品星级
-object MMOForgeStat : ItemStat(
+object ForgeStat : ItemStat(
     "FORGE_ATTRIBUTE",
     Material.PAPER,
     "Forge Attribute",
@@ -119,11 +119,13 @@ object MMOForgeStat : ItemStat(
 
     override fun whenLoaded(mmoitem: ReadMMOItem) {
         //不需要实时读取
+//        val itemTag = ItemTag.getTagAtPath(nbtPath, mmoitem.nbt, SupportedNBTTagValues.STRING) ?: return
+//        val stat = getLoadedNBT(arrayListOf(itemTag)) ?: return
+//        mmoitem.setData(this, stat)
     }
 
     override fun whenDisplayed(lore: MutableList<String>, data: Optional<RandomStatData>) {
-        if (data.isEmpty) return
-        val mmoForgeData = data.get() as? MMOForgeData ?: return
+        val mmoForgeData = data.get() as MMOForgeData
         lore.add("${ChatColor.GRAY}物品强化属性: ")
         lore.add("${ChatColor.WHITE}星级: ${mmoForgeData.star}")
         lore.add("${ChatColor.WHITE}最大精炼次数: ${mmoForgeData.maxRefine}")

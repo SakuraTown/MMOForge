@@ -16,7 +16,6 @@ package top.iseason.mmoforge.stats.material
 
 import org.bukkit.Material
 import top.iseason.mmoforge.stats.tools.MMOAttribute
-import java.io.File
 
 object ForgeExp : MMOAttribute(
     "FORGE_EXP",
@@ -25,7 +24,7 @@ object ForgeExp : MMOAttribute(
     "&7■ &f强化经验: &a#",
     arrayOf("可以强化物品"),
     arrayOf("material"),
-    "materials${File.separatorChar}forge_exp.yml"
+    "materials/forge_exp.yml"
 ) {
 
 }

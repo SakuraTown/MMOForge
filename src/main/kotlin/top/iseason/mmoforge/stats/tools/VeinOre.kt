@@ -9,11 +9,11 @@ package top.iseason.mmoforge.stats.tools
 
 import com.entiv.core.common.submit
 import com.entiv.core.utils.bukkit.isOre
-import net.Indyuce.mmoitems.stat.data.DoubleData
 import org.bukkit.Material
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
-import top.iseason.mmoforge.event.MMOBlockBreakEvent
-import top.iseason.mmoforge.listener.MMOListener
+import org.bukkit.event.block.BlockBreakEvent
+import top.iseason.mmoforge.uitls.checkMainHandData
 import top.iseason.mmoforge.uitls.getVeinBlocks
 
 object VeinOre : MMOAttribute(
@@ -24,26 +24,27 @@ object VeinOre : MMOAttribute(
     arrayOf("连锁采集矿物"),
     arrayOf("tool")
 ) {
+    private val veiningSet = mutableSetOf<Player>()
 
-    @EventHandler(ignoreCancelled = true)
-    fun onMMOBlockBreakEvent(event: MMOBlockBreakEvent) {
+    @EventHandler
+    fun onBlockBreakEvent(event: BlockBreakEvent) {
         val player = event.player
+        if (veiningSet.contains(player)) return
         if (!event.block.type.isOre()) return
-        val level = event.getMMOData<DoubleData>(stat)?.value ?: return
+        val level = player.checkMainHandData(stat) ?: return
         val veinBlocksIterator = getVeinBlocks(event.block, level.toInt()).iterator()
-
+        veiningSet.add(player)
         //降低负担,每tick处理10个
         submit(period = 1L) {
             repeat(10) {
                 if (!veinBlocksIterator.hasNext()) {
-
+                    if (player in veiningSet) {
+                        veiningSet.remove(player)
+                    }
                     cancel()
                     return@submit
                 }
-                val block = veinBlocksIterator.next()
-                MMOListener.lockEvent(event.parent, block)
-                player.breakBlock(block)
-                MMOListener.unLockEvent(event.parent, block)
+                player.breakBlock(veinBlocksIterator.next())
             }
         }
     }

@@ -25,8 +25,8 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import top.iseason.mmoforge.config.MainConfig
+import top.iseason.mmoforge.stats.ForgeStat
 import top.iseason.mmoforge.stats.MMOForgeData
-import top.iseason.mmoforge.stats.MMOForgeStat
 import top.iseason.mmoforge.uitls.breakthrough
 import top.iseason.mmoforge.uitls.getForgeData
 import top.iseason.mmoforge.uitls.setName
@@ -202,7 +202,7 @@ class BreakThroughUI : ChestUI("物品突破", 6) {
         val liveMMOItem = LiveMMOItem(itemStack)
         liveMMOItem.breakthrough(inputData, 1)
         inputData.limit += 1
-        liveMMOItem.setData(MMOForgeStat, inputData)
+        liveMMOItem.setData(ForgeStat, inputData)
         submit {
             resultSlot.outputAble(false)
             resultSlot.itemStack = liveMMOItem.newBuilder().build()

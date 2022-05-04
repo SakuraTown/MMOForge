@@ -7,12 +7,12 @@
 
 package top.iseason.mmoforge.stats.tools
 
-import net.Indyuce.mmoitems.stat.data.DoubleData
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
-import top.iseason.mmoforge.event.MMOBlockBreakEvent
+import top.iseason.mmoforge.uitls.checkMainHandData
 
 object SpeedUp : MMOAttribute(
     "SPEED_UP",
@@ -22,10 +22,11 @@ object SpeedUp : MMOAttribute(
     arrayOf("挖矿时获得速度加成"),
     arrayOf("tool")
 ) {
-    @EventHandler(ignoreCancelled = true)
-    fun onMMOBlockBreakEvent(event: MMOBlockBreakEvent) {
+    @EventHandler
+    fun onBlockBreakEvent(event: BlockBreakEvent) {
+        if (event.isCancelled) return
         val player = event.player
-        val level = event.getMMOData<DoubleData>(stat)?.value?.toInt()?.minus(1) ?: return
+        val level = player.checkMainHandData(stat)?.toInt()?.minus(1) ?: return
         if (level < 0) return
         player.addPotionEffect(PotionEffect(PotionEffectType.SPEED, 100, level))
     }
