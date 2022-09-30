@@ -1,68 +1,79 @@
 plugins {
-    java
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-    kotlin("jvm") version "1.6.20"
+    kotlin("jvm")
+    id("com.github.johnrengelman.shadow")
 }
-group = "top.iseason"
-version = "1.0.0"
-val mainClass = "MMOForge"
-val author = "Iseason"
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-    maven {
-        url = uri("https://papermc.io/repo/repository/maven-public/")
+buildscript {
+    repositories {
+        mavenCentral()
+        google()
     }
-    maven {
-        name = "Vault"
-        url = uri("https://jitpack.io")
+    dependencies {
+        classpath("com.android.tools.build:gradle:4.0.2")
+        classpath("com.guardsquare:proguard-gradle:7.2.2")
     }
-//    maven {
-//        url = uri("https://maven.pkg.github.com/SakuraTown/InsekiCore")
-//        credentials {
-//            username = project.properties["USER"].toString()
-//            password = project.properties["TOKEN"].toString()
-//        }
-//    }
-
 }
+subprojects {
+    group = rootProject.group
+    version = rootProject.version
+    apply {
+        plugin<com.github.jengelman.gradle.plugins.shadow.ShadowPlugin>()
+        plugin<JavaPlugin>()
+        plugin<JavaLibraryPlugin>()
+    }
+    repositories {
+//    阿里的服务器速度快一点
+        maven {
+            name = "aliyun"
+            url = uri("https://maven.aliyun.com/repository/public/")
+        }
+        google()
+        mavenCentral()
+        maven {
+            name = "spigot"
+            url = uri("https://hub.spigotmc.org/nexus/content/repositories/public/")
+        }
+        maven {
+            name = "jitpack"
+            url = uri("https://jitpack.io")
+        }
+        maven {
+            name = "CodeMC"
+            url = uri("https://repo.codemc.org/repository/maven-public")
+        }
+        mavenLocal()
+    }
 
-dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
-    compileOnly(fileTree("lib"))
-    implementation("com.entiv:insekicore:1.0.7")
-    compileOnly(kotlin("stdlib-jdk8"))
-    compileOnly(kotlin("reflect"))
-    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
-}
-tasks {
-    shadowJar {
-        relocate("com.entiv.core", "${project.group}.${mainClass.toLowerCase()}.lib.core")
-        relocate("org.bstats", "${project.group}.${mainClass.toLowerCase()}.lib.bstats")
-
-        minimize()
-        project.findProperty("outputPath")?.let {
-            destinationDirectory.set(file(it.toString()))
+    dependencies {
+        //基础库
+        compileOnly(kotlin("stdlib-jdk8"))
+        // 数据库
+        val exposedVersion: String by rootProject
+        compileOnly("org.jetbrains.exposed:exposed-core:$exposedVersion")
+        compileOnly("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+        compileOnly("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+        compileOnly("org.jetbrains.exposed:exposed-java-time:$exposedVersion")
+        compileOnly("com.zaxxer:HikariCP:4.0.3")
+    }
+    tasks {
+        compileJava {
+            options.encoding = "UTF-8"
+            sourceCompatibility = "1.8"
+            targetCompatibility = "1.8"
         }
     }
-    processResources {
-        val p = "${project.group}.${rootProject.name.toLowerCase()}"
-        include("plugin.yml").expand(
-            "name" to mainClass,
-            "main" to "$p.$mainClass",
-            "version" to project.version,
-            "author" to author,
-            "kotlin" to "1.6.20"
-        )
-    }
-    compileJava {
-        options.encoding = "UTF-8"
-    }
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+repositories {
+//    阿里的服务器速度快一点
+    maven {
+        name = "aliyun"
+        url = uri("https://maven.aliyun.com/repository/public/")
+    }
+    google()
+    mavenCentral()
 }
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> { kotlinOptions.jvmTarget = "17" }
+dependencies {
+    //基础库
+    compileOnly(kotlin("stdlib-jdk8"))
+}
