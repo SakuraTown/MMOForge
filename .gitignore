@@ -1,7 +1,7 @@
 # 项目排除路径
 /.gradle/
 /.idea/
-/build/
-!/gradle.properties
-!/gradle/
+build/
 !/lib/
+!**/src/main/**/build/
+!gradle/wrapper/gradle-wrapper.jar
