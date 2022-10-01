@@ -285,7 +285,7 @@ object MainConfig : SimpleYAMLConfig() {
     private fun restForgeLevelMap() {
         forgeLevelMap.clear()
         ForgeLevelSection.getKeys(false).forEach {
-            forgeLevelMap[it.toInt()] = ForgeLevelSection.getString(it) ?: return@forEach
+            forgeLevelMap[it.toInt()] = ForgeLevelSection.getString(it)?.trim() ?: return@forEach
         }
     }
 

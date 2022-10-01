@@ -53,7 +53,7 @@ object ItemUtils {
     /**
      * 减少物品数量，如果小于0则物品变为空气
      */
-    fun ItemStack.subtract(count: Int) {
+    fun ItemStack.subtract(count: Int = 1) {
         val i = amount - count
         if (i <= 0) type = Material.AIR
         else amount = i
@@ -62,7 +62,7 @@ object ItemUtils {
     /**
      * 增加物品数量，返回溢出的数量
      */
-    fun ItemStack.add(count: Int): Int {
+    fun ItemStack.add(count: Int = 1): Int {
         val i = amount + count
         return if (i >= maxStackSize) {
             amount = maxStackSize
@@ -638,7 +638,9 @@ object ItemUtils {
                     addAttributeModifier(attribute, AttributeModifier(uuid, name, amount, operation, slot))
                 }
             }
-            if (NBTEditor.getMinecraftVersion().lessThanOrEqualTo(NBTEditor.MinecraftVersion.v1_14)) {
+            if (NBTEditor.getMinecraftVersion().greaterThanOrEqualTo(NBTEditor.MinecraftVersion.v1_14)) {
+                val modelData = section.getInt("custom-model-data")
+                if (modelData != 0) setCustomModelData(modelData)
                 if (this is CrossbowMeta) {
                     val section1 = section.getConfigurationSection("projectiles")
                     if (section1 != null) {
@@ -911,5 +913,13 @@ object ItemUtils {
      */
     fun Inventory.canAddItem(itemStacks: Collection<ItemStack>): Int = canAddItem(*itemStacks.toTypedArray())
 
+    /**
+     * Material 转物品
+     */
+    fun Material.getItem() = ItemStack(this)
 
+    /**
+     * 获取一个空气物品
+     */
+    val air = ItemStack(Material.AIR)
 }

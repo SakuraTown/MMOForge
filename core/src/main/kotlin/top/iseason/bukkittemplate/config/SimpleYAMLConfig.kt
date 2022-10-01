@@ -11,8 +11,6 @@ import top.iseason.bukkittemplate.debug.debug
 import top.iseason.bukkittemplate.debug.info
 import top.iseason.bukkittemplate.utils.other.submit
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -38,6 +36,10 @@ open class SimpleYAMLConfig(
      */
     var updateNotify: Boolean = true
 ) {
+    /**
+     * 编码
+     */
+    open var charset = Charsets.UTF_8
 
     /**
      * 更新时间
@@ -145,6 +147,10 @@ open class SimpleYAMLConfig(
      * 保存配置
      */
     fun save(notify: Boolean = updateNotify) {
+        try {
+            preSave(config)
+        } catch (_: Exception) {
+        }
         update(false)
         try {
             onSaved(config)
@@ -167,6 +173,10 @@ open class SimpleYAMLConfig(
      * 从文件加载配置
      */
     fun load(notify: Boolean = updateNotify) {
+        try {
+            preLoad(config)
+        } catch (_: Exception) {
+        }
         if (!update(true)) {
             return
         }
@@ -262,35 +272,47 @@ open class SimpleYAMLConfig(
     }
 
     /**
+     * 配置读取之前的回调
+     */
+    open fun preLoad(section: ConfigurationSection) {
+
+    }
+
+    /**
+     * 配置保存之前的回调
+     */
+    open fun preSave(section: ConfigurationSection) {
+
+    }
+
+    /**
      * 转换配置文件的注释
      */
     private fun commentFile(file: File, commentMap: Map<String, String>) {
         // 创建临时文件
         val commentedFile = File(file.path + ".tmp")
-        val newFile: MutableList<String> = ArrayList()
-        //逐行扫描,匹配注释并替换
-        Scanner(file, "UTF-8").use { scanner ->
-            while (scanner.hasNextLine()) {
-                var nextLine: String = scanner.nextLine()
-                for ((key, value) in commentMap) {
-                    if (nextLine.contains(key)) {
-                        if (value == "# ") {
-                            nextLine = ""
-                            break
-                        }
-                        nextLine = nextLine.substring(0, nextLine.indexOf(key)) + value
-                        break
+        commentedFile.createNewFile()
+        val bufferedWriter = commentedFile.bufferedWriter(charset)
+        val bufferedReader = file.bufferedReader(charset)
+        bufferedReader.lines().forEach {
+            for ((key, value) in commentMap) {
+                if (it.contains(key)) {
+                    if (value != "# ") {
+                        bufferedWriter.write(it.substring(0, it.indexOf(key)) + value)
                     }
+                    bufferedWriter.newLine()
+                    return@forEach
                 }
-                newFile.add(nextLine)
             }
-            //写入数据到临时文件
-            Files.write(commentedFile.toPath(), newFile)
-            //复制替换
-            copyFileUsingStream(commentedFile, file)
-            //删除临时文件
-            Files.delete(commentedFile.toPath())
+            bufferedWriter.write(it)
+            bufferedWriter.newLine()
         }
+        bufferedWriter.close()
+        bufferedReader.close()
+
+        copyFileUsingStream(commentedFile, file)
+        //删除临时文件
+        Files.delete(commentedFile.toPath())
 
     }
 
@@ -299,12 +321,11 @@ open class SimpleYAMLConfig(
      */
     @Throws(IOException::class)
     private fun copyFileUsingStream(source: File, dest: File) {
-        FileInputStream(source).use { fis ->
-            FileOutputStream(dest).use { fos ->
-                val buffer = ByteArray(1024)
-                var length: Int
-                while (fis.read(buffer).also { length = it } > 0) {
-                    fos.write(buffer, 0, length)
+        source.bufferedReader(charset).use { fis ->
+            dest.bufferedWriter(charset).use { fos ->
+                for (line in fis.lines()) {
+                    fos.write(line)
+                    fos.newLine()
                 }
             }
         }

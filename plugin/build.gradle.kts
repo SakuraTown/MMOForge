@@ -7,6 +7,9 @@ repositories {
     maven {
         url = uri("https://nexus.phoenixdvpt.fr/repository/maven-public/")
     }
+    maven {
+        url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/")
+    }
 
 }
 
@@ -25,6 +28,7 @@ dependencies {
     compileOnly("net.Indyuce:MMOItems-API:6.8.2-SNAPSHOT")
     compileOnly("io.lumine:MythicLib-dist:1.4.1-SNAPSHOT")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7")
+    compileOnly("me.clip:placeholderapi:2.11.2")
     compileOnly("org.spigotmc:spigot-api:1.19.2-R0.1-SNAPSHOT")
 }
 

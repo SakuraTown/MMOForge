@@ -33,7 +33,7 @@ fun mainCommands() {
             async = true
             description = "打开突破界面"
             executor {
-                (it as Player).openUI<BreakThroughUI>()
+                (it as Player).openUI(BreakThroughUI(it))
             }
         }
         node("forge") {

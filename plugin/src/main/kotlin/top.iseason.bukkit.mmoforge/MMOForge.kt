@@ -12,7 +12,9 @@ import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
 import top.iseason.bukkit.mmoforge.command.mainCommands
+import top.iseason.bukkit.mmoforge.config.BreakUIConfig
 import top.iseason.bukkit.mmoforge.config.MainConfig
+import top.iseason.bukkit.mmoforge.hook.PAPIHook
 import top.iseason.bukkit.mmoforge.hook.VaultHook
 import top.iseason.bukkit.mmoforge.listener.MMOListener
 import top.iseason.bukkit.mmoforge.stats.MMOForgeStat
@@ -30,8 +32,10 @@ object MMOForge : KotlinPlugin() {
 
     override fun onAsyncEnable() {
         VaultHook.checkHooked()
+        PAPIHook.checkHooked()
         mainCommands()
         CommandHandler.updateCommands()
+        BreakUIConfig.load(false)
         MainConfig.load(false)
         registerStats()
         setStatsLoreFormat(statLoreFormats)
@@ -72,14 +76,17 @@ object MMOForge : KotlinPlugin() {
         val declaredField = ConfigManager::class.java.getDeclaredField("loreFormat")
         declaredField.isAccessible = true
         val config = declaredField.get(MMOItems.plugin.language) as ConfigFile
-        val list = config.config.getStringList("lore-format").toMutableSet()
+        val list = config.config.getStringList("lore-format")
+        val set = list.toMutableSet()
         for (stat in stats) {
             val loreKey = "#${stat.loreKey}#"
-            list.add(loreKey)
+            set.add(loreKey)
         }
-        list.add("#${MMOForgeStat.path}#")
-        config.config.set("lore-format", list.toList())
-        config.save()
+        set.add("#${MMOForgeStat.path}#")
+        if (list.toSet().intersect(set).isNotEmpty()) {
+            config.config.set("lore-format", list.toList())
+            config.save()
+        }
         declaredField.isAccessible = false
     }
 
@@ -91,7 +98,6 @@ object MMOForge : KotlinPlugin() {
         val loreKey = "#${stat.loreKey}#"
         if (list.contains(loreKey)) return
         list.add(loreKey)
-
         config.config.set("lore-format", list)
         config.save()
         declaredField.isAccessible = false

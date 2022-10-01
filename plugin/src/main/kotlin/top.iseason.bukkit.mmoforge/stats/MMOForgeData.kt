@@ -58,7 +58,7 @@ data class MMOForgeData(
 
     // 强化增益
     var forgeGain: ForgeParserMap = MainConfig.forgeGain,
-
+    // 突破需要的材料，分突破等级
     var limitType: LinkedHashMap<Int, List<String>> = MainConfig.limitType
 ) : StatData, Mergeable<MMOForgeData>, RandomStatData<MMOForgeData> {
     /**
