@@ -27,7 +27,7 @@ mmoforge 别名 `mf`, `mforge`, `mmof`
 配置存放于服务端根目录的 `plugins\MMOForge` 下
 
 结构如下
-
+~~~ tex
 MMOForge
 │ config.yml #插件主配置
 │
@@ -53,6 +53,7 @@ break_through.yml
 forge.yml
 refine.yml
 
+~~~
 ### 支持强化的属性
 
 ~~~ tex
