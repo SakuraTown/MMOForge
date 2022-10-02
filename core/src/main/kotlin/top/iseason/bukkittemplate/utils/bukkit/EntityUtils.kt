@@ -11,6 +11,7 @@ import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.PlayerInventory
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.checkAir
+import top.iseason.bukkittemplate.utils.other.submit
 
 /**
  * bukkit 的实体相关工具
@@ -44,10 +45,14 @@ object EntityUtils {
     fun InventoryHolder.giveItems(vararg itemStacks: ItemStack) {
         val addItems = inventory.addItem(*itemStacks).values
         if (this !is Entity) return
-        for (addItem in addItems) {
-            if (addItem == null) continue
-            val item = world.spawnEntity(location, EntityType.DROPPED_ITEM) as Item
-            item.itemStack = addItem
+        if (addItems.isEmpty()) return
+        submit {
+            for (addItem in addItems) {
+                if (addItem == null) continue
+                //防止异步调用
+                val item = world.spawnEntity(location, EntityType.DROPPED_ITEM) as Item
+                item.itemStack = addItem
+            }
         }
     }
 

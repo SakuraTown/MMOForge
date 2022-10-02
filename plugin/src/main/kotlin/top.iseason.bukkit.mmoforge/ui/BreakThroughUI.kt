@@ -46,14 +46,15 @@ class BreakThroughUI(val player: Player) : ChestUI(
     private var canBreak = false
     private lateinit var inputSlot: IOSlot
     private lateinit var outputSlot: IOSlot
-    private lateinit var breakThroughButton: Button
+    private val breakThroughButtons = mutableListOf<Button>()
     private val materialSlots = mutableListOf<MaterialSlot>()
     private var gold = 0.0
 
     init {
         BreakUIConfig.slots["background"]?.forEach { (item, slots) ->
+            val background = PAPIHook.setPlaceHolderAndColor(item, player)
             for (slot in slots) {
-                Icon(PAPIHook.setPlaceHolderAndColor(item, player), slot).setup()
+                Icon(background, slot).setup()
             }
         }
         BreakUIConfig.slots["materials"]?.forEach { (item, slots) ->
@@ -80,29 +81,31 @@ class BreakThroughUI(val player: Player) : ChestUI(
         }
         BreakUIConfig.slots["breakThrough"]?.forEach { (item, slots) ->
             val index = slots.firstOrNull() ?: return@forEach
-            breakThroughButton = Button(PAPIHook.setPlaceHolderAndColor(item, player), index)
-                .onClicked {
-                    if (!canBreak) return@onClicked
-                    if (!(it.whoClicked as Player).takeMoney(gold)) {
-                        return@onClicked
-                    }
-                    //扣材料
-                    for (materialSlot in materialSlots) {
-                        val itemStack = materialSlot.itemStack ?: continue
-                        itemStack.subtract()
-                        if (!itemStack.checkAir()) {
-                            materialSlot.ejectSilently(player)
+            breakThroughButtons.add(
+                Button(PAPIHook.setPlaceHolderAndColor(item, player), index)
+                    .onClicked {
+                        if (!canBreak) return@onClicked
+                        if (!(it.whoClicked as Player).takeMoney(gold)) {
+                            return@onClicked
                         }
-                        materialSlot.reset()
-                    }
-                    outputSlot.outputAble(true)
-                    //扣物品
-                    inputSlot.reset()
-                    reset()
-                    canBreak = false
-                    gold = 0.0
-                    inputData = null
-                }.setup()
+                        //扣材料
+                        for (materialSlot in materialSlots) {
+                            val itemStack = materialSlot.itemStack ?: continue
+                            itemStack.subtract()
+                            if (!itemStack.checkAir()) {
+                                materialSlot.ejectSilently(player)
+                            }
+                            materialSlot.reset()
+                        }
+                        outputSlot.outputAble(true)
+                        //扣物品
+                        inputSlot.reset()
+                        reset()
+                        canBreak = false
+                        gold = 0.0
+                        inputData = null
+                    }.setup()
+            )
         }
     }
 
@@ -169,74 +172,8 @@ class BreakThroughUI(val player: Player) : ChestUI(
         }
     }
 
-
-//    private val rawPlaceHolder = ItemStack(Material.RED_STAINED_GLASS_PANE).applyMeta {
-//        setName("${ChatColor.RED}请先放入需要突破的物品")
-//    }
-
-//    //强化材料槽
-//    private val materials = IOSlot(30, rawPlaceHolder).inputAble(false).onInput {
-//        updateResultAsync()
-//    }.onOutput {
-//        updateResultAsync()
-//    }
-//
-//    init {
-//        //设置背景
-//        setBackGround(Icon(ItemStack(Material.GRAY_STAINED_GLASS_PANE).apply {
-//            itemMeta = itemMeta?.apply { setName(" ") }
-//        }, 1))
-//    }
-
-//    private val materialSlots: List<IOSlot> = addMultiSlots(materials, 31, 32).toType()
-
-    //输入槽
-//    private val inputSlot = IOSlot(13, ItemStack(Material.RED_STAINED_GLASS_PANE).applyMeta {
-//        setName("${ChatColor.RED} 请放入待突破的物品")
-//    }).inputFilter {
-//        val nbtItem = NBTItem.get(it) ?: return@inputFilter false
-//        inputData = nbtItem.getForgeData() ?: return@inputFilter false
-//        true
-//    }.onInput {
-//        updateInputAsync()
-//    }.onOutput {
-//        inputData = null
-//        updateInputAsync()
-//    }.setup()
-//
-//    private val resultSlot = IOSlot(49, null).lockable(true).setup()
-//
-//    private val breakThroughButton =
-//        Button(ItemStack(Material.ANVIL).applyMeta { setName("${ChatColor.RED}无法突破") }, index = 40)
-//            .onClicked {
-//                if (!canBreak) return@onClicked
-//                if (!(it.whoClicked as Player).takeMoney(gold)) {
-//                    return@onClicked
-//                }
-//                //扣材料
-//                for (ioSlot in limitSlot) {
-//                    ioSlot.itemStack?.subtract(1)
-//                }
-//                for (materialSlot in slots.filterIsInstance<MaterialSlot>()) {
-//                    val itemStack = materialSlot.itemStack
-//                    if (itemStack != null && materialSlot.output(materialSlot, itemStack))
-//                        getViewers().getOrNull(0)?.giveItems(itemStack)
-////                    materialSlot.placeholder = rawPlaceHolder 名字变回去
-//                    materialSlot.itemStack = null
-//                    materialSlot.inputAble(false)
-//                }
-//                outputSlot.outputAble(true)
-//                //扣物品
-//                inputSlot.reset()
-//                reset()
-//                limitSlot.clear()
-//                canBreak = false
-//                gold = 0.0
-//                inputData = null
-//            }.setup()
-
     private fun resetResult() {
-        breakThroughButton.reset()
+        breakThroughButtons.forEach { it.reset() }
         for (materialSlot in materialSlots) {
             materialSlot.ejectSilently(player)
             materialSlot.reset()
@@ -274,7 +211,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
         }
         //检查材料是否完整
         if (materialSlots.any { it.requireItem != null && it.itemStack == null }) {
-            breakThroughButton.reset()
+            breakThroughButtons.forEach { it.reset() }
             outputSlot.reset()
             return
         }
@@ -293,11 +230,12 @@ class BreakThroughUI(val player: Player) : ChestUI(
         //上锁
         outputSlot.outputAble(false)
         outputSlot.itemStack = liveMMOItem.newBuilder().build()
-        breakThroughButton.displayName = BreakUIConfig.breakThroughAllowed.formatBy(gold)
-        breakThroughButton.itemStack = PAPIHook.setPlaceHolderAndColor(breakThroughButton.itemStack!!)
-        breakThroughButton.itemStack!!.applyMeta {
-            addEnchant(Enchantment.BINDING_CURSE, 1, true)
-            addItemFlags(ItemFlag.HIDE_ENCHANTS)
+        breakThroughButtons.forEach {
+            it.itemStack = PAPIHook.setPlaceHolderAndColor(it.itemStack!!.applyMeta {
+                setDisplayName(BreakUIConfig.breakThroughAllowed.formatBy(gold))
+                addEnchant(Enchantment.BINDING_CURSE, 1, true)
+                addItemFlags(ItemFlag.HIDE_ENCHANTS)
+            })
         }
         canBreak = true
     }

@@ -124,7 +124,7 @@ object BreakUIConfig : SimpleYAMLConfig() {
     /**
      * 读取单个槽
      */
-    private fun readSlot(
+    fun readSlot(
         type: String,
         section: ConfigurationSection,
         slotMap: MutableMap<String, MutableMap<ItemStack, IntArray>>

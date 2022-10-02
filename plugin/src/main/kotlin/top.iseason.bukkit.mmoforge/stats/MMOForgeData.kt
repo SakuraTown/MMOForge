@@ -30,7 +30,7 @@ data class MMOForgeData(
     val star: Int,
 
     //精炼等级
-    var refine: Int = 1,
+    var refine: Int = 0,
 
     // 限制等级
     var limit: Int = 0,

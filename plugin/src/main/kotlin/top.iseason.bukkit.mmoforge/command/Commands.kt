@@ -41,7 +41,7 @@ fun mainCommands() {
             async = true
             description = "打开强化界面"
             executor {
-                (it as Player).openUI<ForgeUI>()
+                (it as Player).openUI(ForgeUI(it))
             }
         }
         node("refine") {
@@ -49,7 +49,7 @@ fun mainCommands() {
             async = true
             description = "打开精炼界面"
             executor {
-                (it as Player).openUI<ReFineUI>()
+                (it as Player).openUI(ReFineUI(it))
             }
         }
         node("bind") {

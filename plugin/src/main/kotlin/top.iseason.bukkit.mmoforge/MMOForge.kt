@@ -13,7 +13,9 @@ import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
 import top.iseason.bukkit.mmoforge.command.mainCommands
 import top.iseason.bukkit.mmoforge.config.BreakUIConfig
+import top.iseason.bukkit.mmoforge.config.ForgeUIConfig
 import top.iseason.bukkit.mmoforge.config.MainConfig
+import top.iseason.bukkit.mmoforge.config.RefineUIConfig
 import top.iseason.bukkit.mmoforge.hook.PAPIHook
 import top.iseason.bukkit.mmoforge.hook.VaultHook
 import top.iseason.bukkit.mmoforge.listener.MMOListener
@@ -34,15 +36,18 @@ object MMOForge : KotlinPlugin() {
         VaultHook.checkHooked()
         PAPIHook.checkHooked()
         mainCommands()
-        CommandHandler.updateCommands()
         BreakUIConfig.load(false)
+        RefineUIConfig.load(false)
+        ForgeUIConfig.load(false)
         MainConfig.load(false)
+        CommandHandler.updateCommands()
         registerStats()
         setStatsLoreFormat(statLoreFormats)
         setStatsLore(statLoreFormats)
         UIListener.register()
         MMOListener.register()
-
+        MMOItems.plugin.types.reload()
+        MMOItems.plugin.stats.reload(true)
         info("&a插件已启用")
     }
 
