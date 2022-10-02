@@ -156,8 +156,7 @@ class ForgeUI(val player: Player) : ChestUI(
         liveMMOItem.setData(MMOForgeStat, forgeData)
         resultSlot.ejectSilently(player)
         resultSlot.outputAble(false)
-        resultSlot.itemStack = liveMMOItem.newBuilder().buildSilently()
-
+        resultSlot.itemStack = liveMMOItem.newBuilder().build()
         forgeButtons.forEach {
             it.itemStack = PAPIHook.setPlaceHolderAndColor(it.itemStack!!.applyMeta {
                 setDisplayName(ForgeUIConfig.forgeAllowed.formatBy(gold))

@@ -158,8 +158,9 @@ class ReFineUI(val player: Player) : ChestUI(
         }
         resultSlot.ejectSilently(player)
         resultSlot.outputAble(false)
-        val buildSilently = mmoItem.newBuilder().buildSilently()
-        buildSilently.applyMeta {
+        val buildSilently = mmoItem.newBuilder().build()
+//        println(NBTItem.get(buildSilently).tags.contains("MMOITEMS_FIRE_DAMAGE"))
+        buildSilently?.applyMeta {
             setName("$displayName ${forgeData.refine.toRoman()}")
         }
         resultSlot.itemStack = buildSilently

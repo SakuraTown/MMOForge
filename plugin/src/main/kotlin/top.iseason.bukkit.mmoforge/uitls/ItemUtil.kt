@@ -7,6 +7,7 @@
 
 package top.iseason.bukkit.mmoforge.uitls
 
+import io.lumine.mythic.lib.UtilityMethods
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
 import net.Indyuce.mmoitems.stat.Abilities
@@ -105,15 +106,15 @@ fun LiveMMOItem.addAttribute(
         } else if (itemStat is Abilities) {
             //处理技能增强
             val abilityListData = originalData as AbilityListData
-            val abilitiesStr = upgradeInfo.split(';')
+            val abilitiesStr = upgradeInfo.split(' ')
             for (astr in abilitiesStr) {
                 val split = astr.split(':')
                 if (split.size != 2) continue
                 val idStr = split[0].split(',')
                 //查找符合条件的技能
                 val target: AbilityData = abilityListData.abilities.find {
-                    idStr[0].replace('_', ' ').equals(it.ability.name, true)
-                            && idStr[1].replace('_', ' ').equals(it.trigger.name, true)
+                    UtilityMethods.enumName(idStr[0]).equals(it.ability.handler.id, true)
+                            && UtilityMethods.enumName(idStr[1]).equals(it.trigger.name(), true)
                 } ?: continue
                 val modifiers = split[1].split('|')
                 for (modifier in modifiers) {
@@ -123,12 +124,29 @@ fun LiveMMOItem.addAttribute(
                     val s1 = ms[1]
                     if (!isAppend && !target.hasModifier(s)) continue
                     val modifier1 = target.getModifier(s)
-                    val upgradeInfo =
+                    val info =
                         kotlin.runCatching { DoubleStat.DoubleUpgradeInfo.GetFrom(s1) }.getOrNull() ?: continue
-                    target.setModifier(s, upgradeInfo.pmp.apply(modifier1))
+                    target.setModifier(s, info.pmp.apply(modifier1))
                 }
             }
         }
+        //写了一堆结果发现这个只是整合属性，笑死
+//        else if (itemStat is Elements) {
+//            val elementListData = originalData as ElementListData
+//            val elementsStr = upgradeInfo.split(' ')
+//            for (elementStr in elementsStr) {
+//                val split = elementStr.split(',')
+//                if (split.size != 3) continue
+//                val element = Element.valueOf(split[0]) ?: continue
+//                val statType =
+//                    kotlin.runCatching { ElementStatType.valueOf(split[1].uppercase()) }.getOrNull() ?: continue
+//                val stat = elementListData.getStat(element, statType)
+//                if (stat == 0.0 && !isAppend) continue
+//                val info =
+//                    kotlin.runCatching { DoubleStat.DoubleUpgradeInfo.GetFrom(split[2]) }.getOrNull() ?: continue
+//                elementListData.setStat(element, statType, info.pmp.apply(stat))
+//            }
+//        }
     }
 }
 

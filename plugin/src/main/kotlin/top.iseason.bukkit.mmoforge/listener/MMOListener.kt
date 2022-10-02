@@ -16,7 +16,6 @@
 package top.iseason.bukkit.mmoforge.listener
 
 import io.lumine.mythic.lib.api.item.NBTItem
-import net.Indyuce.mmoitems.api.event.ItemBuildEvent
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
 import org.bukkit.Bukkit
 import org.bukkit.event.Event
@@ -26,10 +25,6 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockDropItemEvent
 import top.iseason.bukkit.mmoforge.event.MMOBlockBreakEvent
 import top.iseason.bukkit.mmoforge.event.MMOBlockDropItemEvent
-import top.iseason.bukkit.mmoforge.stats.MMOForgeStat
-import top.iseason.bukkit.mmoforge.uitls.setName
-import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
-import top.iseason.bukkittemplate.utils.other.NumberUtils.toRoman
 
 object MMOListener : Listener {
     //锁库
@@ -84,20 +79,20 @@ object MMOListener : Listener {
         event.isCancelled = mmoEvent.isCancelled
     }
 
-    /**
-     * 检查MMO物品生成，并修改添加精炼
-     */
-    @EventHandler
-    fun onItemBuildEvent(event: ItemBuildEvent) {
-        val itemStack = event.itemStack ?: return
-        val item = NBTItem.get(itemStack) ?: return
-        val string = item.getString(MMOForgeStat.nbtPath)
-        val result = Regex("\"refine\":(.?),").find(string) ?: return
-        val refine = result.groupValues[1].toInt()
-        itemStack.applyMeta {
-            setName("$displayName ${refine.toRoman()}")
-        }
-    }
+//    /**
+//     * 检查MMO物品生成，并修改添加精炼
+//     */
+//    @EventHandler
+//    fun onItemBuildEvent(event: ItemBuildEvent) {
+//        val itemStack = event.itemStack ?: return
+//        val item = NBTItem.get(itemStack) ?: return
+//        val string = item.getString(MMOForgeStat.nbtPath)
+//        val result = Regex("\"refine\":(.?),").find(string) ?: return
+//        val refine = result.groupValues[1].toInt()
+//        itemStack.applyMeta {
+//            setName("$displayName ${refine.toRoman()}")
+//        }
+//    }
 
 //    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 //    fun onEntityPickupItemEvent(event: EntityPickupItemEvent) {
