@@ -48,6 +48,8 @@ object MMOForge : KotlinPlugin() {
         MMOListener.register()
         MMOItems.plugin.types.reload()
         MMOItems.plugin.stats.reload(true)
+        MMOItems.plugin.templates.reload()
+        MMOItems.plugin.formats.reload()
         info("&a插件已启用")
     }
 

@@ -257,9 +257,9 @@ object MainConfig : SimpleYAMLConfig() {
             val section = config.getConfigurationSection(levelStr) ?: return@forEach
             val statWithUpgrade = LinkedHashMap<ItemStat<*, *>, String>()
             for (statStr in section.getKeys(false)) {
-                val stat = MMOItems.plugin.stats.get(statStr) ?: continue
-                if (stat !is Upgradable) continue
-                statWithUpgrade[stat] = section.getString(statStr)!!
+                val stat = MMOItems.plugin.stats.get(statStr.uppercase()) ?: continue
+//                if (stat !is Upgradable) continue
+                statWithUpgrade[stat] = section.getString(statStr)!!.trim()
             }
             mutableMapOf[level] = statWithUpgrade
         }

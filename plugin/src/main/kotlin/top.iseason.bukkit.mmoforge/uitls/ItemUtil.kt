@@ -9,6 +9,9 @@ package top.iseason.bukkit.mmoforge.uitls
 
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
+import net.Indyuce.mmoitems.stat.Abilities
+import net.Indyuce.mmoitems.stat.data.AbilityData
+import net.Indyuce.mmoitems.stat.data.AbilityListData
 import net.Indyuce.mmoitems.stat.data.DoubleData
 import net.Indyuce.mmoitems.stat.data.EnchantListData
 import net.Indyuce.mmoitems.stat.data.type.StatData
@@ -66,37 +69,66 @@ fun LiveMMOItem.addAttribute(
         if (!isAppend && !this.hasData(itemStat)) return@forEach
         val statHistory = StatHistory.from(this, itemStat)
         val originalData = statHistory.originalData
-        val info = (itemStat as Upgradable).getUpgradeInfoByString(upgradeInfo)
-        if (originalData is EnchantListData) {
-            val enchantListData = originalData.cloneData() as EnchantListData
-            val enchants: Set<Enchantment> = enchantListData.enchants
-            val apply = (itemStat as Upgradable).apply(enchantListData.cloneData(), info, times) as EnchantListData
-            if (!isAppend) {
-                val enchants1 = apply.enchants
-                val temp = enchants1.filter { !enchants.contains(it) }
-                temp.forEach {
-                    apply.addEnchant(it, 0)
+        if (itemStat is Upgradable) {
+            val info = itemStat.getUpgradeInfoByString(upgradeInfo)
+            if (originalData is EnchantListData) {
+                val enchantListData = originalData.cloneData() as EnchantListData
+                val enchants: Set<Enchantment> = enchantListData.enchants
+                val apply = itemStat.apply(enchantListData.cloneData(), info, times) as EnchantListData
+                if (!isAppend) {
+                    val enchants1 = apply.enchants
+                    val temp = enchants1.filter { !enchants.contains(it) }
+                    temp.forEach {
+                        apply.addEnchant(it, 0)
+                    }
                 }
-            }
-            //附魔没有历史
+                //附魔没有历史
 //            statHistory.registerModifierBonus(uuid, apply)
 //            this.setStatHistory(itemStat, statHistory)
-            setData(itemStat, apply)
-            return
+                setData(itemStat, apply)
+                return
+            }
+            val rawData = (originalData as DoubleData).cloneData()
+            val forgeData =
+                statHistory.getModifiersBonus(MainConfig.ForgeUUID) as? DoubleData
+                    ?: itemStat.clearStatData as DoubleData
+            rawData.merge(forgeData)
+            if (uuid != MainConfig.ForgeUUID) {
+                val sd = statHistory.getModifiersBonus(uuid) as? DoubleData
+                if (sd != null)
+                    rawData.merge(sd)
+            }
+            val raw = (itemStat as DoubleStat).apply(rawData, info, times) as DoubleData
+            raw.value -= originalData.value
+            statHistory.registerModifierBonus(uuid, raw)
+            this.setStatHistory(itemStat, statHistory)
+        } else if (itemStat is Abilities) {
+            //处理技能增强
+            val abilityListData = originalData as AbilityListData
+            val abilitiesStr = upgradeInfo.split(';')
+            for (astr in abilitiesStr) {
+                val split = astr.split(':')
+                if (split.size != 2) continue
+                val idStr = split[0].split(',')
+                //查找符合条件的技能
+                val target: AbilityData = abilityListData.abilities.find {
+                    idStr[0].replace('_', ' ').equals(it.ability.name, true)
+                            && idStr[1].replace('_', ' ').equals(it.trigger.name, true)
+                } ?: continue
+                val modifiers = split[1].split('|')
+                for (modifier in modifiers) {
+                    val ms = modifier.split(',')
+                    if (ms.size != 2) continue
+                    val s = ms[0]
+                    val s1 = ms[1]
+                    if (!isAppend && !target.hasModifier(s)) continue
+                    val modifier1 = target.getModifier(s)
+                    val upgradeInfo =
+                        kotlin.runCatching { DoubleStat.DoubleUpgradeInfo.GetFrom(s1) }.getOrNull() ?: continue
+                    target.setModifier(s, upgradeInfo.pmp.apply(modifier1))
+                }
+            }
         }
-        val rawData = (originalData as DoubleData).cloneData()
-        val forgeData =
-            statHistory.getModifiersBonus(MainConfig.ForgeUUID) as? DoubleData ?: itemStat.clearStatData as DoubleData
-        rawData.merge(forgeData)
-        if (uuid != MainConfig.ForgeUUID) {
-            val sd = statHistory.getModifiersBonus(uuid) as? DoubleData
-            if (sd != null)
-                rawData.merge(sd)
-        }
-        val raw = (itemStat as DoubleStat).apply(rawData, info, times) as DoubleData
-        raw.value -= originalData.value
-        statHistory.registerModifierBonus(uuid, raw)
-        this.setStatHistory(itemStat, statHistory)
     }
 }
 
