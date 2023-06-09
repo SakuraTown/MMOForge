@@ -12,13 +12,13 @@ import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemStack
+import top.iseason.bukkit.mmoforge.uitls.item
 import top.iseason.bukkittemplate.config.SimpleYAMLConfig
 import top.iseason.bukkittemplate.config.annotations.Comment
 import top.iseason.bukkittemplate.config.annotations.FilePath
 import top.iseason.bukkittemplate.config.annotations.Key
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
-import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getItem
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.toSection
 
 @FilePath("ui/break_through.yml")
@@ -44,7 +44,7 @@ object BreakUIConfig : SimpleYAMLConfig() {
     var backgroundSection: MemorySection = YamlConfiguration().apply {
         createSection("default", buildMap {
             put("slots", (0 until row * 9).joinToString(separator = ","))
-            put("item", Material.GRAY_STAINED_GLASS_PANE.getItem().applyMeta { setDisplayName(" ") }.toSection())
+            put("item", Material.GRAY_STAINED_GLASS_PANE.item.applyMeta { setDisplayName(" ") }.toSection())
         })
     }
 
@@ -52,7 +52,7 @@ object BreakUIConfig : SimpleYAMLConfig() {
     @Comment("工具输入槽，只能有一个")
     var inputSection: MemorySection = YamlConfiguration().apply {
         set("slots", "13")
-        set("item", Material.RED_STAINED_GLASS_PANE.getItem().applyMeta {
+        set("item", Material.RED_STAINED_GLASS_PANE.item.applyMeta {
             setDisplayName("&c请先放入需要突破的物品")
         }.toSection())
     }
@@ -62,7 +62,7 @@ object BreakUIConfig : SimpleYAMLConfig() {
     var materialsSection: MemorySection = YamlConfiguration().apply {
         createSection("default", buildMap {
             put("slots", "30,31,32")
-            put("item", Material.RED_STAINED_GLASS_PANE.getItem().toSection())
+            put("item", Material.RED_STAINED_GLASS_PANE.item.toSection())
         })
     }
 
@@ -76,7 +76,7 @@ object BreakUIConfig : SimpleYAMLConfig() {
     @Comment("工具输出槽，只能有一个")
     var outputSection: MemorySection = YamlConfiguration().apply {
         set("slots", "49")
-        set("item", Material.RED_STAINED_GLASS_PANE.getItem().applyMeta {
+        set("item", Material.RED_STAINED_GLASS_PANE.item.applyMeta {
             setDisplayName("&c请先放入需要突破的物品")
         }.toSection())
     }
@@ -86,7 +86,7 @@ object BreakUIConfig : SimpleYAMLConfig() {
     var breakThroughSection: MemorySection = YamlConfiguration().apply {
         createSection("default", buildMap {
             put("slots", "40")
-            put("item", Material.ANVIL.getItem().applyMeta {
+            put("item", Material.ANVIL.item.applyMeta {
                 setDisplayName("&c无法突破")
             }.toSection())
         })

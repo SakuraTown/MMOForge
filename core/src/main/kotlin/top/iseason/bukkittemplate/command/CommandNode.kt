@@ -48,10 +48,10 @@ open class CommandNode(
     /**
      * 命令执行
      */
-    open var onExecute: (Params.(sender: CommandSender) -> Unit)? = null
+    open var onExecute: CommandNodeExecutor? = null
 ) : CommandExecutor, TabExecutor {
     var permission: Permission =
-        Permission("${BukkitTemplate.getPlugin().name.lowercase()}.$name.", default)
+        Permission("${BukkitTemplate.getPlugin().name.lowercase()}.$name", default)
 
     /**
      * 获取父节点
@@ -69,15 +69,24 @@ open class CommandNode(
                     CommandHandler.addPermissions(parentPerm)
                 }
                 permission = Permission(str, default)
-                Bukkit.getPluginManager().addPermission(permission)
+                try {
+                    Bukkit.getPluginManager().addPermission(permission)
+                } catch (e: Exception) {
+                    permission = Bukkit.getPluginManager().getPermission(permission.name)!!
+                }
                 permission.addParent(parentPerm, true)
             }
         }
 
     /**
-     * 子节点
+     * 子节点名称集合
      */
-    val subNodes = mutableMapOf<String, CommandNode>()
+    val subNodeKeys = mutableListOf<String>()
+
+    /**
+     * 子节点映射，全小写
+     */
+    val subNodesInsensitive = mutableMapOf<String, CommandNode>()
 
     /**
      * 参数类型和建议参数
@@ -91,19 +100,21 @@ open class CommandNode(
         if (parent == null && Bukkit.getPluginManager().getPermission(permission.name) == null) {
             Bukkit.getPluginManager().addPermission(permission)
         }
-        subNodes[node.name] = node
+        subNodeKeys += node.name
+        subNodesInsensitive[node.name.lowercase()] = node
         node.parent = this
         CommandHandler.addPermissions(node.permission)
         node.alias?.forEach {
-            subNodes[it] = node
+            subNodeKeys += it
+            subNodesInsensitive[it.lowercase()] = node
         }
     }
 
     /**
-     * 获取子节点
+     * 获取子节点,大小写不敏感
      * @return null if not exists
      */
-    fun getSubNode(arg: String) = subNodes[arg]
+    fun getSubNode(arg: String) = subNodesInsensitive[arg.lowercase()]
 
     /**
      * 获取该命令发送者可见的子节点
@@ -120,7 +131,7 @@ open class CommandNode(
      */
     fun getSubNodes(sender: CommandSender): Set<CommandNode> {
         val set = mutableSetOf<CommandNode>()
-        for (value in subNodes.values) {
+        for (value in subNodesInsensitive.values) {
             if (!value.canUse(sender)) continue
             set.add(value)
         }
@@ -140,15 +151,13 @@ open class CommandNode(
     }
 
     /**
-     * 获取子健
+     * 获取用户有权限的子键名称
      */
     fun getKeys(sender: CommandSender): MutableList<String> {
-        val mutableListOf = mutableListOf<String>()
-        subNodes.forEach { (k, v) ->
-            if (!v.canUse(sender)) return@forEach
-            mutableListOf.add(k)
-        }
-        return mutableListOf
+        return subNodeKeys.filter {
+            getSubNode(it)?.canUse(sender) == true
+        }.toMutableList()
+
     }
 
     /**
@@ -178,7 +187,7 @@ open class CommandNode(
         if (keys.isEmpty() && node.params.isNotEmpty()) {
             val last = args.last()
             val param = node.params.getOrNull(args.size - deep - 1) ?: return null
-            return (param.suggestRuntime?.invoke(sender) ?: param.suggest)?.filter {
+            return (param.suggestRuntime?.getParams(sender) ?: param.suggest)?.filter {
                 it.startsWith(last, true)
             }
         }
@@ -208,7 +217,7 @@ open class CommandNode(
             } ?: break
             deep++
         }
-        if (node.subNodes.isNotEmpty() && node.onExecute == null) {
+        if (node.subNodeKeys.isNotEmpty() && node.onExecute == null) {
             node.showUsage(sender)
             return true
         }
@@ -220,7 +229,7 @@ open class CommandNode(
         }
         submit(async = node.async) {
             try {
-                node.onExecute!!.invoke((Params(params, node)), sender)
+                node.onExecute!!.accept(Params(params, node), sender)
             } catch (e: ParmaException) {
                 //参数错误的提示
                 if (e.paramAdopter != null) {

@@ -4,7 +4,6 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import top.iseason.bukkittemplate.ui.container.BaseUI
 import top.iseason.bukkittemplate.ui.container.UIContainer
-import top.iseason.bukkittemplate.utils.other.submit
 
 
 /**
@@ -19,23 +18,9 @@ inline fun <reified T : BaseUI> buildUI(builder: T.() -> Unit = {}): Inventory {
  */
 inline fun <reified T : BaseUI> Player.openUI(builder: T.() -> Unit = {}) {
     try {
-        val buildUI = buildUI(builder)
-        submit { openInventory(buildUI) }
-
+        openInventory(buildUI(builder))
     } catch (ex: Throwable) {
         ex.printStackTrace()
-    }
-}
-
-/**
- * 打开任意UI
- */
-fun Player.openUI(ui: BaseUI) {
-    if (!ui.hasBuilt) {
-        ui.build()
-    }
-    submit {
-        openInventory(ui.inventory)
     }
 }
 

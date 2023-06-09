@@ -5,20 +5,6 @@
  *
  */
 
-/*
- * Description:
- * @Author: Iseason2000
- * @Date: 2022/4/17 下午7:45
- *
- */
-
-/*
- * Description:
- * @Author: Iseason2000
- * @Date: 2022/4/17 下午7:37
- *
- */
-
 package top.iseason.bukkit.mmoforge.stats
 
 import io.lumine.mythic.lib.api.item.ItemTag

@@ -45,6 +45,7 @@ class ForgeUI(val player: Player) : ChestUI(
     private val forgeButtons = mutableListOf<Button>()
 
     init {
+        lockOnTop = false
         //设置背景
         ForgeUIConfig.slots["background"]?.forEach { (item, slots) ->
             val background = PAPIHook.setPlaceHolderAndColor(item, player)

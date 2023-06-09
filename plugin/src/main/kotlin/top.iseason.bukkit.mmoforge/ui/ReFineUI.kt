@@ -44,6 +44,7 @@ class ReFineUI(val player: Player) : ChestUI(
     private val refineButtons = mutableListOf<Button>()
 
     init {
+        lockOnTop = false
         RefineUIConfig.slots["background"]?.forEach { (item, slots) ->
             val background = PAPIHook.setPlaceHolderAndColor(item, player)
             for (slot in slots) {

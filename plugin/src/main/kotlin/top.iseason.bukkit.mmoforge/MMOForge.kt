@@ -23,16 +23,16 @@ import top.iseason.bukkit.mmoforge.stats.MMOForgeStat
 import top.iseason.bukkit.mmoforge.stats.material.ForgeExp
 import top.iseason.bukkit.mmoforge.stats.material.LimitLevel
 import top.iseason.bukkit.mmoforge.stats.tools.*
-import top.iseason.bukkittemplate.KotlinPlugin
+import top.iseason.bukkittemplate.BukkitPlugin
 import top.iseason.bukkittemplate.command.CommandHandler
 import top.iseason.bukkittemplate.debug.info
 import top.iseason.bukkittemplate.ui.UIListener
-import top.iseason.bukkittemplate.utils.bukkit.EventUtils.register
+import top.iseason.bukkittemplate.utils.bukkit.EventUtils.registerListener
 
-object MMOForge : KotlinPlugin() {
+object MMOForge : BukkitPlugin {
     private val statLoreFormats = mutableListOf<MMOAttribute>()
 
-    override fun onAsyncEnable() {
+    override fun onEnable() {
         VaultHook.checkHooked()
         PAPIHook.checkHooked()
         mainCommands()
@@ -44,13 +44,13 @@ object MMOForge : KotlinPlugin() {
         registerStats()
         setStatsLoreFormat(statLoreFormats)
         setStatsLore(statLoreFormats)
-        UIListener.register()
-        MMOListener.register()
+        UIListener.registerListener()
+        MMOListener.registerListener()
         MMOItems.plugin.types.reload()
         MMOItems.plugin.stats.reload(true)
         MMOItems.plugin.templates.reload()
         MMOItems.plugin.formats.reload()
-        info("&a插件已启用")
+        info("&a插件已启用!  作者: Iseason QQ: 1347811744")
     }
 
     override fun onDisable() {
@@ -75,7 +75,7 @@ object MMOForge : KotlinPlugin() {
         Harvester.reg()
         AutoTorch.reg()
         SpeedUp.reg()
-        SakuraSoulBound.reg()
+//        SakuraSoulBound.reg()
     }
 
 
@@ -85,11 +85,11 @@ object MMOForge : KotlinPlugin() {
         val config = declaredField.get(MMOItems.plugin.language) as ConfigFile
         val list = config.config.getStringList("lore-format")
         val set = list.toMutableSet()
+        set.add("#${MMOForgeStat.nbtPath}#")
         for (stat in stats) {
             val loreKey = "#${stat.loreKey}#"
             set.add(loreKey)
         }
-        set.add("#${MMOForgeStat.path}#")
         if (list.toSet().intersect(set).isNotEmpty()) {
             config.config.set("lore-format", list.toList())
             config.save()
@@ -135,7 +135,7 @@ object MMOForge : KotlinPlugin() {
     private fun MMOAttribute.reg() {
         registerStat(this)
         load(false)
-        register()
+        registerListener()
     }
 
     private fun registerStat(mmoEnchant: MMOAttribute) {

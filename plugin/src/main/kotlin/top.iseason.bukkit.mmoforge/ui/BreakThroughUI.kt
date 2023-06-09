@@ -51,6 +51,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
     private var gold = 0.0
 
     init {
+        lockOnTop = false
         BreakUIConfig.slots["background"]?.forEach { (item, slots) ->
             val background = PAPIHook.setPlaceHolderAndColor(item, player)
             for (slot in slots) {

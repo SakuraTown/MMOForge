@@ -33,6 +33,10 @@ import top.iseason.bukkittemplate.utils.other.RandomUtils
 import java.util.*
 import java.util.regex.Pattern
 
+
+val Material.item: ItemStack
+    get() = ItemStack(this)
+
 /**
  * 获取MMOItem的Double数据
  */

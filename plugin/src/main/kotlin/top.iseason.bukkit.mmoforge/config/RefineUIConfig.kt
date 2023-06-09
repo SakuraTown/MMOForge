@@ -15,13 +15,13 @@ import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemStack
 import top.iseason.bukkit.mmoforge.config.BreakUIConfig.readSlot
 import top.iseason.bukkit.mmoforge.config.BreakUIConfig.readSlots
+import top.iseason.bukkit.mmoforge.uitls.item
 import top.iseason.bukkit.mmoforge.uitls.setName
 import top.iseason.bukkittemplate.config.SimpleYAMLConfig
 import top.iseason.bukkittemplate.config.annotations.Comment
 import top.iseason.bukkittemplate.config.annotations.FilePath
 import top.iseason.bukkittemplate.config.annotations.Key
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
-import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getItem
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.toSection
 
 @FilePath("ui/refine.yml")
@@ -48,7 +48,7 @@ object RefineUIConfig : SimpleYAMLConfig() {
     var backgroundSection: MemorySection = YamlConfiguration().apply {
         createSection("default", buildMap {
             put("slots", (0 until row * 9).joinToString(separator = ","))
-            put("item", Material.GRAY_STAINED_GLASS_PANE.getItem().applyMeta { setDisplayName(" ") }.toSection())
+            put("item", Material.GRAY_STAINED_GLASS_PANE.item.applyMeta { setDisplayName(" ") }.toSection())
         })
     }
 
