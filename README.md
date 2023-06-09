@@ -11,15 +11,6 @@
 * VaultAPI 1.7+
 * placeholderapi 2.11.2+(非必须)
 
-## 命令
-
-~~~ yaml
-mmoforge break  打开突破界面
-mmoforge forge  打开强化界面
-mmoforge refine  打开精炼界面
-mmoforge bind [player]  绑定某个玩家的物品
-~~~
-
 mmoforge 别名 `mf`, `mforge`, `mmof`
 
 ## 配置
