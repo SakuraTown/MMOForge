@@ -13,11 +13,10 @@ import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.Type
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
 import net.Indyuce.mmoitems.stat.type.NameData
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import top.iseason.bukkit.mmoforge.config.BreakUIConfig
+import top.iseason.bukkit.mmoforge.config.Lang
 import top.iseason.bukkit.mmoforge.config.MainConfig
 import top.iseason.bukkit.mmoforge.hook.PAPIHook
 import top.iseason.bukkit.mmoforge.hook.VaultHook.takeMoney
@@ -31,6 +30,8 @@ import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.checkAir
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.subtract
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
+import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
+import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 
 /**
  * 突破界面
@@ -67,7 +68,9 @@ class BreakThroughUI(val player: Player) : ChestUI(
             val index = slots.firstOrNull() ?: return@forEach
             inputSlot = IOSlot(index, PAPIHook.setPlaceHolderAndColor(item, player)).inputFilter {
                 val nbtItem = NBTItem.get(it) ?: return@inputFilter false
-                inputData = nbtItem.getForgeData() ?: return@inputFilter false
+                val inputData = nbtItem.getForgeData() ?: return@inputFilter false
+                if (inputData.forge != inputData.getCurrentMaxForge()) return@inputFilter false
+                this@BreakThroughUI.inputData = inputData
                 true
             }.onInput(async = true) {
                 updateInput(inputData)
@@ -80,13 +83,17 @@ class BreakThroughUI(val player: Player) : ChestUI(
             val index = slots.firstOrNull() ?: return@forEach
             outputSlot = IOSlot(index, PAPIHook.setPlaceHolderAndColor(item, player)).lockable(true).setup()
         }
-        BreakUIConfig.slots["breakThrough"]?.forEach { (item, slots) ->
+        BreakUIConfig.slots["default-break"]?.forEach { (item, slots) ->
             val index = slots.firstOrNull() ?: return@forEach
             breakThroughButtons.add(
                 Button(PAPIHook.setPlaceHolderAndColor(item, player), index)
                     .onClicked {
                         if (!canBreak) return@onClicked
-                        if (!(it.whoClicked as Player).takeMoney(gold)) {
+                        val player = it.whoClicked as Player
+                        if (!player.takeMoney(gold)) {
+                            if (EasyCoolDown.check("${player.uniqueId}-ui_break_no_gold", Lang.cooldown)) {
+                                player.sendColorMessage(Lang.ui_break_no_gold)
+                            }
                             return@onClicked
                         }
                         //扣材料
@@ -105,6 +112,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
                         canBreak = false
                         gold = 0.0
                         inputData = null
+                        player.sendColorMessage(Lang.ui_break_success)
                     }.setup()
             )
         }
@@ -205,6 +213,10 @@ class BreakThroughUI(val player: Player) : ChestUI(
             resetResult()
             return
         }
+        if (inputData!!.limit >= inputData!!.maxLimit) {
+            resetResult()
+            return
+        }
         //检测能否突破,可以则继续
         if (materialSlots.all { it.requireItem == null }) {
             resetResult()
@@ -231,12 +243,14 @@ class BreakThroughUI(val player: Player) : ChestUI(
         //上锁
         outputSlot.outputAble(false)
         outputSlot.itemStack = liveMMOItem.newBuilder().build()
-        breakThroughButtons.forEach {
-            it.itemStack = PAPIHook.setPlaceHolderAndColor(it.itemStack!!.applyMeta {
-                setDisplayName(BreakUIConfig.breakThroughAllowed.formatBy(gold))
-                addEnchant(Enchantment.BINDING_CURSE, 1, true)
-                addItemFlags(ItemFlag.HIDE_ENCHANTS)
-            })
+        BreakUIConfig.slots["allow-break"]?.forEach { (item, indexes) ->
+            val stack = PAPIHook.setPlaceHolderAndColor(item, player).applyMeta {
+                if (hasDisplayName()) setDisplayName(displayName.replace("{gold}", gold.toString()))
+                if (hasLore()) lore = lore!!.map { it.replace("{gold}", gold.toString()) }
+            }
+            for (index in indexes) {
+                getSlot(index)?.itemStack = stack
+            }
         }
         canBreak = true
     }

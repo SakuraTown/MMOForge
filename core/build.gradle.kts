@@ -7,7 +7,9 @@ group = "top.iseason.bukkittemplate"
 
 val exposedVersion: String by rootProject
 repositories {
-
+    maven {
+        url = uri("https://nexus.phoenixdevt.fr/repository/maven-public/")
+    }
 }
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
@@ -15,6 +17,9 @@ dependencies {
     compileOnly("net.kyori:adventure-text-minimessage:4.13.0")
     compileOnly("net.kyori:adventure-platform-bukkit:4.3.0")
     dokkaHtmlPlugin("org.jetbrains.dokka:kotlin-as-java-plugin:1.8.10")
+    compileOnly("net.Indyuce:MMOItems-API:6.9.2-SNAPSHOT") { isTransitive = false }
+    compileOnly("com.github.LoneDev6:api-itemsadder:3.4.1-r4") { isTransitive = false }
+    compileOnly("com.github.oraxen:oraxen:1.155.3") { isTransitive = false }
 }
 tasks {
     compileJava {

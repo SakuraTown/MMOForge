@@ -8,12 +8,19 @@
 package top.iseason.bukkit.mmoforge.command
 
 import org.bukkit.entity.Player
+import org.bukkit.permissions.PermissionDefault
+import top.iseason.bukkit.mmoforge.MMOForge
+import top.iseason.bukkit.mmoforge.config.BreakUIConfig
+import top.iseason.bukkit.mmoforge.config.ForgeUIConfig
+import top.iseason.bukkit.mmoforge.config.MainConfig
+import top.iseason.bukkit.mmoforge.config.RefineUIConfig
 import top.iseason.bukkit.mmoforge.ui.BreakThroughUI
 import top.iseason.bukkit.mmoforge.ui.ForgeUI
 import top.iseason.bukkit.mmoforge.ui.ReFineUI
 import top.iseason.bukkittemplate.command.command
 import top.iseason.bukkittemplate.command.executor
 import top.iseason.bukkittemplate.command.node
+import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.submit
 
 fun mainCommands() {
@@ -52,6 +59,30 @@ fun mainCommands() {
                 }
             }
         }
+        node("reload") {
+            async = true
+            default = PermissionDefault.OP
+            description = "重载配置"
+            executor { _, it ->
+                BreakUIConfig.load()
+                RefineUIConfig.load()
+                ForgeUIConfig.load()
+                MainConfig.load()
+                it.sendColorMessage("&a重载成功!")
+            }
+        }
+        node("reloadTools") {
+            async = true
+            default = PermissionDefault.OP
+            description = "重载工具属性配置配置"
+            executor { _, it ->
+                for (statLoreFormat in MMOForge.statLoreFormats) {
+                    statLoreFormat.load()
+                }
+                it.sendColorMessage("&a重载成功!")
+            }
+        }
+
 //        node("bind") {
 //            default = PermissionDefault.OP
 //            description = "绑定某个玩家的物品"

@@ -13,6 +13,7 @@ import org.bukkit.configuration.MemorySection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.inventory.ItemStack
 import top.iseason.bukkit.mmoforge.uitls.item
+import top.iseason.bukkit.mmoforge.uitls.setName
 import top.iseason.bukkittemplate.config.SimpleYAMLConfig
 import top.iseason.bukkittemplate.config.annotations.Comment
 import top.iseason.bukkittemplate.config.annotations.FilePath
@@ -81,8 +82,8 @@ object BreakUIConfig : SimpleYAMLConfig() {
         }.toSection())
     }
 
-    @Key("breakThrough")
-    @Comment("突破按钮")
+    @Key("default-break")
+    @Comment("", "默认显示的突破按钮，无法突破")
     var breakThroughSection: MemorySection = YamlConfiguration().apply {
         createSection("default", buildMap {
             put("slots", "40")
@@ -92,20 +93,27 @@ object BreakUIConfig : SimpleYAMLConfig() {
         })
     }
 
-    @Key
-    var breakThroughAllowed = "点击突破物品: &6{0} ￥"
-
-    @Key
-    var breakThroughDeny = "&c无法突破"
+    @Key("allow-break")
+    @Comment("", "可以突破时的突破按钮，{gold} 是需要的金币的占位符")
+    var allowBreakThroughSection: MemorySection = YamlConfiguration().apply {
+        createSection(
+            "default", mutableMapOf(
+                "slots" to "40",
+                "item" to Material.ANVIL.item.applyMeta { setName("点击突破物品: &6{gold} ￥") }.toSection()
+            )
+        )
+    }
 
 
     override fun onLoaded(section: ConfigurationSection) {
         slots = mutableMapOf()
         readSlots("background", backgroundSection, slots)
         readSlots("materials", materialsSection, slots)
-        readSlots("breakThrough", breakThroughSection, slots)
+        readSlots("default-break", breakThroughSection, slots)
+        readSlots("allow-break", allowBreakThroughSection, slots)
         readSlot("input", inputSection, slots)
         readSlot("output", outputSection, slots)
+
     }
 
     /**

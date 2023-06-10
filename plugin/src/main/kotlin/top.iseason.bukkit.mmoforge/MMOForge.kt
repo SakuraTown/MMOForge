@@ -21,7 +21,6 @@ import top.iseason.bukkit.mmoforge.hook.VaultHook
 import top.iseason.bukkit.mmoforge.listener.MMOListener
 import top.iseason.bukkit.mmoforge.stats.MMOForgeStat
 import top.iseason.bukkit.mmoforge.stats.material.ForgeExp
-import top.iseason.bukkit.mmoforge.stats.material.LimitLevel
 import top.iseason.bukkit.mmoforge.stats.tools.*
 import top.iseason.bukkittemplate.BukkitPlugin
 import top.iseason.bukkittemplate.command.CommandHandler
@@ -30,7 +29,7 @@ import top.iseason.bukkittemplate.ui.UIListener
 import top.iseason.bukkittemplate.utils.bukkit.EventUtils.registerListener
 
 object MMOForge : BukkitPlugin {
-    private val statLoreFormats = mutableListOf<MMOAttribute>()
+    val statLoreFormats = mutableListOf<MMOAttribute>()
 
     override fun onEnable() {
         VaultHook.checkHooked()
@@ -64,7 +63,7 @@ object MMOForge : BukkitPlugin {
     private fun registerStats() {
         MMOItems.plugin.stats.register(MMOForgeStat)
         ForgeExp.reg()
-        LimitLevel.reg()
+//        LimitLevel.reg()
         SilkTouch.reg()
         FortuneOre.reg()
         VeinOre.reg()
@@ -85,12 +84,18 @@ object MMOForge : BukkitPlugin {
         val config = declaredField.get(MMOItems.plugin.language) as ConfigFile
         val list = config.config.getStringList("lore-format")
         val set = list.toMutableSet()
-        set.add("#${MMOForgeStat.nbtPath}#")
+        var change = false
         for (stat in stats) {
             val loreKey = "#${stat.loreKey}#"
-            set.add(loreKey)
+            if (set.contains(loreKey)) continue
+            change = true
+            list.add(loreKey)
         }
-        if (list.toSet().intersect(set).isNotEmpty()) {
+        if (!set.contains("#${MMOForgeStat.nbtPath}#")) {
+            list.add("#${MMOForgeStat.nbtPath}#")
+            change = true
+        }
+        if (change) {
             config.config.set("lore-format", list.toList())
             config.save()
         }

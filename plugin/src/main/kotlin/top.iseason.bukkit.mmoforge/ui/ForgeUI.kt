@@ -9,10 +9,9 @@ package top.iseason.bukkit.mmoforge.ui
 
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemFlag
 import top.iseason.bukkit.mmoforge.config.ForgeUIConfig
+import top.iseason.bukkit.mmoforge.config.Lang
 import top.iseason.bukkit.mmoforge.config.MainConfig
 import top.iseason.bukkit.mmoforge.hook.PAPIHook
 import top.iseason.bukkit.mmoforge.hook.VaultHook.takeMoney
@@ -27,7 +26,8 @@ import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.EntityUtils.giveItems
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.subtract
-import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
+import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
+import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 
 
 class ForgeUI(val player: Player) : ChestUI(
@@ -83,14 +83,18 @@ class ForgeUI(val player: Player) : ChestUI(
                 )
             }
         }
-        ForgeUIConfig.slots["forge"]?.forEach { (item, slots) ->
+        ForgeUIConfig.slots["default-forge"]?.forEach { (item, slots) ->
             val item2 = PAPIHook.setPlaceHolderAndColor(item, player)
             for (slot in slots) {
                 forgeButtons.add(
                     Button(item2, index = slot)
                         .onClicked(true) {
                             if (!canForge) return@onClicked
-                            if (!(it.whoClicked as Player).takeMoney(gold)) {
+                            val player = it.whoClicked as Player
+                            if (!player.takeMoney(gold)) {
+                                if (EasyCoolDown.check("${player.uniqueId}-ui_forge_no_gold", Lang.cooldown)) {
+                                    player.sendColorMessage(Lang.ui_forge_no_gold)
+                                }
                                 return@onClicked
                             }
                             //扣材料
@@ -113,6 +117,7 @@ class ForgeUI(val player: Player) : ChestUI(
                             canForge = false
                             gold = 0.0
                             costExp = 0.0
+                            player.sendColorMessage(Lang.ui_forge_success)
                         }.setup()
                 )
             }
@@ -158,12 +163,14 @@ class ForgeUI(val player: Player) : ChestUI(
         resultSlot.ejectSilently(player)
         resultSlot.outputAble(false)
         resultSlot.itemStack = liveMMOItem.newBuilder().build()
-        forgeButtons.forEach {
-            it.itemStack = PAPIHook.setPlaceHolderAndColor(it.itemStack!!.applyMeta {
-                setDisplayName(ForgeUIConfig.forgeAllowed.formatBy(gold))
-                addEnchant(Enchantment.BINDING_CURSE, 1, true)
-                addItemFlags(ItemFlag.HIDE_ENCHANTS)
-            }, player)
+        ForgeUIConfig.slots["allow-forge"]?.forEach { (item, indexes) ->
+            val stack = PAPIHook.setPlaceHolderAndColor(item, player).applyMeta {
+                if (hasDisplayName()) setDisplayName(displayName.replace("{gold}", gold.toString()))
+                if (hasLore()) lore = lore!!.map { it.replace("{gold}", gold.toString()) }
+            }
+            for (index in indexes) {
+                getSlot(index)?.itemStack = stack
+            }
         }
         canForge = true
     }

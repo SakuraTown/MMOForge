@@ -35,6 +35,7 @@ import top.iseason.bukkittemplate.config.annotations.FilePath
 import top.iseason.bukkittemplate.config.annotations.Key
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.toColor
 import top.iseason.bukkittemplate.utils.other.NumberUtils.toRoman
+import java.text.DecimalFormat
 import java.util.*
 
 //配置保存路径
@@ -55,31 +56,14 @@ object MainConfig : SimpleYAMLConfig() {
     @Key
     var AHEAD = "属性加成格式"
 
-    @Comment("物品星级标签，储存在物品NBT")
-    @Key("quality_tag")
-    var QUALITY_TAG = "SAKURA_QUALITY"
-
-    @Comment("强化标签，储存在物品NBT")
-    @Key("foreg-tag")
-    var FORGE_TAG = "SAKURA_FORGE"
     val ForgeUUID = UUID.fromString("9605eb27-aef7-477e-bb7e-d5075c82de85")
 
-    @Comment("", "强化限制标签，储存在物品NBT")
-    @Key("limit-tag")
-    var LIMIT_TAG = "SAKURA_FORGE_LIMIT"
     val LimitUUID = UUID.fromString("aff6ef71-8963-4651-aa31-62782ba7e71f")
 
     @Comment("", "强化限制对应多少强化等级")
     @Key("limit-rate-tag")
     var LimitRate = 20
 
-    @Comment("", "强化经验标签，储存在物品NBT")
-    @Key("limit-exp-tag")
-    var FORGE_EXP_TAG = "SAKURA_FORGE_EXP"
-
-    @Comment("", "精炼标签，储存在物品NBT")
-    @Key("refine-tag")
-    var REFINE_TAG = "SAKURA_REFINE"
     val RefineUUID = UUID.fromString("6e6f2bb6-068e-481f-b913-1b80c2cf1dbb")
 
     @Comment("", "物品最大精炼等级，储存在物品NBT")
@@ -89,16 +73,6 @@ object MainConfig : SimpleYAMLConfig() {
     @Comment("", "物品最大突破等级，储存在物品NBT")
     @Key("max_limit_tag")
     var MAX_LIMIT = 5
-
-
-    @Comment("", "材料拥有的强化经验，储存在物品NBT")
-    @Key("material_forge_tag")
-    var MATERIAL_FORGE_TAG = "SAKURA_MATERIAL_FORGE"
-
-    @Comment("", "材料拥有的突破等级，储存在物品NBT")
-    @Key("material_limit_tag")
-    var MATERIAL_LIMIT_TAG = "SAKURA_MATERIAL_LIMIT"
-
 
     @Comment("", "强化每级增加的属性，支持小数及范围")
     @Key("forge-map")
@@ -209,24 +183,37 @@ object MainConfig : SimpleYAMLConfig() {
 //        "&7■ &f精炼：&6{refine}",
         "&7■ &f突破：&a{limit}",
         "&7■ &f强化：&b{forge}",
-        "&7■ 强化经验：&b{progress}"
+        "&7■ 强化经验：&b|{forge-progress}| {forge-current}/{forge-need}"
     )
+
+    @Comment("", "星级符号")
+    @Key("star-char")
+    var starChar = "✪ "
+
+    @Comment("", "强化进度条符号")
+    @Key("forge-progress-char")
+    var forgeProgressChar = "█"
 
     /**
      * 由强化数据得lore
      */
     fun getItemLore(forgeData: MMOForgeData): List<String> {
         val lore = mutableListOf<String>()
+        val format = DecimalFormat("0.##")
+        val current = format.format(forgeData.currentExp)
+        val forgeUpdateExp = forgeData.getForgeUpdateExp()
+        val forgeNeed = format.format(forgeUpdateExp)
+        val processBar = getProcessBar(10, forgeData.currentExp, forgeUpdateExp)
         itemLore.forEach {
             lore.add(
                 it.replace("{star}", getStarCount(forgeData.star))
                     .replace("{refine}", forgeData.refine.toRoman())
                     .replace("{limit}", forgeData.limit.toString())
                     .replace("{forge}", forgeData.forge.toString())
-                    .replace(
-                        "{progress}",
-                        getProcessBar(10, forgeData.currentExp, forgeData.getForgeUpdateExp())
-                    ).toColor()
+                    .replace("{forge-progress}", processBar)
+                    .replace("{forge-current}", current)
+                    .replace("{forge-need}", forgeNeed)
+                    .toColor()
             )
         }
         return lore

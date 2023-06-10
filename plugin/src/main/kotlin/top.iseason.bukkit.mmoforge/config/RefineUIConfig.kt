@@ -72,13 +72,24 @@ object RefineUIConfig : SimpleYAMLConfig() {
         )
     }
 
-    @Key("refine")
-    @Comment("精炼按钮")
+    @Key("default-refine")
+    @Comment("", "默认显示的精炼按钮，无法精炼")
     var refineSection: MemorySection = YamlConfiguration().apply {
         createSection(
             "default", mutableMapOf(
                 "slots" to "23",
                 "item" to ItemStack(Material.ANVIL).applyMeta { setName("${ChatColor.RED}无法精炼") }.toSection()
+            )
+        )
+    }
+
+    @Key("allow-refine")
+    @Comment("", "可以精炼时的精炼按钮，{gold} 是需要的金币的占位符")
+    var allowRefineSection: MemorySection = YamlConfiguration().apply {
+        createSection(
+            "default", mutableMapOf(
+                "slots" to "40",
+                "item" to Material.ANVIL.item.applyMeta { setName("点击精炼物品: &6{gold} ￥") }.toSection()
             )
         )
     }
@@ -92,8 +103,6 @@ object RefineUIConfig : SimpleYAMLConfig() {
         }.toSection())
     }
 
-    @Key
-    var refineAllowed = "点击精炼物品: &6{0} ￥"
 
     override fun onLoaded(section: ConfigurationSection) {
         slots = mutableMapOf()
@@ -101,7 +110,8 @@ object RefineUIConfig : SimpleYAMLConfig() {
         readSlot("tool", toolSection, slots)
         readSlot("result", resultSection, slots)
         readSlot("material", materialSection, slots)
-        readSlots("refine", refineSection, slots)
+        readSlots("default-refine", refineSection, slots)
+        readSlots("allow-refine", allowRefineSection, slots)
     }
 
 }

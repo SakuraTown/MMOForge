@@ -24,6 +24,7 @@ import net.Indyuce.mmoitems.stat.data.type.Mergeable
 import net.Indyuce.mmoitems.stat.data.type.StatData
 import net.Indyuce.mmoitems.stat.type.ItemStat
 import top.iseason.bukkit.mmoforge.config.MainConfig
+import kotlin.math.min
 
 data class MMOForgeData(
     // 物品星级
@@ -64,7 +65,7 @@ data class MMOForgeData(
     /**
      * 获取当前最大强化等级
      */
-    fun getCurrentMaxForge() = (limit + 1) * MainConfig.LimitRate
+    fun getCurrentMaxForge() = min((limit + 1) * MainConfig.LimitRate, maxForge)
 
     override fun merge(data: MMOForgeData?) {
         require(data != null) { "Cannot merge two different stat data types!" }
@@ -88,11 +89,11 @@ data class MMOForgeData(
         addProperty("forge", forge)
         addProperty("totalExp", currentExp)
         if (maxRefine != MainConfig.MAX_REFINE)
-            addProperty("maxRefine", maxRefine)
+            addProperty("max-refine", maxRefine)
         if (maxLimit != MainConfig.MAX_LIMIT)
-            addProperty("maxLimit", maxLimit)
+            addProperty("max-limit", maxLimit)
         if (maxForge != MainConfig.MAX_LIMIT * MainConfig.LimitRate)
-            addProperty("maxForge", maxForge)
+            addProperty("max-forge", maxForge)
         if (refineGain != MainConfig.refineGain && refineGain.isNotEmpty())
             add("gain-refine", refineGain.toJson())
         if (limitGain != MainConfig.limitGain && limitGain.isNotEmpty())

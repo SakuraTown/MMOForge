@@ -9,9 +9,8 @@ package top.iseason.bukkit.mmoforge.ui
 
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
-import org.bukkit.inventory.ItemFlag
+import top.iseason.bukkit.mmoforge.config.Lang
 import top.iseason.bukkit.mmoforge.config.MainConfig
 import top.iseason.bukkit.mmoforge.config.RefineUIConfig
 import top.iseason.bukkit.mmoforge.hook.PAPIHook
@@ -24,7 +23,8 @@ import top.iseason.bukkit.mmoforge.uitls.setName
 import top.iseason.bukkittemplate.ui.container.ChestUI
 import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
-import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
+import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
+import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 import top.iseason.bukkittemplate.utils.other.NumberUtils.toRoman
 
 
@@ -90,7 +90,7 @@ class ReFineUI(val player: Player) : ChestUI(
             resultSlot = IOSlot(index, item).inputAble(false).setup()
         }
 
-        RefineUIConfig.slots["refine"]?.forEach { (item, slots) ->
+        RefineUIConfig.slots["default-refine"]?.forEach { (item, slots) ->
             for (slot in slots) {
                 refineButtons.add(
                     Button(
@@ -100,12 +100,19 @@ class ReFineUI(val player: Player) : ChestUI(
                         ), index = slot
                     ).onClicked(true) {
                         if (gold == 0.0) return@onClicked
-                        if (!(it.whoClicked as Player).takeMoney(gold)) return@onClicked
+                        val player = it.whoClicked as Player
+                        if (!player.takeMoney(gold)) {
+                            if (EasyCoolDown.check("${player.uniqueId}-ui_refine_no_gold", Lang.cooldown)) {
+                                player.sendColorMessage(Lang.ui_refine_no_gold)
+                            }
+                            return@onClicked
+                        }
                         resetData()
                         toolSlot.reset()
                         materialSlot.reset()
                         this.reset()
                         resultSlot.outputAble(true)
+                        player.sendColorMessage(Lang.ui_refine_success)
                     }.setup()
                 )
             }
@@ -150,12 +157,14 @@ class ReFineUI(val player: Player) : ChestUI(
         mmoItem.setData(MMOForgeStat, forgeData)
         val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
         gold = MainConfig.getValueByFormula(expression, forgeData.star, refine = add)
-        refineButtons.forEach {
-            it.itemStack = PAPIHook.setPlaceHolderAndColor(it.itemStack!!.applyMeta {
-                setDisplayName(RefineUIConfig.refineAllowed.formatBy(gold))
-                addEnchant(Enchantment.BINDING_CURSE, 1, true)
-                addItemFlags(ItemFlag.HIDE_ENCHANTS)
-            }, player)
+        RefineUIConfig.slots["allow-refine"]?.forEach { (item, indexes) ->
+            val stack = PAPIHook.setPlaceHolderAndColor(item, player).applyMeta {
+                if (hasDisplayName()) setDisplayName(displayName.replace("{gold}", gold.toString()))
+                if (hasLore()) lore = lore!!.map { it.replace("{gold}", gold.toString()) }
+            }
+            for (index in indexes) {
+                getSlot(index)?.itemStack = stack
+            }
         }
         resultSlot.ejectSilently(player)
         resultSlot.outputAble(false)

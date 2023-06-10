@@ -26,6 +26,9 @@ import org.bukkit.material.SpawnEgg
 import org.bukkit.potion.*
 import org.bukkit.util.io.BukkitObjectInputStream
 import org.bukkit.util.io.BukkitObjectOutputStream
+import top.iseason.bukkittemplate.hook.ItemsAdderHook
+import top.iseason.bukkittemplate.hook.MMOItemsHook
+import top.iseason.bukkittemplate.hook.OraxenHook
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.toColor
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -445,8 +448,11 @@ object ItemUtils {
      * @param allowNested 是否允许嵌套解析(比如潜影盒)，只对容器有效，为false时将容器内容转为base64储存
      */
     fun fromSection(section: ConfigurationSection, allowNested: Boolean = true): ItemStack? {
-        val material = Material.getMaterial(section.getString("material")!!.uppercase()) ?: return null
-        var item = ItemStack(material)
+        val mat = section.getString("material")!!
+        val material = Material.getMaterial(mat.uppercase())
+        var item = if (material != null) ItemStack(material) else {
+            ItemsAdderHook.getByNameId(mat) ?: MMOItemsHook.getByNameID(mat) ?: OraxenHook.getItemById(mat)
+        } ?: return null
         //处理头颅
         val url = section.getString("skull")
         if (url != null) item = NBTEditor.getHead(url)

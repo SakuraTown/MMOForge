@@ -7,16 +7,15 @@
 
 package top.iseason.bukkit.mmoforge.uitls
 
-import java.text.DecimalFormat
+import top.iseason.bukkit.mmoforge.config.MainConfig
 
 fun getProcessBar(size: Int, current: Double, max: Double): String {
     val fillCount = ((current / max) * size).toInt()
-    val format = DecimalFormat("0.##")
-    return "|${"█".repeat(fillCount)}${" ".repeat(size - fillCount)}| ${format.format(current)}/${format.format(max)}"
+    return "${MainConfig.forgeProgressChar.repeat(fillCount)}${" ".repeat(size - fillCount)}"
 }
 
 fun getStarCount(star: Int): String {
-    return "✪ ".repeat(star)
+    return MainConfig.starChar.repeat(star)
 }
 
 inline fun <T, reified U> List<T>.toType(): List<U> {

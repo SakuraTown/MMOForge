@@ -72,8 +72,8 @@ object ForgeUIConfig : SimpleYAMLConfig() {
         )
     }
 
-    @Key("forge")
-    @Comment("强化按钮")
+    @Key("default-forge")
+    @Comment("", "默认不放入东西显示的强化按钮")
     var forgeSection: MemorySection = YamlConfiguration().apply {
         createSection(
             "default", mutableMapOf(
@@ -83,8 +83,16 @@ object ForgeUIConfig : SimpleYAMLConfig() {
         )
     }
 
-    @Key
-    var forgeAllowed = "点击强化物品: &6{0} ￥"
+    @Key("allow-forge")
+    @Comment("", "可以强化时显示的物品, {gold} 是需要的金币的占位符")
+    var allowForgeSection: MemorySection = YamlConfiguration().apply {
+        createSection(
+            "default", mutableMapOf(
+                "slots" to "40",
+                "item" to Material.ANVIL.item.applyMeta { setName("点击强化物品: &6{gold} ￥") }.toSection()
+            )
+        )
+    }
 
     @Key("result")
     @Comment("强化产物输出槽")
@@ -102,7 +110,8 @@ object ForgeUIConfig : SimpleYAMLConfig() {
         readSlot("input", inputSection, slots)
         readSlot("result", resultSection, slots)
         readSlots("material", materialSection, slots)
-        readSlots("forge", forgeSection, slots)
+        readSlots("default-forge", forgeSection, slots)
+        readSlots("allow-forge", allowForgeSection, slots)
     }
 
 }
