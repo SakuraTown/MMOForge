@@ -19,10 +19,18 @@ object Lang : top.iseason.bukkittemplate.config.Lang() {
     var cooldown = 1000L
 
     var ui_forge_no_gold = "&6你没有足够的金币!"
+
+    @Comment("占位符{0}原来的等级，{1}新的等级")
     var ui_forge_success = "&a强化成功!"
+
     var ui_break_no_gold = "&6你没有足够的金币!"
+
+    @Comment("占位符{0}原来的等级，{1}新的等级")
     var ui_break_success = "&a突破成功!"
+
     var ui_refine_no_gold = "&6你没有足够的金币!"
+
+    @Comment("占位符{0}原来的等级，{1}新的等级")
     var ui_refine_success = "&a精炼成功!"
 
 }

@@ -50,6 +50,8 @@ class BreakThroughUI(val player: Player) : ChestUI(
     private val breakThroughButtons = mutableListOf<Button>()
     private val materialSlots = mutableListOf<MaterialSlot>()
     private var gold = 0.0
+    private var breakLevel = 0
+    private var newBreakLevel = 0
 
     init {
         lockOnTop = false
@@ -111,8 +113,10 @@ class BreakThroughUI(val player: Player) : ChestUI(
                         reset()
                         canBreak = false
                         gold = 0.0
+                        breakLevel = 0
+                        newBreakLevel = 0
                         inputData = null
-                        player.sendColorMessage(Lang.ui_break_success)
+                        player.sendColorMessage(Lang.ui_break_success.formatBy(breakLevel, newBreakLevel))
                     }.setup()
             )
         }
@@ -236,7 +240,9 @@ class BreakThroughUI(val player: Player) : ChestUI(
         // 预览物品
         val liveMMOItem = LiveMMOItem(itemStack)
         liveMMOItem.breakthrough(inputData, 1)
+        breakLevel = inputData.limit
         inputData.limit += 1
+        newBreakLevel = inputData.limit
         liveMMOItem.setData(MMOForgeStat, inputData)
         //把旧的弹出
         outputSlot.ejectSilently(player)

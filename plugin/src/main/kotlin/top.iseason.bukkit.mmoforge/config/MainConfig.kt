@@ -67,15 +67,15 @@ object MainConfig : SimpleYAMLConfig() {
     val RefineUUID = UUID.fromString("6e6f2bb6-068e-481f-b913-1b80c2cf1dbb")
 
     @Comment("", "物品最大精炼等级，储存在物品NBT")
-    @Key("max_refine_tag")
+    @Key("max-refine-tag")
     var MAX_REFINE = 5
 
     @Comment("", "物品最大突破等级，储存在物品NBT")
-    @Key("max_limit_tag")
+    @Key("max-limit-tag")
     var MAX_LIMIT = 5
 
-    @Comment("", "强化每级增加的属性，支持小数及范围")
     @Key("forge-map")
+    @Comment("", "强化每级增加的属性，支持小数及范围")
     var ForgeMap: MemorySection = YamlConfiguration().apply {
         createSection("1").set("ATTACK_DAMAGE", "1%")
         createSection("2").set("ATTACK_DAMAGE", "2%")
@@ -88,14 +88,14 @@ object MainConfig : SimpleYAMLConfig() {
     var forgeGain: ForgeParserMap = LinkedHashMap()
         private set
 
-    @Comment("", "强化每级所需的经验公式")
-    @Comment("{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ")
+    @Comment("", "强化每级所需的经验公式", "{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ")
     @Key("forge-level-map")
     var ForgeLevelSection: MemorySection = YamlConfiguration().apply {
         set("20", "2*{star}+5*{forge}")
         set("40", "2*{star}+5.1*{forge}")
     }
-    val forgeLevelMap: LinkedHashMap<Int, String> = LinkedHashMap()
+
+    private val forgeLevelMap: LinkedHashMap<Int, String> = LinkedHashMap()
 
     /**
      * 根据目前强化等级获得对应的经验公式
@@ -156,7 +156,7 @@ object MainConfig : SimpleYAMLConfig() {
 
     @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
     @Key("refine-map")
-    var RefineSection: MemorySection = YamlConfiguration().apply {
+    var refineSection: MemorySection = YamlConfiguration().apply {
         createSection("1").set("ATTACK_DAMAGE", "1%")
         createSection("2").set("ATTACK_DAMAGE", "2%")
         createSection("3").set("ATTACK_DAMAGE", "3%")
@@ -166,8 +166,7 @@ object MainConfig : SimpleYAMLConfig() {
     var refineGain: ForgeParserMap = LinkedHashMap()
         private set
 
-    @Comment("", "金币公式")
-    @Comment("{forge}:增加的强化经验 {limit}:增加的突破等级 {refine}:增加的精炼等级 ")
+    @Comment("", "金币公式", "{forge}:增加的强化经验 {limit}:增加的突破等级 {refine}:增加的精炼等级 ")
     @Key("gold-require-map")
     var goldForgeExpression: MemorySection = YamlConfiguration().apply {
         set("3", "{forge}*1+{limit}*200+{refine}*500")
@@ -186,6 +185,10 @@ object MainConfig : SimpleYAMLConfig() {
         "&7■ 强化经验：&b|{forge-progress}| {forge-current}/{forge-need}"
     )
 
+    @Comment("", "当强化等级达到上限时删除强化经验lore，此处指定以上强化经验lore的位置，0开始, -1取消")
+    @Key("item-lore-removed-when-max-forge")
+    var itemLoreRemoved = itemLore.size - 1
+
     @Comment("", "星级符号")
     @Key("star-char")
     var starChar = "✪ "
@@ -198,31 +201,33 @@ object MainConfig : SimpleYAMLConfig() {
      * 由强化数据得lore
      */
     fun getItemLore(forgeData: MMOForgeData): List<String> {
-        val lore = mutableListOf<String>()
         val format = DecimalFormat("0.##")
         val current = format.format(forgeData.currentExp)
         val forgeUpdateExp = forgeData.getForgeUpdateExp()
         val forgeNeed = format.format(forgeUpdateExp)
-        val processBar = getProcessBar(10, forgeData.currentExp, forgeUpdateExp)
-        itemLore.forEach {
-            lore.add(
-                it.replace("{star}", getStarCount(forgeData.star))
-                    .replace("{refine}", forgeData.refine.toRoman())
-                    .replace("{limit}", forgeData.limit.toString())
-                    .replace("{forge}", forgeData.forge.toString())
-                    .replace("{forge-progress}", processBar)
-                    .replace("{forge-current}", current)
-                    .replace("{forge-need}", forgeNeed)
-                    .toColor()
-            )
+        var processBar = ""
+        val toMutableList = ArrayList(itemLore)
+        if (itemLoreRemoved >= 0 && forgeData.forge == forgeData.maxForge) {
+            toMutableList.removeAt(itemLoreRemoved)
+        } else {
+            processBar = getProcessBar(10, forgeData.currentExp, forgeUpdateExp)
         }
-        return lore
+        return toMutableList.map {
+            it.replace("{star}", getStarCount(forgeData.star))
+                .replace("{refine}", forgeData.refine.toRoman())
+                .replace("{limit}", forgeData.limit.toString())
+                .replace("{forge}", forgeData.forge.toString())
+                .replace("{forge-progress}", processBar)
+                .replace("{forge-current}", current)
+                .replace("{forge-need}", forgeNeed)
+                .toColor()
+        }
     }
 
     override fun onLoaded(section: ConfigurationSection) {
         //加载配置后调用
         forgeGain = getStatGain(ForgeMap)
-        refineGain = getStatGain(RefineSection)
+        refineGain = getStatGain(refineSection)
         limitGain = getStatGain(ForgeLimitSection)
         restForgeLevelMap()
         val linkedHashMap = LinkedHashMap<Int, List<String>>()

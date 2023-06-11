@@ -37,7 +37,8 @@ class ReFineUI(val player: Player) : ChestUI(
     private var materialMMOForgeData: MMOForgeData? = null
     private var toolType: String? = null
     private var gold = 0.0
-
+    private var refine = 0
+    private var newRefine = 0
     private lateinit var toolSlot: IOSlot
     private lateinit var materialSlot: IOSlot
     private lateinit var resultSlot: IOSlot
@@ -112,7 +113,7 @@ class ReFineUI(val player: Player) : ChestUI(
                         materialSlot.reset()
                         this.reset()
                         resultSlot.outputAble(true)
-                        player.sendColorMessage(Lang.ui_refine_success)
+                        player.sendColorMessage(Lang.ui_refine_success.format(refine, newRefine))
                     }.setup()
                 )
             }
@@ -124,6 +125,8 @@ class ReFineUI(val player: Player) : ChestUI(
         materialMMOForgeData = null
         toolType = null
         gold = 0.0
+        refine = 0
+        newRefine = 0
     }
 
     override fun reset() {
@@ -138,6 +141,8 @@ class ReFineUI(val player: Player) : ChestUI(
         if (materialM == null) {
             refineButtons.forEach { it.reset() }
             gold = 0.0
+            refine = 0
+            newRefine = 0
             return
         }
         val toolNBT = NBTItem.get(toolM)
@@ -145,6 +150,8 @@ class ReFineUI(val player: Player) : ChestUI(
             resultSlot.reset()
             refineButtons.forEach { it.reset() }
             gold = 0.0
+            refine = 0
+            newRefine = 0
             return
         }
         val mmoItem = LiveMMOItem(toolNBT)
@@ -153,7 +160,9 @@ class ReFineUI(val player: Player) : ChestUI(
         add = if (forgeData.refine + add > forgeData.maxRefine) forgeData.maxRefine - forgeData.refine else add
         if (add == 0) return
         mmoItem.refine(forgeData, add)
+        refine = forgeData.refine
         forgeData.refine += add
+        newRefine = forgeData.refine
         mmoItem.setData(MMOForgeStat, forgeData)
         val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
         gold = MainConfig.getValueByFormula(expression, forgeData.star, refine = add)

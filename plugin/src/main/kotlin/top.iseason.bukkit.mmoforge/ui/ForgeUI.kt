@@ -26,6 +26,7 @@ import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.EntityUtils.giveItems
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.subtract
+import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 
@@ -37,6 +38,8 @@ class ForgeUI(val player: Player) : ChestUI(
 ) {
     private var inputData: MMOForgeData? = null
     private var canForge = false
+    private var forgeLevel = 0
+    private var newForgeLevel = 0
     private var gold = 0.0
     private var costExp = 0.0
     private lateinit var inputSlot: IOSlot
@@ -114,10 +117,12 @@ class ForgeUI(val player: Player) : ChestUI(
                             inputSlot.reset()
                             reset()
                             resultSlot.outputAble(true)
+                            player.sendColorMessage(Lang.ui_forge_success.formatBy(forgeLevel, newForgeLevel))
                             canForge = false
                             gold = 0.0
                             costExp = 0.0
-                            player.sendColorMessage(Lang.ui_forge_success)
+                            forgeLevel = 0
+                            newForgeLevel = 0
                         }.setup()
                 )
             }
@@ -155,10 +160,12 @@ class ForgeUI(val player: Player) : ChestUI(
         gold = MainConfig.getValueByFormula(expression, forgeData.star, forge = costExp)
         val liveMMOItem = LiveMMOItem(inputItem)
         liveMMOItem.forge(forgeData, level)
+        forgeLevel = forgeData.forge
         forgeData.apply {
             forge += level
             currentExp = remain
         }
+        newForgeLevel = forgeData.forge
         liveMMOItem.setData(MMOForgeStat, forgeData)
         resultSlot.ejectSilently(player)
         resultSlot.outputAble(false)
@@ -180,6 +187,8 @@ class ForgeUI(val player: Player) : ChestUI(
         canForge = false
         gold = 0.0
         costExp = 0.0
+        forgeLevel = 0
+        newForgeLevel = 0
         val itemStack = resultSlot.itemStack
         if (itemStack != null && resultSlot.output(resultSlot, itemStack))
             getViewers().getOrNull(0)?.giveItems(itemStack)

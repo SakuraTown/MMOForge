@@ -12,10 +12,7 @@ import net.Indyuce.mmoitems.MMOItems
 import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
 import top.iseason.bukkit.mmoforge.command.mainCommands
-import top.iseason.bukkit.mmoforge.config.BreakUIConfig
-import top.iseason.bukkit.mmoforge.config.ForgeUIConfig
-import top.iseason.bukkit.mmoforge.config.MainConfig
-import top.iseason.bukkit.mmoforge.config.RefineUIConfig
+import top.iseason.bukkit.mmoforge.config.*
 import top.iseason.bukkit.mmoforge.hook.PAPIHook
 import top.iseason.bukkit.mmoforge.hook.VaultHook
 import top.iseason.bukkit.mmoforge.listener.MMOListener
@@ -24,6 +21,7 @@ import top.iseason.bukkit.mmoforge.stats.material.ForgeExp
 import top.iseason.bukkit.mmoforge.stats.tools.*
 import top.iseason.bukkittemplate.BukkitPlugin
 import top.iseason.bukkittemplate.command.CommandHandler
+import top.iseason.bukkittemplate.config.SimpleYAMLConfig
 import top.iseason.bukkittemplate.debug.info
 import top.iseason.bukkittemplate.ui.UIListener
 import top.iseason.bukkittemplate.utils.bukkit.EventUtils.registerListener
@@ -32,6 +30,7 @@ object MMOForge : BukkitPlugin {
     val statLoreFormats = mutableListOf<MMOAttribute>()
 
     override fun onEnable() {
+        SimpleYAMLConfig.notifyMessage = "&a配置 &6%s &a已重载!"
         VaultHook.checkHooked()
         PAPIHook.checkHooked()
         mainCommands()
@@ -39,6 +38,7 @@ object MMOForge : BukkitPlugin {
         RefineUIConfig.load(false)
         ForgeUIConfig.load(false)
         MainConfig.load(false)
+        Lang.load(false)
         CommandHandler.updateCommands()
         registerStats()
         setStatsLoreFormat(statLoreFormats)

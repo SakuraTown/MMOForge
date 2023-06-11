@@ -10,10 +10,7 @@ package top.iseason.bukkit.mmoforge.command
 import org.bukkit.entity.Player
 import org.bukkit.permissions.PermissionDefault
 import top.iseason.bukkit.mmoforge.MMOForge
-import top.iseason.bukkit.mmoforge.config.BreakUIConfig
-import top.iseason.bukkit.mmoforge.config.ForgeUIConfig
-import top.iseason.bukkit.mmoforge.config.MainConfig
-import top.iseason.bukkit.mmoforge.config.RefineUIConfig
+import top.iseason.bukkit.mmoforge.config.*
 import top.iseason.bukkit.mmoforge.ui.BreakThroughUI
 import top.iseason.bukkit.mmoforge.ui.ForgeUI
 import top.iseason.bukkit.mmoforge.ui.ReFineUI
@@ -68,6 +65,7 @@ fun mainCommands() {
                 RefineUIConfig.load()
                 ForgeUIConfig.load()
                 MainConfig.load()
+                Lang.load()
                 it.sendColorMessage("&a重载成功!")
             }
         }
