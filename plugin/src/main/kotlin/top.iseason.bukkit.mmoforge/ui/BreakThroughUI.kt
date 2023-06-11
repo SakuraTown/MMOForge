@@ -61,7 +61,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
                 Icon(background, slot).setup()
             }
         }
-        BreakUIConfig.slots["materials"]?.forEach { (item, slots) ->
+        BreakUIConfig.slots["default-materials"]?.forEach { (item, slots) ->
             for (slot in slots) {
                 materialSlots.add(MaterialSlot(slot, PAPIHook.setPlaceHolderAndColor(item, player)).setup())
             }
@@ -113,10 +113,10 @@ class BreakThroughUI(val player: Player) : ChestUI(
                         reset()
                         canBreak = false
                         gold = 0.0
-                        breakLevel = 0
-                        newBreakLevel = 0
                         inputData = null
                         player.sendColorMessage(Lang.ui_break_success.formatBy(breakLevel, newBreakLevel))
+                        breakLevel = 0
+                        newBreakLevel = 0
                     }.setup()
             )
         }
@@ -124,6 +124,8 @@ class BreakThroughUI(val player: Player) : ChestUI(
 
     inner class MaterialSlot(slotIndex: Int, placeholder: ItemStack?) :
         IOSlot(slotIndex, placeholder) {
+
+        private val basePlaceholder = placeholder
         var requireItem: String? = null
 
         init {
@@ -158,14 +160,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
          */
         fun updateDisplay() {
             if (requireItem == null) {
-                placeholder = placeholder?.clone()?.applyMeta {
-                    setDisplayName(
-                        PAPIHook.setPlaceHolderAndColor(
-                            BreakUIConfig.materialEmpty,
-                            player
-                        ),
-                    )
-                }
+                placeholder = basePlaceholder
                 itemStack = null
                 return
             }
@@ -173,13 +168,21 @@ class BreakThroughUI(val player: Player) : ChestUI(
             if (split.size != 2) return
             val type = Type.get(split[0]) ?: return
             val template = MMOItems.plugin.templates.getTemplate(type, split[1]) ?: return
-            placeholder = placeholder?.clone()?.applyMeta {
-                setDisplayName(
-                    PAPIHook.setPlaceHolderAndColor(
-                        BreakUIConfig.materialRequired.formatBy((template.baseItemData[ItemStats.NAME] as NameData).bake()),
-                        player
-                    ),
-                )
+            val item = BreakUIConfig.slots["allow-materials"]?.entries?.firstNotNullOfOrNull {
+                it.value.contains(this@MaterialSlot.index)
+                it.key
+            }
+            if (item != null) {
+                val typeName = type.name
+                val itemName = (template.baseItemData[ItemStats.NAME] as NameData).bake()
+                placeholder = item.clone().applyMeta {
+                    if (hasDisplayName())
+                        setDisplayName(
+                            PAPIHook.setPlaceHolderAndColor(displayName.formatBy(typeName, itemName), player),
+                        )
+                    if (hasLore()) lore =
+                        lore!!.map { PAPIHook.setPlaceHolderAndColor(it.formatBy(typeName, itemName), player) }
+                }
             }
             itemStack = null
         }

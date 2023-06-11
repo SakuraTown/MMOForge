@@ -41,7 +41,7 @@ object BreakUIConfig : SimpleYAMLConfig() {
         private set
 
     @Key("background")
-    @Comment("背景图标")
+    @Comment("", "背景图标")
     var backgroundSection: MemorySection = YamlConfiguration().apply {
         createSection("default", buildMap {
             put("slots", (0 until row * 9).joinToString(separator = ","))
@@ -50,7 +50,7 @@ object BreakUIConfig : SimpleYAMLConfig() {
     }
 
     @Key("input")
-    @Comment("工具输入槽，只能有一个")
+    @Comment("", "工具输入槽，只能有一个")
     var inputSection: MemorySection = YamlConfiguration().apply {
         set("slots", "13")
         set("item", Material.RED_STAINED_GLASS_PANE.item.applyMeta {
@@ -58,23 +58,28 @@ object BreakUIConfig : SimpleYAMLConfig() {
         }.toSection())
     }
 
-    @Key("materials")
-    @Comment("材料输入槽")
+    @Key("default-materials")
+    @Comment("", "默认材料输入槽")
     var materialsSection: MemorySection = YamlConfiguration().apply {
         createSection("default", buildMap {
             put("slots", "30,31,32")
-            put("item", Material.RED_STAINED_GLASS_PANE.item.toSection())
+            put("item", Material.RED_STAINED_GLASS_PANE.item.applyMeta { setDisplayName("&c请先放入需要突破的物品") }
+                .toSection())
         })
     }
 
-    @Key
-    var materialEmpty = "&c请先放入需要突破的物品"
-
-    @Key
-    var materialRequired = "&6请放入:&f{0}"
+    @Key("allow-materials")
+    @Comment("", "接受材料时的材料输入槽，{0} 为需要的物品的类型名称；{1} 为需要的物品的名字")
+    var allowMaterialsSection: MemorySection = YamlConfiguration().apply {
+        createSection("default", buildMap {
+            put("slots", "30,31,32")
+            put("item", Material.RED_STAINED_GLASS_PANE.item.applyMeta { setDisplayName("&6请放入:&f{0} &f{1}") }
+                .toSection())
+        })
+    }
 
     @Key("output")
-    @Comment("工具输出槽，只能有一个")
+    @Comment("", "工具输出槽，只能有一个")
     var outputSection: MemorySection = YamlConfiguration().apply {
         set("slots", "49")
         set("item", Material.RED_STAINED_GLASS_PANE.item.applyMeta {
@@ -108,7 +113,8 @@ object BreakUIConfig : SimpleYAMLConfig() {
     override fun onLoaded(section: ConfigurationSection) {
         slots = mutableMapOf()
         readSlots("background", backgroundSection, slots)
-        readSlots("materials", materialsSection, slots)
+        readSlots("default-materials", materialsSection, slots)
+        readSlots("allow-materials", allowMaterialsSection, slots)
         readSlots("default-break", breakThroughSection, slots)
         readSlots("allow-break", allowBreakThroughSection, slots)
         readSlot("input", inputSection, slots)

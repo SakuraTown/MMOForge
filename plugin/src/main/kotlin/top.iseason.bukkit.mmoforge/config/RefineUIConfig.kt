@@ -88,7 +88,7 @@ object RefineUIConfig : SimpleYAMLConfig() {
     var allowRefineSection: MemorySection = YamlConfiguration().apply {
         createSection(
             "default", mutableMapOf(
-                "slots" to "40",
+                "slots" to "23",
                 "item" to Material.ANVIL.item.applyMeta { setName("点击精炼物品: &6{gold} ￥") }.toSection()
             )
         )

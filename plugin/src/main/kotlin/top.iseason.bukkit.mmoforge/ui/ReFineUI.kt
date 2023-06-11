@@ -23,6 +23,7 @@ import top.iseason.bukkit.mmoforge.uitls.setName
 import top.iseason.bukkittemplate.ui.container.ChestUI
 import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
+import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 import top.iseason.bukkittemplate.utils.other.NumberUtils.toRoman
@@ -113,7 +114,9 @@ class ReFineUI(val player: Player) : ChestUI(
                         materialSlot.reset()
                         this.reset()
                         resultSlot.outputAble(true)
-                        player.sendColorMessage(Lang.ui_refine_success.format(refine, newRefine))
+                        player.sendColorMessage(Lang.ui_refine_success.formatBy(refine, newRefine))
+                        refine = 0
+                        newRefine = 0
                     }.setup()
                 )
             }
