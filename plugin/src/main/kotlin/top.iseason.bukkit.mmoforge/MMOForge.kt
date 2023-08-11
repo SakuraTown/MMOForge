@@ -91,8 +91,9 @@ object MMOForge : BukkitPlugin {
             change = true
             list.add(loreKey)
         }
-        if (!set.contains("#${MMOForgeStat.nbtPath}#")) {
-            list.add("#${MMOForgeStat.nbtPath}#")
+        val key = "#${MMOForgeStat.id.lowercase().replace('_', '-')}#"
+        if (!set.contains(key)) {
+            list.add(key)
             change = true
         }
         if (change) {

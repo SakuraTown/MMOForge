@@ -25,7 +25,7 @@ import top.iseason.bukkittemplate.ui.container.ChestUI
 import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.EntityUtils.giveItems
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
-import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.subtract
+import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
@@ -107,7 +107,7 @@ class ForgeUI(val player: Player) : ChestUI(
                                 if (exp == 0.0) continue
                                 val times = (costExp / exp).toInt()
                                 if (times <= material.amount) {
-                                    material.subtract(times)
+                                    material.decrease(times)
                                     if (material.type.isAir) s.itemStack = null
                                     break
                                 }

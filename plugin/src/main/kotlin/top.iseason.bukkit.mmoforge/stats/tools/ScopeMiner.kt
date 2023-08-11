@@ -20,7 +20,7 @@ import top.iseason.bukkit.mmoforge.uitls.getScopeBlocksByVector
 import top.iseason.bukkit.mmoforge.uitls.isAxe
 import top.iseason.bukkit.mmoforge.uitls.isPickaxe
 import top.iseason.bukkit.mmoforge.uitls.isShovel
-import top.iseason.bukkittemplate.utils.other.submit
+import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
 
 
 object ScopeMiner : MMOAttribute(

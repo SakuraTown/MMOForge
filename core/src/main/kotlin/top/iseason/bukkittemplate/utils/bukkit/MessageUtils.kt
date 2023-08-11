@@ -19,7 +19,7 @@ import top.iseason.bukkittemplate.DisableHook
 import top.iseason.bukkittemplate.debug.warn
 import top.iseason.bukkittemplate.hook.BungeeCordHook
 import top.iseason.bukkittemplate.hook.PlaceHolderHook
-import top.iseason.bukkittemplate.utils.other.submit
+import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern

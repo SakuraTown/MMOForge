@@ -28,7 +28,7 @@ import top.iseason.bukkittemplate.ui.container.ChestUI
 import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.checkAir
-import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.subtract
+import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
@@ -101,7 +101,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
                         //扣材料
                         for (materialSlot in materialSlots) {
                             val itemStack = materialSlot.itemStack ?: continue
-                            itemStack.subtract()
+                            itemStack.decrease()
                             if (!itemStack.checkAir()) {
                                 materialSlot.ejectSilently(player)
                             }

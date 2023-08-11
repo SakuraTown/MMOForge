@@ -18,7 +18,7 @@ import top.iseason.bukkittemplate.command.command
 import top.iseason.bukkittemplate.command.executor
 import top.iseason.bukkittemplate.command.node
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
-import top.iseason.bukkittemplate.utils.other.submit
+import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
 
 fun mainCommands() {
     command("mmoforge") {

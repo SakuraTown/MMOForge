@@ -9,13 +9,15 @@ package top.iseason.bukkittemplate.hook
 
 import net.Indyuce.mmoitems.MMOItems
 import org.bukkit.inventory.ItemStack
+import top.iseason.bukkittemplate.utils.bukkit.ItemUtils
 
 object MMOItemsHook : BaseHook("MMOItems") {
     init {
         checkHooked()
+        if (hasHooked) ItemUtils.itemProviders.add { getByNameId(it) }
     }
 
-    fun getByNameID(id: String): ItemStack? {
+    fun getByNameId(id: String): ItemStack? {
         if (!hasHooked) return null
         val split = id.split(':', limit = 2)
         return runCatching { MMOItems.plugin.getItem(split[0], split[1]) }.getOrNull()

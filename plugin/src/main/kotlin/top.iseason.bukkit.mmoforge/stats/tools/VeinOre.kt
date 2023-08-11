@@ -15,7 +15,7 @@ import top.iseason.bukkit.mmoforge.event.MMOBlockBreakEvent
 import top.iseason.bukkit.mmoforge.listener.MMOListener
 import top.iseason.bukkit.mmoforge.uitls.getVeinBlocks
 import top.iseason.bukkit.mmoforge.uitls.isOre
-import top.iseason.bukkittemplate.utils.other.submit
+import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
 
 object VeinOre : MMOAttribute(
     "VEIN_ORE",

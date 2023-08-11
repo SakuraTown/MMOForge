@@ -13,7 +13,7 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import top.iseason.bukkit.mmoforge.event.MMOBlockBreakEvent
-import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.subtract
+import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
 
 
 object AutoTorch : MMOAttribute(
@@ -39,7 +39,7 @@ object AutoTorch : MMOAttribute(
             val inventory = player.inventory
             val index = inventory.first(Material.TORCH)
             if (index < 0) return
-            inventory.getItem(index)?.subtract(1) ?: return
+            inventory.getItem(index)?.decrease(1) ?: return
         }
         block.type = Material.TORCH
     }
