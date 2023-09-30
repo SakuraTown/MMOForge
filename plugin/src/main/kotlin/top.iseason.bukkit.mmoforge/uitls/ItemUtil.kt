@@ -99,13 +99,12 @@ fun LiveMMOItem.addAttribute(
 //                    statHistory.getModifiersBonus(MainConfig.ForgeUUID) as? DoubleData
 //                        ?: itemStat.clearStatData as DoubleData
 //                rawData.merge(forgeData)
-//                val sd = statHistory.getModifiersBonus(uuid) as? DoubleData
-//                if (sd != null)
-//                    rawData.merge(sd)
-//                    rawData.value -= forgeData.value
+//
 //            }
             val raw = (itemStat as DoubleStat).apply(rawData, info, times) as DoubleData
             raw.value -= originalData.value
+            val sd = statHistory.getModifiersBonus(uuid) as? DoubleData
+            if (sd != null) raw.merge(sd)
             statHistory.registerModifierBonus(uuid, raw)
             this.setStatHistory(itemStat, statHistory)
         } else if (itemStat is Abilities) {
