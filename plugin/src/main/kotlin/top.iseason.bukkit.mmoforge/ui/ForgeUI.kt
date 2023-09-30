@@ -9,18 +9,19 @@ package top.iseason.bukkit.mmoforge.ui
 
 import io.lumine.mythic.lib.api.item.NBTItem
 import net.Indyuce.mmoitems.api.item.mmoitem.LiveMMOItem
+import net.Indyuce.mmoitems.stat.data.DoubleData
 import org.bukkit.entity.Player
 import top.iseason.bukkit.mmoforge.config.ForgeUIConfig
 import top.iseason.bukkit.mmoforge.config.Lang
 import top.iseason.bukkit.mmoforge.config.MainConfig
 import top.iseason.bukkit.mmoforge.hook.PAPIHook
 import top.iseason.bukkit.mmoforge.hook.VaultHook.takeMoney
+import top.iseason.bukkit.mmoforge.stats.ForgeChance
 import top.iseason.bukkit.mmoforge.stats.MMOForgeData
 import top.iseason.bukkit.mmoforge.stats.MMOForgeStat
 import top.iseason.bukkit.mmoforge.stats.material.ForgeExp
 import top.iseason.bukkit.mmoforge.uitls.forge
 import top.iseason.bukkit.mmoforge.uitls.getForgeData
-import top.iseason.bukkit.mmoforge.uitls.getMMODouble
 import top.iseason.bukkittemplate.ui.container.ChestUI
 import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.EntityUtils.giveItems
@@ -29,6 +30,7 @@ import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
+import top.iseason.bukkittemplate.utils.other.RandomUtils
 
 
 class ForgeUI(val player: Player) : ChestUI(
@@ -42,6 +44,7 @@ class ForgeUI(val player: Player) : ChestUI(
     private var newForgeLevel = 0
     private var gold = 0.0
     private var costExp = 0.0
+    private var chance = 0.0
     private lateinit var inputSlot: IOSlot
     private lateinit var resultSlot: IOSlot
     private val materialSlots = mutableListOf<IOSlot>()
@@ -51,14 +54,14 @@ class ForgeUI(val player: Player) : ChestUI(
         lockOnTop = false
         //设置背景
         ForgeUIConfig.slots["background"]?.forEach { (item, slots) ->
-            val background = PAPIHook.setPlaceHolderAndColor(item, player)
+            val background = PAPIHook.setPlaceHolderAndColor(item.clone(), player)
             for (slot in slots) {
                 Icon(background, slot).setup()
             }
         }
         ForgeUIConfig.slots["input"]?.forEach { (item, slots) ->
             val index = slots.firstOrNull() ?: return@forEach
-            inputSlot = IOSlot(index, PAPIHook.setPlaceHolderAndColor(item, player))
+            inputSlot = IOSlot(index, PAPIHook.setPlaceHolderAndColor(item.clone(), player))
                 .inputFilter {
                     val nbtItem = NBTItem.get(it) ?: return@inputFilter false
                     inputData = nbtItem.getForgeData() ?: return@inputFilter false
@@ -71,7 +74,7 @@ class ForgeUI(val player: Player) : ChestUI(
                 }.setup()
         }
         ForgeUIConfig.slots["material"]?.forEach { (item, slots) ->
-            val item2 = PAPIHook.setPlaceHolderAndColor(item, player)
+            val item2 = PAPIHook.setPlaceHolderAndColor(item.clone(), player)
             for (slot in slots) {
                 materialSlots.add(
                     IOSlot(slot, item2).inputFilter {
@@ -87,7 +90,7 @@ class ForgeUI(val player: Player) : ChestUI(
             }
         }
         ForgeUIConfig.slots["default-forge"]?.forEach { (item, slots) ->
-            val item2 = PAPIHook.setPlaceHolderAndColor(item, player)
+            val item2 = PAPIHook.setPlaceHolderAndColor(item.clone(), player)
             for (slot in slots) {
                 forgeButtons.add(
                     Button(item2, index = slot)
@@ -116,20 +119,27 @@ class ForgeUI(val player: Player) : ChestUI(
                             }
                             inputSlot.reset()
                             reset()
-                            resultSlot.outputAble(true)
-                            player.sendColorMessage(Lang.ui_forge_success.formatBy(forgeLevel, newForgeLevel))
+                            if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
+                                resultSlot.reset()
+                                resultSlot.outputAble(false)
+                                player.sendColorMessage(Lang.ui_forge_failure.formatBy(forgeLevel, newForgeLevel))
+                            } else {
+                                resultSlot.outputAble(true)
+                                player.sendColorMessage(Lang.ui_forge_success.formatBy(forgeLevel, newForgeLevel))
+                            }
                             canForge = false
                             gold = 0.0
                             costExp = 0.0
                             forgeLevel = 0
                             newForgeLevel = 0
+                            chance = 0.0
                         }.setup()
                 )
             }
         }
         ForgeUIConfig.slots["result"]?.forEach { (item, slots) ->
             val index = slots.firstOrNull() ?: return@forEach
-            resultSlot = IOSlot(index, PAPIHook.setPlaceHolderAndColor(item, player)).lockable(true).setup()
+            resultSlot = IOSlot(index, PAPIHook.setPlaceHolderAndColor(item.clone(), player)).lockable(true).setup()
         }
     }
 
@@ -138,10 +148,16 @@ class ForgeUI(val player: Player) : ChestUI(
      */
     private fun updateResult() {
         var totalExp = 0.0
+        var materialChance = 0.0
         materialSlots.forEach {
             val itemStack = it.itemStack ?: return@forEach
-            totalExp += itemStack.getMMODouble(ForgeExp.stat.nbtPath) * itemStack.amount
+            val get = NBTItem.get(itemStack)
+            val exp = if (get.hasTag(ForgeExp.stat.nbtPath)) get.getDouble(ForgeExp.stat.nbtPath) else 0.0
+            val chance = if (get.hasTag(ForgeChance.stat.nbtPath)) get.getDouble(ForgeChance.stat.nbtPath) else 0.0
+            totalExp += exp * itemStack.amount
+            materialChance += chance * itemStack.amount
         }
+
         val inputItem = inputSlot.itemStack
         //不满足强化条件
         if (inputItem == null || totalExp == 0.0 || inputData == null) {
@@ -159,6 +175,11 @@ class ForgeUI(val player: Player) : ChestUI(
         val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
         gold = MainConfig.getValueByFormula(expression, forgeData.star, forge = costExp)
         val liveMMOItem = LiveMMOItem(inputItem)
+        chance = if (liveMMOItem.hasData(ForgeChance.stat)) {
+            (liveMMOItem.getData(ForgeChance.stat) as DoubleData).value
+        } else {
+            100.0
+        } + materialChance
         liveMMOItem.forge(forgeData, level)
         forgeLevel = forgeData.forge
         forgeData.apply {
@@ -171,9 +192,14 @@ class ForgeUI(val player: Player) : ChestUI(
         resultSlot.outputAble(false)
         resultSlot.itemStack = liveMMOItem.newBuilder().build()
         ForgeUIConfig.slots["allow-forge"]?.forEach { (item, indexes) ->
-            val stack = PAPIHook.setPlaceHolderAndColor(item, player).applyMeta {
-                if (hasDisplayName()) setDisplayName(displayName.replace("{gold}", gold.toString()))
-                if (hasLore()) lore = lore!!.map { it.replace("{gold}", gold.toString()) }
+            val stack = PAPIHook.setPlaceHolderAndColor(item.clone(), player).applyMeta {
+                if (hasDisplayName()) setDisplayName(
+                    displayName.replace("{gold}", gold.toString())
+                        .replace("{chance}", chance.toString())
+                )
+                if (hasLore()) lore = lore!!.map {
+                    it.replace("{chance}", chance.toString())
+                }
             }
             for (index in indexes) {
                 getSlot(index)?.itemStack = stack
@@ -189,6 +215,7 @@ class ForgeUI(val player: Player) : ChestUI(
         costExp = 0.0
         forgeLevel = 0
         newForgeLevel = 0
+        chance = 0.0
         val itemStack = resultSlot.itemStack
         if (itemStack != null && resultSlot.output(resultSlot, itemStack))
             getViewers().getOrNull(0)?.giveItems(itemStack)

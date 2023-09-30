@@ -34,6 +34,18 @@ fun mainCommands() {
                 }
             }
         }
+        node("breakfor") {
+            async = true
+            default = PermissionDefault.OP
+            description = "为某玩家打开突破界面"
+            executor { arg, it ->
+                val player = arg.next<Player>()
+                val build = BreakThroughUI(player).build()
+                submit {
+                    player.openInventory(build)
+                }
+            }
+        }
         node("forge") {
             isPlayerOnly = true
             async = true
@@ -45,6 +57,18 @@ fun mainCommands() {
                 }
             }
         }
+        node("forgefor") {
+            async = true
+            default = PermissionDefault.OP
+            description = "为某玩家打开强化界面"
+            executor { arg, it ->
+                val player = arg.next<Player>()
+                val build = ForgeUI(player).build()
+                submit {
+                    player.openInventory(build)
+                }
+            }
+        }
         node("refine") {
             isPlayerOnly = true
             async = true
@@ -53,6 +77,18 @@ fun mainCommands() {
                 val build = ReFineUI(it as Player).build()
                 submit {
                     it.openInventory(build)
+                }
+            }
+        }
+        node("refinefor") {
+            async = true
+            default = PermissionDefault.OP
+            description = "为某玩家打开精炼界面"
+            executor { arg, it ->
+                val player = arg.next<Player>()
+                val build = ReFineUI(player).build()
+                submit {
+                    player.openInventory(build)
                 }
             }
         }

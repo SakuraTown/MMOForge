@@ -16,13 +16,19 @@ import top.iseason.bukkit.mmoforge.config.*
 import top.iseason.bukkit.mmoforge.hook.PAPIHook
 import top.iseason.bukkit.mmoforge.hook.VaultHook
 import top.iseason.bukkit.mmoforge.listener.MMOListener
+import top.iseason.bukkit.mmoforge.stats.BreakChance
+import top.iseason.bukkit.mmoforge.stats.ForgeChance
 import top.iseason.bukkit.mmoforge.stats.MMOForgeStat
+import top.iseason.bukkit.mmoforge.stats.RefineChance
 import top.iseason.bukkit.mmoforge.stats.material.ForgeExp
 import top.iseason.bukkit.mmoforge.stats.tools.*
 import top.iseason.bukkittemplate.BukkitPlugin
 import top.iseason.bukkittemplate.command.CommandHandler
 import top.iseason.bukkittemplate.config.SimpleYAMLConfig
 import top.iseason.bukkittemplate.debug.info
+import top.iseason.bukkittemplate.hook.ItemsAdderHook
+import top.iseason.bukkittemplate.hook.MMOItemsHook
+import top.iseason.bukkittemplate.hook.OraxenHook
 import top.iseason.bukkittemplate.ui.UIListener
 import top.iseason.bukkittemplate.utils.bukkit.EventUtils.registerListener
 
@@ -33,6 +39,9 @@ object MMOForge : BukkitPlugin {
         SimpleYAMLConfig.notifyMessage = "&a配置 &6%s &a已重载!"
         VaultHook.checkHooked()
         PAPIHook.checkHooked()
+        MMOItemsHook.checkHooked()
+        OraxenHook.checkHooked()
+        ItemsAdderHook.checkHooked()
         mainCommands()
         BreakUIConfig.load(false)
         RefineUIConfig.load(false)
@@ -74,6 +83,9 @@ object MMOForge : BukkitPlugin {
         Harvester.reg()
         AutoTorch.reg()
         SpeedUp.reg()
+        BreakChance.reg()
+        ForgeChance.reg()
+        RefineChance.reg()
 //        SakuraSoulBound.reg()
     }
 

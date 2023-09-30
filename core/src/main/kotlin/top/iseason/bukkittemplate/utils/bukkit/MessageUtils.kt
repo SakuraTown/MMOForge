@@ -12,6 +12,7 @@ import net.md_5.bungee.api.chat.TextComponent
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.OfflinePlayer
+import org.bukkit.Sound
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import top.iseason.bukkittemplate.BukkitTemplate
@@ -68,6 +69,19 @@ object MessageUtils {
             if (sender is Player && msg.startsWith("[title]", true)) {
                 val drop = msg.drop(7).split("\\n")
                 sender.sendCustomTitle(drop.getOrNull(0), drop.getOrNull(1), prefix)
+                return@add false
+            }
+            true
+        }
+        messageHandlers.add { msg, sender, prefix ->
+            if (sender is Player && msg.startsWith("[Sound]", true)) {
+                val soundStr = msg.drop(7).trim()
+                val args = soundStr.split(',')
+                if (args.isEmpty()) return@add false
+                val sound = runCatching { Sound.valueOf(args[0].uppercase()) }.getOrElse { return@add false }
+                val volume = args.getOrNull(1)?.toFloat() ?: 1.0F
+                val pitch = args.getOrNull(1)?.toFloat() ?: 1.0F
+                sender.playSound(sender.location, sound, volume, pitch)
                 return@add false
             }
             true

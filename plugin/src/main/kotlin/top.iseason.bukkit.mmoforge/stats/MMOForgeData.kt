@@ -5,13 +5,6 @@
  *
  */
 
-/*
- * Description:
- * @Author: Iseason2000
- * @Date: 2022/4/17 下午8:23
- *
- */
-
 package top.iseason.bukkit.mmoforge.stats
 
 import io.lumine.mythic.lib.gson.JsonArray
@@ -62,6 +55,7 @@ data class MMOForgeData(
     // 突破需要的材料，分突破等级
     var limitType: LinkedHashMap<Int, List<String>> = MainConfig.limitType
 ) : StatData, Mergeable<MMOForgeData>, RandomStatData<MMOForgeData> {
+
     /**
      * 获取当前最大强化等级
      */

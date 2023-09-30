@@ -99,16 +99,16 @@ object BreakUIConfig : SimpleYAMLConfig() {
     }
 
     @Key("allow-break")
-    @Comment("", "可以突破时的突破按钮，{gold} 是需要的金币的占位符")
+    @Comment("", "可以突破时的突破按钮", "{gold} 是需要的金币的占位符", "{chance}是强化成功率")
     var allowBreakThroughSection: MemorySection = YamlConfiguration().apply {
         createSection(
             "default", mutableMapOf(
                 "slots" to "40",
-                "item" to Material.ANVIL.item.applyMeta { setName("点击突破物品: &6{gold} ￥") }.toSection()
+                "item" to Material.ANVIL.item.applyMeta { setName("点击突破物品: &6{gold} ￥ &7概率: &b{chance}") }
+                    .toSection()
             )
         )
     }
-
 
     override fun onLoaded(section: ConfigurationSection) {
         slots = mutableMapOf()

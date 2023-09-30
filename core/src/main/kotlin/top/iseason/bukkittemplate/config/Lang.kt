@@ -24,7 +24,9 @@ open class Lang(
         "以 [Title] 开头将发送标题消息,格式为 大标题\\n小标题",
         "以 [Command] 开头将以消息接收者的身份运行命令",
         "以 [Console] 开头将以控制台的身份运行命令",
-        "以 [OP-Command] 开头将赋予消息接收者临时op运行命令 (慎用)"
+        "以 [OP-Command] 开头将赋予消息接收者临时op运行命令 (慎用)",
+        "以 [Sound] 开头将播放声音,格式 name[,volume,pitch] name 在这选 https://bukkit.windit.net/javadoc/org/bukkit/Sound.html",
+        "以 [Sound] 例子 BLOCK_ANVIL_BREAK 或者 BLOCK_ANVIL_BREAK,1.0 或者 BLOCK_ANVIL_BREAK,0.5,1.0"
     )
     var readme = ""
 

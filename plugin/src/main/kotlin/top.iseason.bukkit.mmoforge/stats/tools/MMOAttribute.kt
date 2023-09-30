@@ -20,7 +20,6 @@ import top.iseason.bukkit.mmoforge.MMOForge
 import top.iseason.bukkittemplate.config.SimpleYAMLConfig
 import top.iseason.bukkittemplate.config.annotations.Comment
 import top.iseason.bukkittemplate.config.annotations.Key
-import java.io.File
 
 /**
  * types see https://git.lumine.io/mythiccraft/mmoitems/-/blob/master/src/main/java/net/Indyuce/mmoitems/api/Type.java
@@ -32,7 +31,7 @@ abstract class MMOAttribute(
     format: String,
     val mLore: Array<String>,
     val mTypes: Array<String>,
-    defaultPath: String = "enchants${File.separatorChar}${mID.lowercase()}.yml"
+    defaultPath: String = "enchants/${mID.lowercase()}.yml"
 ) : SimpleYAMLConfig(defaultPath = defaultPath), Listener {
     var loreKey: String = mID.lowercase().replace('_', '-')
 

@@ -84,12 +84,18 @@ object ForgeUIConfig : SimpleYAMLConfig() {
     }
 
     @Key("allow-forge")
-    @Comment("", "可以强化时显示的物品, {gold} 是需要的金币的占位符")
+    @Comment(
+        "", "可以强化时显示的物品",
+        "{gold} 是需要的金币的占位符",
+        "{chance}是强化成功率"
+    )
     var allowForgeSection: MemorySection = YamlConfiguration().apply {
         createSection(
             "default", mutableMapOf(
                 "slots" to "40",
-                "item" to Material.ANVIL.item.applyMeta { setName("点击强化物品: &6{gold} ￥") }.toSection()
+                "item" to Material.ANVIL.item.applyMeta {
+                    setName("点击强化物品: &6{gold} ￥ &7概率: &b{chance}")
+                }.toSection()
             )
         )
     }
@@ -102,7 +108,6 @@ object ForgeUIConfig : SimpleYAMLConfig() {
             setName("${ChatColor.RED} 请放入待强化的物品")
         }.toSection())
     }
-
 
     override fun onLoaded(section: ConfigurationSection) {
         slots = mutableMapOf()

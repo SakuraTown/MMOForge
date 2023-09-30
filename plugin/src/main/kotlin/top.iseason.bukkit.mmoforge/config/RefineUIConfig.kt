@@ -84,12 +84,13 @@ object RefineUIConfig : SimpleYAMLConfig() {
     }
 
     @Key("allow-refine")
-    @Comment("", "可以精炼时的精炼按钮，{gold} 是需要的金币的占位符")
+    @Comment("", "可以精炼时的精炼按钮", "{gold} 是需要的金币的占位符", "{chance}是强化成功率")
     var allowRefineSection: MemorySection = YamlConfiguration().apply {
         createSection(
             "default", mutableMapOf(
                 "slots" to "23",
-                "item" to Material.ANVIL.item.applyMeta { setName("点击精炼物品: &6{gold} ￥") }.toSection()
+                "item" to Material.ANVIL.item.applyMeta { setName("点击精炼物品: &6{gold} ￥ &7概率: &b{chance}") }
+                    .toSection()
             )
         )
     }

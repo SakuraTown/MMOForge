@@ -94,15 +94,16 @@ fun LiveMMOItem.addAttribute(
                 return
             }
             val rawData = (originalData as DoubleData).cloneData()
-            val forgeData =
-                statHistory.getModifiersBonus(MainConfig.ForgeUUID) as? DoubleData
-                    ?: itemStat.clearStatData as DoubleData
-            rawData.merge(forgeData)
-            if (uuid != MainConfig.ForgeUUID) {
-                val sd = statHistory.getModifiersBonus(uuid) as? DoubleData
-                if (sd != null)
-                    rawData.merge(sd)
-            }
+//            if (uuid != MainConfig.ForgeUUID) {
+//                val forgeData =
+//                    statHistory.getModifiersBonus(MainConfig.ForgeUUID) as? DoubleData
+//                        ?: itemStat.clearStatData as DoubleData
+//                rawData.merge(forgeData)
+//                val sd = statHistory.getModifiersBonus(uuid) as? DoubleData
+//                if (sd != null)
+//                    rawData.merge(sd)
+//                    rawData.value -= forgeData.value
+//            }
             val raw = (itemStat as DoubleStat).apply(rawData, info, times) as DoubleData
             raw.value -= originalData.value
             statHistory.registerModifierBonus(uuid, raw)
@@ -162,7 +163,12 @@ fun LiveMMOItem.addAttribute(
 fun LiveMMOItem.refine(data: MMOForgeData, times: Int) {
     val refine = data.refine
     for (i in refine + 1..refine + times) {
-        addAttribute(MainConfig.RefineUUID, data.refineGain.getLevelMap(i), 1, data.refineGain != MainConfig.refineGain)
+        addAttribute(
+            MainConfig.RefineUUID,
+            data.refineGain.getLevelMap(i),
+            1,
+            data.refineGain !== MainConfig.refineGain
+        )
     }
 }
 
@@ -172,12 +178,15 @@ fun LiveMMOItem.refine(data: MMOForgeData, times: Int) {
  * @param times 突破的次数
  */
 fun LiveMMOItem.breakthrough(data: MMOForgeData, times: Int) {
-    addAttribute(
-        MainConfig.LimitUUID,
-        data.limitGain.getLevelMap(data.star),
-        times,
-        data.limitGain != MainConfig.limitGain
-    )
+    val limit = data.limit
+    for (i in limit + 1..limit + times) {
+        addAttribute(
+            MainConfig.LimitUUID,
+            data.limitGain.getLevelMap(i),
+            1,
+            data.limitGain !== MainConfig.limitGain
+        )
+    }
 }
 
 
@@ -187,12 +196,15 @@ fun LiveMMOItem.breakthrough(data: MMOForgeData, times: Int) {
  * @param times 强化的次数
  */
 fun LiveMMOItem.forge(data: MMOForgeData, times: Int) {
-    addAttribute(
-        MainConfig.ForgeUUID,
-        data.forgeGain.getLevelMap(data.star),
-        times,
-        data.forgeGain != MainConfig.forgeGain
-    )
+    val forge = data.forge
+    for (i in forge + 1..forge + times) {
+        addAttribute(
+            MainConfig.ForgeUUID,
+            data.forgeGain.getLevelMap(i),
+            1,
+            data.forgeGain !== MainConfig.forgeGain
+        )
+    }
 }
 
 /**
