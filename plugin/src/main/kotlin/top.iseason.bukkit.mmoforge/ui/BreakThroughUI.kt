@@ -259,7 +259,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
             return
         }
         val itemStack = inputSlot.itemStack ?: return
-        val inputData = inputData!!.cloneData()
+        val inputData = inputData!!.clone()
         val expression = MainConfig.goldForgeExpression.getString(inputData.star.toString()) ?: return
         //设置所需金币
         gold = MainConfig.getValueByFormula(expression, inputData.star, limit = 1)

@@ -61,17 +61,17 @@ object MainConfig : SimpleYAMLConfig() {
     val LimitUUID = UUID.fromString("aff6ef71-8963-4651-aa31-62782ba7e71f")
 
     @Comment("", "强化限制对应多少强化等级")
-    @Key("limit-rate-tag")
+    @Key("limit-rate")
     var LimitRate = 20
 
     val RefineUUID = UUID.fromString("6e6f2bb6-068e-481f-b913-1b80c2cf1dbb")
 
     @Comment("", "物品最大精炼等级，储存在物品NBT")
-    @Key("max-refine-tag")
+    @Key("max-refine")
     var MAX_REFINE = 5
 
     @Comment("", "物品最大突破等级，储存在物品NBT")
-    @Key("max-limit-tag")
+    @Key("max-limit")
     var MAX_LIMIT = 5
 
     @Key("forge-map")

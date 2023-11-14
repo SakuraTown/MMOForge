@@ -164,7 +164,7 @@ class ForgeUI(val player: Player) : ChestUI(
             resetResult()
             return
         }
-        val forgeData = inputData!!.cloneData()
+        val forgeData = inputData!!.clone()
         val (level, remain, overflow) = forgeData.getLevelByExtraExp(totalExp)
         //不能升级
         if (overflow == totalExp) {

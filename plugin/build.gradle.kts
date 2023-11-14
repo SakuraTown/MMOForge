@@ -21,7 +21,7 @@ dependencies {
     // 本地依赖放在libs文件夹内
     compileOnly(fileTree("libs") { include("*.jar") })
     implementation("org.bstats:bstats-bukkit:3.0.1")
-    compileOnly("net.Indyuce:MMOItems-API:6.9.2-SNAPSHOT") { isTransitive = false }
+    compileOnly("net.Indyuce:MMOItems-API:6.9.5-SNAPSHOT") { isTransitive = false }
     compileOnly("io.lumine:MythicLib-dist:1.6.2-SNAPSHOT") { isTransitive = false }
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }
     compileOnly("me.clip:placeholderapi:2.11.3")

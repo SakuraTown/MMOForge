@@ -129,25 +129,19 @@ object MMOForge : BukkitPlugin {
     }
 
     private fun setStatsLore(stats: List<MMOAttribute>) {
-        val declaredField = ConfigManager::class.java.getDeclaredField("stats")
-        declaredField.isAccessible = true
-        val configFile = declaredField.get(MMOItems.plugin.language) as ConfigFile
+        val configFile = ConfigFile("/language", "stats")
         val config = configFile.config
         for (stat in stats) {
             config.set(stat.loreKey, stat.loreFormat)
         }
         configFile.save()
-        declaredField.isAccessible = false
     }
 
     fun setStatLore(stat: MMOAttribute) {
-        val declaredField = ConfigManager::class.java.getDeclaredField("stats")
-        declaredField.isAccessible = true
-        val configFile = declaredField.get(MMOItems.plugin.language) as ConfigFile
+        val configFile = ConfigFile("/language", "stats")
         val config = configFile.config
         config.set(stat.loreKey, stat.loreFormat)
         configFile.save()
-        declaredField.isAccessible = false
     }
 
     private fun MMOAttribute.reg() {

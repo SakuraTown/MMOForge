@@ -61,20 +61,12 @@ data class MMOForgeData(
      */
     fun getCurrentMaxForge() = min((limit + 1) * MainConfig.LimitRate, maxForge)
 
-    override fun merge(data: MMOForgeData?) {
+    override fun mergeWith(data: MMOForgeData?) {
         require(data != null) { "Cannot merge two different stat data types!" }
         require(data.star == star) { "Cannot merge two stat data with different star!" }
         //仅合并精炼等级
         refine += data.refine
     }
-
-    override fun cloneData(): MMOForgeData =
-        copy(
-            refineGain = LinkedHashMap(refineGain),
-            limitGain = LinkedHashMap(limitGain),
-            forgeGain = LinkedHashMap(forgeGain),
-            limitType = LinkedHashMap(limitType),
-        )
 
     fun toJson(): JsonObject = JsonObject().apply {
         addProperty("star", star)
@@ -150,7 +142,14 @@ data class MMOForgeData(
         return Triple(level, current, remainExp)
     }
 
-    override fun isClear(): Boolean = refine == 0 && limit == 0 && forge == 0 && currentExp == 0.0
+    override fun isEmpty(): Boolean = refine == 0 && limit == 0 && forge == 0 && currentExp == 0.0
+    override fun clone(): MMOForgeData = copy(
+        refineGain = LinkedHashMap(refineGain),
+        limitGain = LinkedHashMap(limitGain),
+        forgeGain = LinkedHashMap(forgeGain),
+        limitType = LinkedHashMap(limitType),
+    )
+
     override fun randomize(p0: MMOItemBuilder?) = this
 
     companion object {
@@ -231,7 +230,7 @@ fun JsonObject.toForgeMap(): ForgeParserMap? {
     entrySet.forEach {
         val linkedHashMap = LinkedHashMap<ItemStat<*, *>, String>()
         it.value.asJsonObject.entrySet().forEach { d ->
-            val stat = MMOItems.plugin.stats.get(d.key)
+            val stat = MMOItems.plugin.stats.get(d.key) as ItemStat<*, *>
             linkedHashMap[stat] = d.value.asString
         }
         map[it.key.toInt()] = linkedHashMap
