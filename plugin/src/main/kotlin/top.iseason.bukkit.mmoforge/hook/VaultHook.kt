@@ -19,15 +19,16 @@ object VaultHook : BaseHook("Vault") {
 
     fun Player.takeMoney(amount: Double): Boolean {
         if (economy == null) return false
-        return if (has(this, amount) == true) {
+        return if (has(this, amount)) {
             withdraw(this, amount)?.type == EconomyResponse.ResponseType.SUCCESS
         } else
             false
     }
 
-    fun withdraw(player: OfflinePlayer, amount: Double): EconomyResponse? =
+    private fun withdraw(player: OfflinePlayer, amount: Double): EconomyResponse? =
         economy?.withdrawPlayer(player, amount)
 
     fun deposit(player: OfflinePlayer, amount: Double) = economy?.depositPlayer(player, amount)
-    fun has(player: OfflinePlayer, amount: Double) = economy?.has(player, amount)
+
+    private fun has(player: OfflinePlayer, amount: Double) = economy?.has(player, amount) == true
 }

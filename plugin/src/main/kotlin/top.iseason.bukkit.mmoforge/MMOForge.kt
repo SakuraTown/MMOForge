@@ -54,7 +54,7 @@ object MMOForge : BukkitPlugin {
         setStatsLore(statLoreFormats)
         UIListener.registerListener()
         MMOListener.registerListener()
-        MMOItems.plugin.types.reload()
+        MMOItems.plugin.types.reload(true)
         MMOItems.plugin.stats.reload(true)
         MMOItems.plugin.templates.reload()
         MMOItems.plugin.formats.reload()

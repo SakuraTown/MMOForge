@@ -6,6 +6,8 @@ api-version: 1.13
 depend:
   - MMOItems
   - Vault
+softdepend:
+  - MMOEconomy
 runtime-libraries:
   # If not defined, it will be 'libraries'
   # when start with @Plugin: will start with plugin data folder
