@@ -20,26 +20,26 @@ object Lang : top.iseason.bukkittemplate.config.Lang() {
 
     var ui_forge_no_gold = "&6你没有足够的金币!"
 
-    @Comment("", "占位符{0}原来的等级，{1}新的等级")
+    @Comment("", "占位符{0}原来的等级，{1}新的等级 {2} 物品名")
     var ui_forge_success = "&a强化成功!"
 
-    @Comment("", "占位符{0}原来的等级，{1}新的等级")
+    @Comment("", "占位符{0}原来的等级，{1}新的等级 {2} 物品名")
     var ui_forge_failure = "&c强化失败!"
 
     var ui_break_no_gold = "&6你没有足够的金币!"
 
-    @Comment("", "占位符{0}原来的等级，{1}新的等级")
+    @Comment("", "占位符{0}原来的等级，{1}新的等级 {2} 物品名")
     var ui_break_success = "&a突破成功!"
 
-    @Comment("", "占位符{0}原来的等级，{1}新的等级")
+    @Comment("", "占位符{0}原来的等级，{1}新的等级 {2} 物品名")
     var ui_break_failure = "&c突破失败!"
 
     var ui_refine_no_gold = "&6你没有足够的金币!"
 
-    @Comment("", "占位符{0}原来的等级，{1}新的等级")
+    @Comment("", "占位符{0}原来的等级，{1}新的等级 {2} 物品名")
     var ui_refine_success = "&a精炼成功!"
 
-    @Comment("", "占位符{0}原来的等级，{1}新的等级")
+    @Comment("", "占位符{0}原来的等级，{1}新的等级 {2} 物品名")
     var ui_refine_failure = "&c精炼失败!"
 
 

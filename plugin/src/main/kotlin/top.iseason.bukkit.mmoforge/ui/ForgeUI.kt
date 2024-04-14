@@ -27,6 +27,7 @@ import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.EntityUtils.giveItems
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
+import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getDisplayName
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
@@ -94,7 +95,7 @@ class ForgeUI(val player: Player) : ChestUI(
             for (slot in slots) {
                 forgeButtons.add(
                     Button(item2, index = slot)
-                        .onClicked(true) {
+                        .onClicked {
                             if (!canForge) return@onClicked
                             val player = it.whoClicked as Player
                             if (!player.takeMoney(gold)) {
@@ -122,10 +123,22 @@ class ForgeUI(val player: Player) : ChestUI(
                             if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
                                 resultSlot.reset()
                                 resultSlot.outputAble(false)
-                                player.sendColorMessage(Lang.ui_forge_failure.formatBy(forgeLevel, newForgeLevel))
+                                player.sendColorMessage(
+                                    Lang.ui_forge_failure.formatBy(
+                                        forgeLevel,
+                                        newForgeLevel,
+                                        resultSlot.itemStack?.getDisplayName()
+                                    )
+                                )
                             } else {
                                 resultSlot.outputAble(true)
-                                player.sendColorMessage(Lang.ui_forge_success.formatBy(forgeLevel, newForgeLevel))
+                                player.sendColorMessage(
+                                    Lang.ui_forge_success.formatBy(
+                                        forgeLevel,
+                                        newForgeLevel,
+                                        resultSlot.itemStack?.getDisplayName()
+                                    )
+                                )
                             }
                             canForge = false
                             gold = 0.0

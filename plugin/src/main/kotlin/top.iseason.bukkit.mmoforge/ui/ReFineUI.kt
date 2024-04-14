@@ -25,6 +25,7 @@ import top.iseason.bukkit.mmoforge.uitls.setName
 import top.iseason.bukkittemplate.ui.container.ChestUI
 import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
+import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getDisplayName
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
@@ -119,10 +120,22 @@ class ReFineUI(val player: Player) : ChestUI(
                         if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
                             resultSlot.reset()
                             resultSlot.outputAble(false)
-                            player.sendColorMessage(Lang.ui_refine_failure.formatBy(refine, newRefine))
+                            player.sendColorMessage(
+                                Lang.ui_refine_failure.formatBy(
+                                    refine,
+                                    newRefine,
+                                    resultSlot.itemStack?.getDisplayName()
+                                )
+                            )
                         } else {
                             resultSlot.outputAble(true)
-                            player.sendColorMessage(Lang.ui_refine_success.formatBy(refine, newRefine))
+                            player.sendColorMessage(
+                                Lang.ui_refine_success.formatBy(
+                                    refine,
+                                    newRefine,
+                                    resultSlot.itemStack?.getDisplayName()
+                                )
+                            )
                         }
                         resetData()
                         toolSlot.reset()

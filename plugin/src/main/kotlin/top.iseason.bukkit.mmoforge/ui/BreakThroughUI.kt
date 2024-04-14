@@ -31,6 +31,7 @@ import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.checkAir
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
+import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getDisplayName
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
@@ -119,10 +120,22 @@ class BreakThroughUI(val player: Player) : ChestUI(
                         if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
                             outputSlot.reset()
                             outputSlot.outputAble(false)
-                            player.sendColorMessage(Lang.ui_break_failure.formatBy(breakLevel, newBreakLevel))
+                            player.sendColorMessage(
+                                Lang.ui_break_failure.formatBy(
+                                    breakLevel,
+                                    newBreakLevel,
+                                    outputSlot.itemStack?.getDisplayName()
+                                )
+                            )
                         } else {
                             outputSlot.outputAble(true)
-                            player.sendColorMessage(Lang.ui_break_success.formatBy(breakLevel, newBreakLevel))
+                            player.sendColorMessage(
+                                Lang.ui_break_success.formatBy(
+                                    breakLevel,
+                                    newBreakLevel,
+                                    outputSlot.itemStack?.getDisplayName()
+                                )
+                            )
                         }
                         canBreak = false
                         gold = 0.0
@@ -162,7 +175,6 @@ class BreakThroughUI(val player: Player) : ChestUI(
                 if (nbtItem.hasTag(BreakChance.stat.nbtPath)) {
                     chance = nbtItem.getDouble(BreakChance.stat.nbtPath)
                 }
-                println("material chance $chance")
                 updateResult()
             }
             onOutput(async = true) {
@@ -280,6 +292,11 @@ class BreakThroughUI(val player: Player) : ChestUI(
         //上锁
         outputSlot.outputAble(false)
         outputSlot.itemStack = liveMMOItem.newBuilder().build()
+        val modelDataHis = liveMMOItem.getStatHistory(ItemStats.CUSTOM_MODEL_DATA)
+        if (modelDataHis != null) {
+            val modelData = modelDataHis.recalculate(liveMMOItem.upgradeLevel) as DoubleData
+            outputSlot.itemStack!!.applyMeta { this.setCustomModelData(modelData.value.toInt()) }
+        }
         BreakUIConfig.slots["allow-break"]?.forEach { (item, indexes) ->
             val stack = PAPIHook.setPlaceHolderAndColor(item.clone(), player).applyMeta {
                 if (hasDisplayName()) setDisplayName(
