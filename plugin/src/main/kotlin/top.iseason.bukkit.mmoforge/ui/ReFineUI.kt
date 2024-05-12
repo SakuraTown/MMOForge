@@ -203,8 +203,15 @@ class ReFineUI(val player: Player) : ChestUI(
         } else {
             100.0
         } + materialChance
-        val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
-        gold = MainConfig.getValueByFormula(expression, forgeData.star, refine = add)
+        val expression = MainConfig.goldRefineExpression.getString(forgeData.star.toString()) ?: return
+        gold = MainConfig.getValueByFormula(
+            expression,
+            forgeData.star,
+            refine = add,
+            nowForge = forgeData.forge,
+            nowLimit = forgeData.limit,
+            nowRefine = forgeData.refine,
+        )
         RefineUIConfig.slots["allow-refine"]?.forEach { (item, indexes) ->
             val stack = PAPIHook.setPlaceHolderAndColor(item.clone(), player).applyMeta {
                 if (hasDisplayName()) setDisplayName(

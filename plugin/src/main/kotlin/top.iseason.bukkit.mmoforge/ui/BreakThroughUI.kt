@@ -275,9 +275,16 @@ class BreakThroughUI(val player: Player) : ChestUI(
         }
         val itemStack = inputSlot.itemStack ?: return
         val inputData = inputData!!.clone()
-        val expression = MainConfig.goldForgeExpression.getString(inputData.star.toString()) ?: return
+        val expression = MainConfig.goldBreakExpression.getString(inputData.star.toString()) ?: return
         //设置所需金币
-        gold = MainConfig.getValueByFormula(expression, inputData.star, limit = 1)
+        gold = MainConfig.getValueByFormula(
+            expression,
+            inputData.star,
+            limit = 1,
+            nowForge = inputData.forge,
+            nowLimit = inputData.limit,
+            nowRefine = inputData.refine,
+        )
         // 预览物品
         val liveMMOItem = LiveMMOItem(itemStack)
         liveMMOItem.breakthrough(inputData, 1)

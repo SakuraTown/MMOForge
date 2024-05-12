@@ -124,10 +124,11 @@ data class MMOForgeData(
             //升级需要的经验
             val requireExp = MainConfig.getValueByFormula(
                 MainConfig.getForgeExpression(fl),
-                star,
-                fl,
-                limit,
-                refine
+                star = star,
+                nowForge = fl,
+                forge = fl,
+                nowLimit = limit,
+                nowRefine = refine
             )
             //剩余的经验加上本身拥有的 是否能够升级
             if (remainExp + current < requireExp) {

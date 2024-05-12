@@ -189,7 +189,15 @@ class ForgeUI(val player: Player) : ChestUI(
         }
         costExp = totalExp - overflow
         val expression = MainConfig.goldForgeExpression.getString(forgeData.star.toString()) ?: return
-        gold = MainConfig.getValueByFormula(expression, forgeData.star, forge = costExp)
+        gold = MainConfig.getValueByFormula(
+            expression,
+            forgeData.star,
+            forge = level,
+            exp = costExp,
+            nowForge = forgeData.forge,
+            nowLimit = forgeData.limit,
+            nowRefine = forgeData.refine,
+        )
         val liveMMOItem = LiveMMOItem(inputItem)
         chance = if (liveMMOItem.hasData(ForgeChance.stat)) {
             (liveMMOItem.getData(ForgeChance.stat) as DoubleData).value

@@ -103,12 +103,12 @@ object MainConfig : SimpleYAMLConfig() {
     @Comment(
         "",
         "强化区间等级所需的经验公式，强化时按顺序从配置键中找到小于等于当前等级的最大的键",
-        "{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ",
+        "{star}:武器星级 {now-forge}:当前强化等级 {now-limit}:当前突破等级 {now-refine}:当前精炼等级 ",
     )
     @Key("forge-level-map")
     var ForgeLevelSection: MemorySection = YamlConfiguration().apply {
-        set("20", "2*{star}+5*{forge}")
-        set("40", "2*{star}+5.1*{forge}")
+        set("20", "2*{star}+5*{now-forge}")
+        set("40", "2*{star}+5.1*{now-forge}")
     }
 
     private val forgeLevelMap: LinkedHashMap<Int, String> = LinkedHashMap()
@@ -117,7 +117,7 @@ object MainConfig : SimpleYAMLConfig() {
      * 根据目前强化等级获得对应的经验公式
      */
     fun getForgeExpression(level: Int): String {
-        var formula = "2*{star}+5*{forge}"
+        var formula = "2*{star}+5*{now-forge}"
         forgeLevelMap.forEach { (l, f) ->
             formula = f
             if (level <= l) return formula
@@ -133,12 +133,21 @@ object MainConfig : SimpleYAMLConfig() {
         star: Number = 3,
         forge: Number = 0.0,
         limit: Number = 0,
-        refine: Number = 0
+        refine: Number = 0,
+        nowForge: Number = 0,
+        nowLimit: Number = 0,
+        nowRefine: Number = 0,
+        exp: Number = 0,
     ): Double {
-        val express = formula.replace("{star}", star.toString())
+        val express = formula
+            .replace("{star}", star.toString())
             .replace("{forge}", forge.toString())
+            .replace("{forge-exp}", exp.toString())
             .replace("{limit}", limit.toString())
             .replace("{refine}", refine.toString())
+            .replace("{now-forge}", nowForge.toString())
+            .replace("{now-limit}", nowLimit.toString())
+            .replace("{now-refine}", nowRefine.toString())
         return try {
             ExpressionParser().evaluate(express)
         } catch (e: Exception) {
@@ -196,9 +205,38 @@ object MainConfig : SimpleYAMLConfig() {
     var refineGain: ForgeParserMap = LinkedHashMap()
         private set
 
-    @Comment("", "金币公式", "{forge}:增加的强化经验 {limit}:增加的突破等级 {refine}:增加的精炼等级 ")
+    @Comment(
+        "", "强化每星级金币公式",
+        "{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 {forge-exp}: 强化增加的经验",
+        "{now-forge}:当前强化等级 {now-limit}:当前突破等级 {now-refine}:当前精炼等级 ",
+    )
     @Key("gold-require-map")
     var goldForgeExpression: MemorySection = YamlConfiguration().apply {
+        set("3", "{forge}*1+{limit}*200+{refine}*500")
+        set("4", "({forge}*1.1+{limit}*200+{refine}*500)*1.5")
+        set("5", "({forge}*1.2+{limit}*200+{refine}*500)*2.475")
+    }
+
+    @Comment(
+        "", "突破每星级金币公式",
+        "{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 {forge-exp}: 强化增加的经验",
+        "{now-forge}:当前强化等级 {now-limit}:当前突破等级 {now-refine}:当前精炼等级 ",
+    )
+    @Key("limit-gold-require-map")
+    var goldBreakExpression: MemorySection = YamlConfiguration().apply {
+        set("3", "{forge}*1+{limit}*200+{refine}*500")
+        set("4", "({forge}*1.1+{limit}*200+{refine}*500)*1.5")
+        set("5", "({forge}*1.2+{limit}*200+{refine}*500)*2.475")
+    }
+
+    @Comment(
+        "",
+        "精炼每星级金币公式",
+        "{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 {forge-exp}: 强化增加的经验",
+        "{now-forge}:当前强化等级 {now-limit}:当前突破等级 {now-refine}:当前精炼等级 ",
+    )
+    @Key("gold-require-map")
+    var goldRefineExpression: MemorySection = YamlConfiguration().apply {
         set("3", "{forge}*1+{limit}*200+{refine}*500")
         set("4", "({forge}*1.1+{limit}*200+{refine}*500)*1.5")
         set("5", "({forge}*1.2+{limit}*200+{refine}*500)*2.475")
