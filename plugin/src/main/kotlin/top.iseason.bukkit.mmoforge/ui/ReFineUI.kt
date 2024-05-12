@@ -118,6 +118,9 @@ class ReFineUI(val player: Player) : ChestUI(
                             return@onClicked
                         }
                         if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
+                            if (MainConfig.refineFailureRemoveItem) {
+                                toolSlot.reset()
+                            }
                             resultSlot.reset()
                             resultSlot.outputAble(false)
                             player.sendColorMessage(
@@ -128,6 +131,7 @@ class ReFineUI(val player: Player) : ChestUI(
                                 )
                             )
                         } else {
+                            toolSlot.reset()
                             resultSlot.outputAble(true)
                             player.sendColorMessage(
                                 Lang.ui_refine_success.formatBy(
@@ -138,7 +142,6 @@ class ReFineUI(val player: Player) : ChestUI(
                             )
                         }
                         resetData()
-                        toolSlot.reset()
                         materialSlot.reset()
                         this.reset()
                     }.setup()
@@ -223,7 +226,7 @@ class ReFineUI(val player: Player) : ChestUI(
         resultSlot.ejectSilently(player)
         resultSlot.outputAble(false)
         val buildSilently = mmoItem.newBuilder().build()
-//        println(NBTItem.get(buildSilently).tags.contains("MMOITEMS_FIRE_DAMAGE"))
+//        println(NBTItem.get(buildSilently).tags.contains("MMOITEMS_FIRE_DAMAGE"))\
         buildSilently?.applyMeta {
             setName("$displayName ${forgeData.refine.toRoman()}")
         }

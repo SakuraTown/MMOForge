@@ -115,9 +115,11 @@ class BreakThroughUI(val player: Player) : ChestUI(
                             materialSlot.reset()
                         }
                         //扣物品
-                        inputSlot.reset()
                         reset()
                         if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
+                            if (MainConfig.breakFailureRemoveItem) {
+                                inputSlot.reset()
+                            }
                             outputSlot.reset()
                             outputSlot.outputAble(false)
                             player.sendColorMessage(
@@ -128,6 +130,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
                                 )
                             )
                         } else {
+                            inputSlot.reset()
                             outputSlot.outputAble(true)
                             player.sendColorMessage(
                                 Lang.ui_break_success.formatBy(
@@ -291,7 +294,10 @@ class BreakThroughUI(val player: Player) : ChestUI(
         outputSlot.ejectSilently(player)
         //上锁
         outputSlot.outputAble(false)
-        outputSlot.itemStack = liveMMOItem.newBuilder().build()
+        val oldName = itemStack.getDisplayName()
+        outputSlot.itemStack = liveMMOItem.newBuilder().build()?.applyMeta {
+            setDisplayName(oldName)
+        }
         val modelDataHis = liveMMOItem.getStatHistory(ItemStats.CUSTOM_MODEL_DATA)
         if (modelDataHis != null) {
             val modelData = modelDataHis.recalculate(liveMMOItem.upgradeLevel) as DoubleData

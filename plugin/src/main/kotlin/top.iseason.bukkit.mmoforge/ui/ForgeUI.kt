@@ -118,9 +118,11 @@ class ForgeUI(val player: Player) : ChestUI(
                                 s.itemStack = null
                                 costExp -= exp * material.amount
                             }
-                            inputSlot.reset()
                             reset()
                             if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
+                                if (MainConfig.forgeFailureRemoveItem) {
+                                    inputSlot.reset()
+                                }
                                 resultSlot.reset()
                                 resultSlot.outputAble(false)
                                 player.sendColorMessage(
@@ -131,6 +133,7 @@ class ForgeUI(val player: Player) : ChestUI(
                                     )
                                 )
                             } else {
+                                inputSlot.reset()
                                 resultSlot.outputAble(true)
                                 player.sendColorMessage(
                                     Lang.ui_forge_success.formatBy(
@@ -203,7 +206,10 @@ class ForgeUI(val player: Player) : ChestUI(
         liveMMOItem.setData(MMOForgeStat, forgeData)
         resultSlot.ejectSilently(player)
         resultSlot.outputAble(false)
-        resultSlot.itemStack = liveMMOItem.newBuilder().build()
+        val oldName = inputItem.getDisplayName()
+        resultSlot.itemStack = liveMMOItem.newBuilder().build()?.applyMeta {
+            setDisplayName(oldName)
+        }
         ForgeUIConfig.slots["allow-forge"]?.forEach { (item, indexes) ->
             val stack = PAPIHook.setPlaceHolderAndColor(item.clone(), player).applyMeta {
                 if (hasDisplayName()) setDisplayName(
@@ -212,6 +218,7 @@ class ForgeUI(val player: Player) : ChestUI(
                 )
                 if (hasLore()) lore = lore!!.map {
                     it.replace("{chance}", chance.toString())
+                        .replace("{gold}", gold.toString())
                 }
             }
             for (index in indexes) {

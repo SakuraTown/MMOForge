@@ -56,9 +56,9 @@ object MainConfig : SimpleYAMLConfig() {
     @Key
     var AHEAD = "属性加成格式"
 
-    val ForgeUUID = UUID.fromString("9605eb27-aef7-477e-bb7e-d5075c82de85")
+    val ForgeUUID: UUID = UUID.fromString("9605eb27-aef7-477e-bb7e-d5075c82de85")
 
-    val LimitUUID = UUID.fromString("aff6ef71-8963-4651-aa31-62782ba7e71f")
+    val LimitUUID: UUID = UUID.fromString("aff6ef71-8963-4651-aa31-62782ba7e71f")
 
     @Comment("", "强化限制对应多少强化等级")
     @Key("limit-rate")
@@ -74,8 +74,20 @@ object MainConfig : SimpleYAMLConfig() {
     @Key("max-limit")
     var MAX_LIMIT = 5
 
+    @Comment("", "强化失败是否没收原型物品")
+    @Key
+    var forgeFailureRemoveItem = false
+
+    @Comment("", "突破失败是否没收原型物品")
+    @Key
+    var breakFailureRemoveItem = false
+
+    @Comment("", "精炼失败是否没收原型物品")
+    @Key
+    var refineFailureRemoveItem = false
+
     @Key("forge-map")
-    @Comment("", "强化每级增加的属性，支持小数及范围")
+    @Comment("", "强化区间等级增加的属性，强化时按顺序从配置键中找到小于等于当前等级的最大的键")
     var ForgeMap: MemorySection = YamlConfiguration().apply {
         createSection("1").set("ATTACK_DAMAGE", "1%")
         createSection("2").set("ATTACK_DAMAGE", "2%")
@@ -88,7 +100,11 @@ object MainConfig : SimpleYAMLConfig() {
     var forgeGain: ForgeParserMap = LinkedHashMap()
         private set
 
-    @Comment("", "强化每级所需的经验公式", "{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ")
+    @Comment(
+        "",
+        "强化区间等级所需的经验公式，强化时按顺序从配置键中找到小于等于当前等级的最大的键",
+        "{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 ",
+    )
     @Key("forge-level-map")
     var ForgeLevelSection: MemorySection = YamlConfiguration().apply {
         set("20", "2*{star}+5*{forge}")
@@ -130,7 +146,12 @@ object MainConfig : SimpleYAMLConfig() {
         }
     }
 
-    @Comment("", "强化突破属性增加，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
+    @Comment(
+        "",
+        "强化突破属性增加，支持小数、范围及百分比",
+        "高等级覆盖低等级，不覆盖会继承",
+        "突破时按顺序从配置键中找到小于等于当前突破等级的最大的键"
+    )
     @Key("limit-map")
     var ForgeLimitSection: MemorySection = YamlConfiguration().apply {
         createSection("1").set("ATTACK_DAMAGE", "1%")
@@ -140,7 +161,11 @@ object MainConfig : SimpleYAMLConfig() {
         createSection("5").set("ATTACK_DAMAGE", "5%")
     }
 
-    @Comment("", "突破材料，如果某个等级没有声明将不能进行突破")
+    @Comment(
+        "",
+        "突破材料，如果某个等级没有声明将不能进行突破",
+        "突破时按顺序从配置键中找到小于等于当前突破等级的最大的键"
+    )
     @Key("limit-type-map")
     var LimitTypeSection: MemorySection = YamlConfiguration().apply {
         set("1", arrayListOf("material:STEEL_INGOT"))
@@ -154,7 +179,12 @@ object MainConfig : SimpleYAMLConfig() {
     var limitGain: ForgeParserMap = LinkedHashMap()
         private set
 
-    @Comment("", "精炼属性，支持小数、范围及百分比", "高等级覆盖低等级，不覆盖会继承")
+    @Comment(
+        "",
+        "精炼属性，支持小数、范围及百分比",
+        "高等级覆盖低等级，不覆盖会继承",
+        "精炼时按顺序从配置键中找到小于等于当前精炼等级的最大的键"
+    )
     @Key("refine-map")
     var refineSection: MemorySection = YamlConfiguration().apply {
         createSection("1").set("ATTACK_DAMAGE", "1%")
