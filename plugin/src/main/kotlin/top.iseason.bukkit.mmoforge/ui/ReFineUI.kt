@@ -28,6 +28,7 @@ import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getDisplayName
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
+import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 import top.iseason.bukkittemplate.utils.other.NumberUtils.toRoman
 import top.iseason.bukkittemplate.utils.other.RandomUtils
@@ -45,7 +46,6 @@ class ReFineUI(val player: Player) : ChestUI(
     private var refine = 0
     private var newRefine = 0
     private var chance = 0.0
-    private var materialChance = 0.0
     private lateinit var toolSlot: IOSlot
     private lateinit var materialSlot: IOSlot
     private lateinit var resultSlot: IOSlot
@@ -118,6 +118,12 @@ class ReFineUI(val player: Player) : ChestUI(
                         if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
                             if (MainConfig.refineFailureRemoveItem) {
                                 toolSlot.reset()
+                            } else {
+                                submit {
+                                    val tItem = toolSlot.itemStack ?: return@submit
+                                    toolMMOForgeData = NBTItem.get(tItem).getForgeData()
+                                    toolSlot.onInput.invoke(toolSlot, tItem)
+                                }
                             }
                             resultSlot.reset()
                             resultSlot.outputAble(false)
@@ -156,7 +162,6 @@ class ReFineUI(val player: Player) : ChestUI(
         refine = 0
         newRefine = 0
         chance = 0.0
-        materialChance = 0.0
     }
 
     override fun reset() {
@@ -174,7 +179,6 @@ class ReFineUI(val player: Player) : ChestUI(
             chance = 0.0
             refine = 0
             newRefine = 0
-            materialChance = 0.0
             return
         }
         val toolNBT = NBTItem.get(toolM)
@@ -184,7 +188,6 @@ class ReFineUI(val player: Player) : ChestUI(
             gold = 0.0
             refine = 0
             chance = 0.0
-            materialChance = 0.0
             newRefine = 0
             return
         }
@@ -202,7 +205,7 @@ class ReFineUI(val player: Player) : ChestUI(
             (mmoItem.getData(RefineChance.stat) as DoubleData).value
         } else {
             100.0
-        } + materialChance
+        }
         val expression = MainConfig.goldRefineExpression.getString(forgeData.star.toString()) ?: return
         gold = MainConfig.getValueByFormula(
             expression,

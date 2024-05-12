@@ -100,6 +100,17 @@ object ForgeUIConfig : SimpleYAMLConfig() {
         )
     }
 
+    @Key("max-forge")
+    @Comment("", "达到强化上限显示的物品")
+    var maxForgeSection: MemorySection = YamlConfiguration().apply {
+        createSection(
+            "default", mutableMapOf(
+                "slots" to "40",
+                "item" to Material.ANVIL.item.applyMeta { setName("${ChatColor.RED}已达到等级上限，请突破") }.toSection()
+            )
+        )
+    }
+
     @Key("result")
     @Comment("强化产物输出槽")
     var resultSection: MemorySection = YamlConfiguration().apply {
@@ -117,6 +128,7 @@ object ForgeUIConfig : SimpleYAMLConfig() {
         readSlots("material", materialSection, slots)
         readSlots("default-forge", forgeSection, slots)
         readSlots("allow-forge", allowForgeSection, slots)
+        readSlots("max-forge", maxForgeSection, slots)
     }
 
 }

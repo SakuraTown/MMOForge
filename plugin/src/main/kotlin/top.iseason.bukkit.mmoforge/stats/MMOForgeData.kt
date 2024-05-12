@@ -117,7 +117,7 @@ data class MMOForgeData(
         var level = 0
         var remainExp = exp
         var current = currentExp
-        val max = getCurrentMaxForge()
+        val max = min(forge + MainConfig.PerMaxForge, getCurrentMaxForge())
         while (true) {
             val fl = forge + level
             if (fl >= max) break

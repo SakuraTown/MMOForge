@@ -77,7 +77,7 @@ fun LiveMMOItem.addAttribute(
         if (itemStat is Upgradable) {
             val info = itemStat.getUpgradeInfoByString(upgradeInfo)
             if (originalData is EnchantListData) {
-                val enchantListData = originalData.clone() as EnchantListData
+                val enchantListData = originalData.clone()
                 val enchants: Set<Enchantment> = enchantListData.enchants
                 val apply = itemStat.apply(enchantListData.clone(), info, times) as EnchantListData
                 if (!isAppend) {
@@ -245,6 +245,11 @@ fun NBTItem.getForgeData(): MMOForgeData? {
         null
     }
 }
+fun NBTItem.hasForgeData(): Boolean {
+    if (!hasType()) return false
+    return hasTag(MMOForgeStat.nbtPath)
+}
+
 
 fun ItemMeta.setName(name: String) {
     setDisplayName(name.toColor())

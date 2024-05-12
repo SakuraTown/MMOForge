@@ -34,6 +34,7 @@ import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getDisplayName
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
+import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 import top.iseason.bukkittemplate.utils.other.RandomUtils
 
@@ -119,6 +120,12 @@ class BreakThroughUI(val player: Player) : ChestUI(
                         if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
                             if (MainConfig.breakFailureRemoveItem) {
                                 inputSlot.reset()
+                            } else {
+                                submit {
+                                    val tItem = inputSlot.itemStack ?: return@submit
+                                    inputData = NBTItem.get(tItem).getForgeData()
+                                    inputSlot.onInput.invoke(inputSlot, tItem)
+                                }
                             }
                             outputSlot.reset()
                             outputSlot.outputAble(false)

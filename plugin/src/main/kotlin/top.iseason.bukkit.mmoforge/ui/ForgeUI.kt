@@ -22,6 +22,7 @@ import top.iseason.bukkit.mmoforge.stats.MMOForgeStat
 import top.iseason.bukkit.mmoforge.stats.material.ForgeExp
 import top.iseason.bukkit.mmoforge.uitls.forge
 import top.iseason.bukkit.mmoforge.uitls.getForgeData
+import top.iseason.bukkit.mmoforge.uitls.hasForgeData
 import top.iseason.bukkittemplate.ui.container.ChestUI
 import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.EntityUtils.giveItems
@@ -30,8 +31,10 @@ import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getDisplayName
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
+import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 import top.iseason.bukkittemplate.utils.other.RandomUtils
+import kotlin.math.ceil
 
 
 class ForgeUI(val player: Player) : ChestUI(
@@ -82,10 +85,24 @@ class ForgeUI(val player: Player) : ChestUI(
                         val nbtItem = NBTItem.get(it) ?: return@inputFilter false
                         if (!nbtItem.hasType()) return@inputFilter false
                         val double = nbtItem.getDouble(ForgeExp.stat.nbtPath)
-                        if (double == 0.0) return@inputFilter false
+                        if (double == 0.0) {
+                            val chance = nbtItem.getDouble(ForgeChance.stat.nbtPath)
+                            if (chance != 0.0 && !nbtItem.hasForgeData()) {
+                                for (materialSlot in materialSlots) {
+                                    val sItem = materialSlot.itemStack ?: continue
+                                    if (NBTItem.get(sItem).hasTag(ForgeChance.stat.nbtPath)) {
+                                        return@inputFilter false
+                                    }
+                                }
+                                return@inputFilter true
+                            }
+                            return@inputFilter false
+                        }
                         true
                     }.onInput(true) { updateResult() }
-                        .onOutput(true) { updateResult() }
+                        .onOutput(true) {
+                            updateResult()
+                        }
                         .setup()
                 )
             }
@@ -107,24 +124,30 @@ class ForgeUI(val player: Player) : ChestUI(
                             //扣材料
                             for (s in materialSlots) {
                                 val material = s.itemStack ?: continue
-                                val exp = NBTItem.get(material).getDouble(ForgeExp.stat.nbtPath)
-                                if (exp == 0.0) continue
-                                val times = (costExp / exp).toInt()
-                                if (times <= material.amount) {
-                                    material.decrease(times)
-                                    if (material.type.isAir) s.itemStack = null
-                                    break
+                                val get = NBTItem.get(material)
+                                val amount = material.amount
+                                val exp = get.getDouble(ForgeExp.stat.nbtPath)
+                                if (exp == 0.0) { //强化概率只扣一个
+                                    val chance = get.getDouble(ForgeChance.stat.nbtPath)
+                                    if (chance > 0) {
+                                        if (amount > 1)
+                                            material.decrease(1)
+                                        else
+                                            s.reset()
+                                    }
+                                } else {
+                                    val times = ceil(costExp / exp).toInt()
+                                    if (times < amount) {
+                                        costExp -= exp * times
+                                        material.decrease(times)
+                                    } else {
+                                        costExp -= exp * amount
+                                        s.reset()
+                                    }
                                 }
-                                s.itemStack = null
-                                costExp -= exp * material.amount
                             }
-                            reset()
+
                             if (chance < 100.0 && RandomUtils.checkPercentage(chance)) {
-                                if (MainConfig.forgeFailureRemoveItem) {
-                                    inputSlot.reset()
-                                }
-                                resultSlot.reset()
-                                resultSlot.outputAble(false)
                                 player.sendColorMessage(
                                     Lang.ui_forge_failure.formatBy(
                                         forgeLevel,
@@ -132,6 +155,18 @@ class ForgeUI(val player: Player) : ChestUI(
                                         resultSlot.itemStack?.getDisplayName()
                                     )
                                 )
+                                if (MainConfig.forgeFailureRemoveItem) {
+                                    inputSlot.reset()
+                                } else {
+                                    submit {
+                                        val tItem = inputSlot.itemStack ?: return@submit
+                                        inputData = NBTItem.get(tItem).getForgeData()
+                                        inputSlot.onInput.invoke(inputSlot, tItem)
+                                    }
+                                }
+                                resultSlot.reset()
+                                resultSlot.outputAble(false)
+
                             } else {
                                 inputSlot.reset()
                                 resultSlot.outputAble(true)
@@ -143,6 +178,7 @@ class ForgeUI(val player: Player) : ChestUI(
                                     )
                                 )
                             }
+                            reset()
                             canForge = false
                             gold = 0.0
                             costExp = 0.0
@@ -168,10 +204,9 @@ class ForgeUI(val player: Player) : ChestUI(
         materialSlots.forEach {
             val itemStack = it.itemStack ?: return@forEach
             val get = NBTItem.get(itemStack)
-            val exp = if (get.hasTag(ForgeExp.stat.nbtPath)) get.getDouble(ForgeExp.stat.nbtPath) else 0.0
-            val chance = if (get.hasTag(ForgeChance.stat.nbtPath)) get.getDouble(ForgeChance.stat.nbtPath) else 0.0
+            val exp = get.getDouble(ForgeExp.stat.nbtPath)
             totalExp += exp * itemStack.amount
-            materialChance += chance * itemStack.amount
+            materialChance += get.getDouble(ForgeChance.stat.nbtPath)
         }
 
         val inputItem = inputSlot.itemStack
@@ -185,6 +220,21 @@ class ForgeUI(val player: Player) : ChestUI(
         //不能升级
         if (overflow == totalExp) {
             resetResult()
+            ForgeUIConfig.slots["max-forge"]?.forEach { (item, indexes) ->
+                val stack = PAPIHook.setPlaceHolderAndColor(item.clone(), player).applyMeta {
+                    if (hasDisplayName()) setDisplayName(
+                        displayName.replace("{gold}", gold.toString())
+                            .replace("{chance}", chance.toString())
+                    )
+                    if (hasLore()) lore = lore!!.map {
+                        it.replace("{chance}", chance.toString())
+                            .replace("{gold}", gold.toString())
+                    }
+                }
+                for (index in indexes) {
+                    getSlot(index)?.itemStack = stack
+                }
+            }
             return
         }
         costExp = totalExp - overflow

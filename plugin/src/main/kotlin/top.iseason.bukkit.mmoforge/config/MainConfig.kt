@@ -70,6 +70,10 @@ object MainConfig : SimpleYAMLConfig() {
     @Key("max-refine")
     var MAX_REFINE = 5
 
+    @Comment("", "单次最大强化等级")
+    @Key
+    var PerMaxForge = 9999
+
     @Comment("", "物品最大突破等级，储存在物品NBT")
     @Key("max-limit")
     var MAX_LIMIT = 5
