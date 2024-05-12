@@ -47,10 +47,10 @@ fun ItemStack.getMMODouble(tag: String): Double {
 }
 
 fun Map<Int, Map<ItemStat<*, *>, String>>.getLevelMap(level: Int): Map<ItemStat<*, *>, String> {
-    val attributes = mutableMapOf<ItemStat<*, *>, String>()
-    forEach { (l, dataMap) ->
-        if (l > level) return@forEach
-        attributes.putAll(dataMap)
+    var attributes = emptyMap<ItemStat<*, *>, String>()
+    for ((l, dataMap) in this) {
+        if (l > level) break
+        attributes = dataMap
     }
     return attributes
 }
@@ -164,9 +164,9 @@ fun LiveMMOItem.refine(data: MMOForgeData, times: Int) {
     for (i in refine + 1..refine + times) {
         addAttribute(
             MainConfig.RefineUUID,
-            data.refineGain.getLevelMap(i),
+            (data.refineGain ?: MainConfig.refineGain).getLevelMap(i),
             1,
-            data.refineGain !== MainConfig.refineGain
+            data.refineGain != null
         )
     }
 }
@@ -181,9 +181,9 @@ fun LiveMMOItem.breakthrough(data: MMOForgeData, times: Int) {
     for (i in limit + 1..limit + times) {
         addAttribute(
             MainConfig.LimitUUID,
-            data.limitGain.getLevelMap(i),
+            (data.limitGain ?: MainConfig.limitGain).getLevelMap(i),
             1,
-            data.limitGain !== MainConfig.limitGain
+            data.limitGain != null
         )
     }
 }
@@ -199,9 +199,9 @@ fun LiveMMOItem.forge(data: MMOForgeData, times: Int) {
     for (i in forge + 1..forge + times) {
         addAttribute(
             MainConfig.ForgeUUID,
-            data.forgeGain.getLevelMap(i),
+            (data.forgeGain ?: MainConfig.forgeGain).getLevelMap(i),
             1,
-            data.forgeGain !== MainConfig.forgeGain
+            data.forgeGain != null
         )
     }
 }

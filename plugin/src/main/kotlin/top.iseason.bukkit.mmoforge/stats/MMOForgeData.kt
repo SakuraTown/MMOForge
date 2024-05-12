@@ -45,15 +45,15 @@ data class MMOForgeData(
     var maxForge: Int = MainConfig.MAX_LIMIT * MainConfig.LimitRate,
 
     // 精炼增益
-    var refineGain: ForgeParserMap = MainConfig.refineGain,
+    var refineGain: ForgeParserMap? = null,
 
     // 突破增益
-    var limitGain: ForgeParserMap = MainConfig.limitGain,
+    var limitGain: ForgeParserMap? = null,
 
     // 强化增益
-    var forgeGain: ForgeParserMap = MainConfig.forgeGain,
+    var forgeGain: ForgeParserMap? = null,
     // 突破需要的材料，分突破等级
-    var limitType: LinkedHashMap<Int, List<String>> = MainConfig.limitType
+    var limitType: LinkedHashMap<Int, List<String>>? = null
 ) : StatData, Mergeable<MMOForgeData>, RandomStatData<MMOForgeData> {
 
     /**
@@ -80,15 +80,16 @@ data class MMOForgeData(
             addProperty("max-limit", maxLimit)
         if (maxForge != MainConfig.MAX_LIMIT * MainConfig.LimitRate)
             addProperty("max-forge", maxForge)
-        if (refineGain != MainConfig.refineGain && refineGain.isNotEmpty())
-            add("gain-refine", refineGain.toJson())
-        if (limitGain != MainConfig.limitGain && limitGain.isNotEmpty())
-            add("gain-limit", limitGain.toJson())
-        if (forgeGain != MainConfig.forgeGain && forgeGain.isNotEmpty())
-            add("gain-forge", forgeGain.toJson())
-        if (limitType != MainConfig.limitType && limitType.isNotEmpty()) {
+        if (!refineGain.isNullOrEmpty())
+            add("gain-refine", refineGain!!.toJson())
+        if (!limitGain.isNullOrEmpty())
+            add("gain-limit", limitGain!!.toJson())
+        if (!forgeGain.isNullOrEmpty()) {
+            add("gain-forge", forgeGain!!.toJson())
+        }
+        if (!limitType.isNullOrEmpty()) {
             val jsonObject = JsonObject()
-            limitType.forEach { (level, list) ->
+            limitType!!.forEach { (level, list) ->
                 val temp = JsonArray()
                 list.forEach { temp.add(it) }
                 jsonObject.add(level.toString(), temp)
@@ -145,10 +146,10 @@ data class MMOForgeData(
 
     override fun isEmpty(): Boolean = refine == 0 && limit == 0 && forge == 0 && currentExp == 0.0
     override fun clone(): MMOForgeData = copy(
-        refineGain = LinkedHashMap(refineGain),
-        limitGain = LinkedHashMap(limitGain),
-        forgeGain = LinkedHashMap(forgeGain),
-        limitType = LinkedHashMap(limitType),
+        refineGain = if (refineGain == null) null else LinkedHashMap(refineGain),
+        limitGain = if (limitGain == null) null else LinkedHashMap(limitGain),
+        forgeGain = if (forgeGain == null) null else LinkedHashMap(forgeGain),
+        limitType = if (limitType == null) null else LinkedHashMap(limitType),
     )
 
     override fun randomize(p0: MMOItemBuilder?) = this
@@ -210,7 +211,6 @@ data class MMOForgeData(
  */
 fun ForgeParserMap.toJson(): JsonObject {
     val jsonObject = JsonObject()
-
     forEach { (level, lMap) ->
         val temp = JsonObject()
         lMap.forEach { (statKey, info) ->

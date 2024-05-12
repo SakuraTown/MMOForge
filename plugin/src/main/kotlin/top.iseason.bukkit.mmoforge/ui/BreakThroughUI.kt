@@ -252,7 +252,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
             resetResult()
             return
         }
-        val limitType = inputData.limitType[inputData.limit + 1]
+        val limitType = (inputData.limitType ?: MainConfig.limitType)[inputData.limit + 1]
         //刷新材料槽
         for ((i, s) in materialSlots.withIndex()) {
             s.requireItem = limitType?.getOrNull(i)
