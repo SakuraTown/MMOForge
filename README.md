@@ -373,7 +373,7 @@ tanh()
 log2()
 log10()
 ln()
-log,
+log
 sqrt()
 exp()
 
