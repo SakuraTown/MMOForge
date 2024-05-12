@@ -349,4 +349,33 @@ STEEL_INGOT:
     vein-ore: 10 # 连锁挖矿
 ~~~
 
+### 公式
+
+经验、金币公式支持的操作符如下
+
+~~~ text
++
+-
+*
+/
+^
+E
+u
+sin()
+cos()
+tan()
+asin()
+acos()
+atan()
+sinh()
+cosh()
+tanh()
+log2()
+log10()
+ln()
+log,
+sqrt()
+exp()
+
+~~~
 
