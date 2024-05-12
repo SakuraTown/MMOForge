@@ -84,8 +84,6 @@ class ReFineUI(val player: Player) : ChestUI(
                 val nbtItem = NBTItem.get(it) ?: return@inputFilter false
                 if (nbtItem.getString("MMOITEMS_ITEM_ID") != toolType) return@inputFilter false
                 materialMMOForgeData = nbtItem.getForgeData() ?: return@inputFilter false
-                materialChance =
-                    if (nbtItem.hasTag(RefineChance.stat.nbtPath)) nbtItem.getDouble(RefineChance.stat.nbtPath) else 0.0
                 true
             }.onInput(true) {
                 updateResult()
