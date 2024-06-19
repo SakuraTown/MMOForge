@@ -17,6 +17,7 @@ import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.event.Listener
 import top.iseason.bukkit.mmoforge.MMOForge
+import top.iseason.bukkit.mmoforge.config.MainConfig
 import top.iseason.bukkittemplate.config.SimpleYAMLConfig
 import top.iseason.bukkittemplate.config.annotations.Comment
 import top.iseason.bukkittemplate.config.annotations.Key
@@ -39,9 +40,10 @@ abstract class MMOAttribute(
     @Key("loreFormat")
     var loreFormat: String = format
     override fun onLoaded(section: ConfigurationSection) {
-        MMOForge.setStatLore(this)
-        MMOForge.setStatLoreFormat(this)
-
+        if (MainConfig.updateLore) {
+            MMOForge.setStatLore(this)
+            MMOForge.setStatLoreFormat(this)
+        }
     }
 
     /**

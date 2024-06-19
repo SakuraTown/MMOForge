@@ -56,6 +56,10 @@ object MainConfig : SimpleYAMLConfig() {
     @Key
     var AHEAD = "属性加成格式"
 
+    @Key
+    @Comment("", "启动时是否将本插件的属性插入到mi的配置中")
+    var updateLore = true
+
     val ForgeUUID: UUID = UUID.fromString("9605eb27-aef7-477e-bb7e-d5075c82de85")
 
     val LimitUUID: UUID = UUID.fromString("aff6ef71-8963-4651-aa31-62782ba7e71f")

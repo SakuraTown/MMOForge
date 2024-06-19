@@ -42,6 +42,7 @@ object MMOForge : BukkitPlugin {
         MMOItemsHook.checkHooked()
         OraxenHook.checkHooked()
         ItemsAdderHook.checkHooked()
+        MainConfig.load(false)
         mainCommands()
         BreakUIConfig.load(false)
         RefineUIConfig.load(false)
@@ -49,22 +50,23 @@ object MMOForge : BukkitPlugin {
         Lang.load(false)
         CommandHandler.updateCommands()
         registerStats()
-        MainConfig.load(false)
-        setStatsLoreFormat(statLoreFormats)
-        setStatsLore(statLoreFormats)
         UIListener.registerListener()
         MMOListener.registerListener()
-        MMOItems.plugin.types.reload(true)
-        MMOItems.plugin.stats.reload(true)
-        MMOItems.plugin.templates.reload()
-        MMOItems.plugin.formats.reload()
+        if (MainConfig.updateLore) {
+            setStatsLoreFormat(statLoreFormats)
+            setStatsLore(statLoreFormats)
+            MMOItems.plugin.types.reload(true)
+            MMOItems.plugin.stats.reload(true)
+            MMOItems.plugin.templates.reload()
+            MMOItems.plugin.formats.reload()
+        }
+
         info("&a插件已启用!  作者: Iseason QQ: 1347811744")
     }
 
     override fun onDisable() {
         info("&e插件已注销")
     }
-
 
     /**
      * 注册所有属性
@@ -88,7 +90,6 @@ object MMOForge : BukkitPlugin {
         RefineChance.reg()
 //        SakuraSoulBound.reg()
     }
-
 
     private fun setStatsLoreFormat(stats: List<MMOAttribute>) {
         val declaredField = ConfigManager::class.java.getDeclaredField("loreFormat")
