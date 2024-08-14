@@ -243,7 +243,7 @@ object MainConfig : SimpleYAMLConfig() {
         "{star}:武器星级 {forge}:强化等级 {limit}:突破等级 {refine}:精炼等级 {forge-exp}: 强化增加的经验",
         "{now-forge}:当前强化等级 {now-limit}:当前突破等级 {now-refine}:当前精炼等级 ",
     )
-    @Key("gold-require-map")
+    @Key("refine-gold-require-map")
     var goldRefineExpression: MemorySection = YamlConfiguration().apply {
         set("3", "{forge}*1+{limit}*200+{refine}*500")
         set("4", "({forge}*1.1+{limit}*200+{refine}*500)*1.5")
