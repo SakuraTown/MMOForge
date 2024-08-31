@@ -54,14 +54,16 @@ subprojects {
     dependencies {
         val kotlinVersion: String by rootProject
         val exposedVersion: String by rootProject
-        val nbtEditorVersion: String by rootProject
+//        val nbtEditorVersion: String by rootProject
 
         compileOnly(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
         //基础库
         compileOnly(kotlin("stdlib"))
         compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
         compileOnly("me.clip:placeholderapi:2.11.3")
-        implementation("io.github.bananapuncher714:nbteditor:$nbtEditorVersion")
+        compileOnly("de.tr7zw:item-nbt-api-plugin:2.13.2")
+
+//        implementation("io.github.bananapuncher714:nbteditor:$nbtEditorVersion")
 
         // 数据库
         compileOnly("org.jetbrains.exposed:exposed-core:$exposedVersion") {

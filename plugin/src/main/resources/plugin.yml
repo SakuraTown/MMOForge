@@ -4,6 +4,7 @@ version: ${version}
 authors: [ ${ author } ]
 api-version: 1.13
 depend:
+  - NBTAPI
   - MMOItems
   - Vault
 softdepend:

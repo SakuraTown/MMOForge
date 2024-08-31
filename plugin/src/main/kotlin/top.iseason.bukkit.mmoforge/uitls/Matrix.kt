@@ -122,7 +122,7 @@ fun <T> matrixOf(cols: Int, rows: Int, vararg elements: T): Matrix<T> = ListMatr
 fun <T> mutableMatrixOf(cols: Int, rows: Int, vararg elements: T): MutableMatrix<T> =
     MutableListMatrix(cols, rows, elements.toMutableList())
 
-private inline fun <T> prepareListForMatrix(cols: Int, rows: Int, init: (Int, Int) -> T): ArrayList<T> {
+inline fun <T> prepareListForMatrix(cols: Int, rows: Int, init: (Int, Int) -> T): ArrayList<T> {
     val list = ArrayList<T>(cols * rows)
     for (y in 0 until rows) {
         for (x in 0 until cols) {

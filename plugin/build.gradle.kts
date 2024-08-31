@@ -68,7 +68,7 @@ tasks {
         }
         relocate("top.iseason.bukkittemplate", "$groupS.libs.core")
         relocate("org.bstats", "$groupS.libs.bstats")
-        relocate("io.github.bananapuncher714.nbteditor", "$groupS.libs.nbteditor")
+//        relocate("io.github.bananapuncher714.nbteditor", "$groupS.libs.nbteditor")
     }
     build {
         dependsOn("buildPlugin")
@@ -89,7 +89,6 @@ tasks {
                 "author" to author,
                 "kotlinVersion" to getProperties("kotlinVersion"),
                 "exposedVersion" to getProperties("exposedVersion"),
-                "nbtEditorVersion" to getProperties("nbtEditorVersion")
             )
         }
     }

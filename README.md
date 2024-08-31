@@ -5,6 +5,7 @@
 ## 依赖
 
 插件版本为MMOForge使用的API版本，最好大于等于版本号
+硬依赖 NBTAPI
 
 * MMOItems 6.8.2+
 * MythicLib 1.4.1+
