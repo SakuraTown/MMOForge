@@ -54,32 +54,18 @@ subprojects {
     dependencies {
         val kotlinVersion: String by rootProject
         val exposedVersion: String by rootProject
-
-        compileOnly(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
         //基础库
-        compileOnly(kotlin("stdlib"))
-        compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
-        compileOnly("me.clip:placeholderapi:2.11.3")
         compileOnly("de.tr7zw:item-nbt-api-plugin:2.13.2")
-
+        compileOnly(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
+        compileOnly(kotlin("stdlib"))
+        compileOnly("org.spigotmc", "spigot-api", "1.20.3-R0.1-SNAPSHOT")
+        compileOnly("me.clip:placeholderapi:2.11.3")
 
         // 数据库
-        compileOnly("org.jetbrains.exposed:exposed-core:$exposedVersion") {
-            isTransitive = false
-            targetConfiguration = "runtime"
-        }
-        compileOnly("org.jetbrains.exposed:exposed-dao:$exposedVersion") {
-            isTransitive = false
-            targetConfiguration = "runtime"
-        }
-        compileOnly("org.jetbrains.exposed:exposed-jdbc:$exposedVersion") {
-            isTransitive = false
-            targetConfiguration = "runtime"
-        }
-        compileOnly("org.jetbrains.exposed:exposed-java-time:$exposedVersion") {
-            isTransitive = false
-            targetConfiguration = "runtime"
-        }
+        compileOnly("org.jetbrains.exposed", "exposed-core", exposedVersion)
+        compileOnly("org.jetbrains.exposed", "exposed-dao", exposedVersion)
+        compileOnly("org.jetbrains.exposed", "exposed-jdbc", exposedVersion)
+        compileOnly("org.jetbrains.exposed", "exposed-java-time", exposedVersion)
         compileOnly("com.zaxxer:HikariCP:4.0.3")
     }
 
