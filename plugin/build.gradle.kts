@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    id("com.gradleup.shadow")
 }
 
 repositories {
@@ -54,27 +55,35 @@ val obfuscatedMainClass =
     } else "a"
 val isObfuscated = obfuscated == "true"
 val shrink: String by rootProject
-val defaultFile = File("../build", "${rootProject.name}-${rootProject.version}.jar")
+val formatJarOutput = jarOutputFile.replace("\${root}", rootProject.projectDir.absolutePath)
 val output: File =
     if (isObfuscated)
-        File(jarOutputFile, "${rootProject.name}-${rootProject.version}-obfuscated.jar").absoluteFile
+        File(formatJarOutput, "${rootProject.name}-${rootProject.version}-obfuscated.jar").absoluteFile
     else
-        File(jarOutputFile, "${rootProject.name}-${rootProject.version}.jar").absoluteFile
+        File(formatJarOutput, "${rootProject.name}-${rootProject.version}.jar").absoluteFile
 
 tasks {
+    compileJava {
+        options.encoding = "UTF-8"
+    }
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(8))
+        }
+    }
+    kotlin {
+        jvmToolchain(8)
+    }
+
     shadowJar {
         if (isObfuscated) {
             relocate("top.iseason.bukkittemplate.BukkitTemplate", obfuscatedMainClass)
         }
         relocate("top.iseason.bukkittemplate", "$groupS.libs.core")
         relocate("org.bstats", "$groupS.libs.bstats")
-//        relocate("io.github.bananapuncher714.nbteditor", "$groupS.libs.nbteditor")
     }
     build {
         dependsOn("buildPlugin")
-    }
-    compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
     }
     processResources {
         filesMatching("plugin.yml") {

@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm")
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
 }
 
 buildscript {
@@ -8,7 +8,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.4.0-beta01")
+        classpath("com.guardsquare:proguard-gradle:7.5.0")
     }
 }
 
@@ -54,7 +54,6 @@ subprojects {
     dependencies {
         val kotlinVersion: String by rootProject
         val exposedVersion: String by rootProject
-//        val nbtEditorVersion: String by rootProject
 
         compileOnly(platform("org.jetbrains.kotlin:kotlin-bom:$kotlinVersion"))
         //基础库
@@ -63,7 +62,6 @@ subprojects {
         compileOnly("me.clip:placeholderapi:2.11.3")
         compileOnly("de.tr7zw:item-nbt-api-plugin:2.13.2")
 
-//        implementation("io.github.bananapuncher714:nbteditor:$nbtEditorVersion")
 
         // 数据库
         compileOnly("org.jetbrains.exposed:exposed-core:$exposedVersion") {
