@@ -25,7 +25,7 @@ dependencies {
     compileOnly("net.Indyuce:MMOItems-API:6.10-SNAPSHOT") { isTransitive = false }
     compileOnly("io.lumine:MythicLib-dist:1.6.2-SNAPSHOT") { isTransitive = false }
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }
-    compileOnly("me.clip:placeholderapi:2.11.3")
+    compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("org.spigotmc:spigot-api:1.19.3-R0.1-SNAPSHOT")
 }
 
