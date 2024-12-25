@@ -189,10 +189,6 @@ object ItemUtils {
         if (amount != 1) yaml["amount"] = amount
         if (!hasItemMeta()) return yaml
 
-        // 额外的NBt
-//        val toJson = NBT.get(this) { it.getCompound("tag") }.toString()
-//        val json = Gson().fromJson(toJson, Map::class.java).toMutableMap()
-
         val data = this.data
         if (data != null && data.data != 0.toByte()) {
             var toInt = data.data.toInt()
@@ -209,7 +205,6 @@ object ItemUtils {
             val durability = this@toSection.durability
             if (durability != 0.toShort()) {
                 yaml["damage"] = durability
-//                json.remove("Damage")
             }
             // 附魔
             if (hasEnchants()) {
@@ -217,13 +212,11 @@ object ItemUtils {
                     val namespacedKey = it.key.key
                     if (namespacedKey.namespace == NamespacedKey.MINECRAFT) namespacedKey.key else namespacedKey.toString()
                 })
-//                json.remove("Enchantments")
             }
             // flags
             val itemFlags = itemFlags
             if (itemFlags.isNotEmpty()) {
                 yaml["flags"] = itemFlags.map { it.name }
-//                json.remove("HideFlags")
             }
             when (this) {
                 // 附魔书附魔
@@ -231,18 +224,8 @@ object ItemUtils {
                     if (hasStoredEnchants()) {
                         yaml.createSection("stored-enchants",
                             storedEnchants.mapKeys { it.key.key })
-//                        json.remove("StoredEnchantments")
                     }
 
-
-                // 头颅
-//                is SkullMeta -> {
-//
-//                    val texture = NBTEditor.getTexture(this@toSection)
-//                    if (texture != null) yaml["skull"] = texture
-//                    else if (hasOwner()) yaml["skull-owner"] = owner
-//                    json.remove("SkullOwner")
-//                }
                 // 皮革
                 is LeatherArmorMeta -> yaml["color"] = color.toRGBString()
                 // 药水
@@ -257,9 +240,6 @@ object ItemUtils {
                         val potion = Potion.fromItemStack(this@toSection)
                         yaml["base-effect"] = "${potion.type.name},${potion.hasExtendedDuration()},${potion.isSplash}"
                     }
-//                    json.remove("Potion")
-//                    json.remove("CustomPotionEffects")
-//                    json.remove("CustomPotionColor")
                 }
 
                 is BlockStateMeta -> {
@@ -282,7 +262,6 @@ object ItemUtils {
                             }.toBase64()
                         }
                     }
-//                    json.remove("BlockEntityTag")
                 }
 
                 is FireworkMeta -> {
@@ -296,7 +275,6 @@ object ItemUtils {
                         colors["base"] = effect.colors.map { it.toRGBString() }
                         colors["fade"] = effect.fadeColors.map { it.toRGBString() }
                     }
-//                    json.remove("Fireworks")
                 }
 
                 is BookMeta -> {
@@ -307,10 +285,6 @@ object ItemUtils {
                         bookInfo["generation"] = generation?.name
                     }
                     bookInfo["pages"] = pages
-//                    json.remove("generation")
-//                    json.remove("author")
-//                    json.remove("title")
-//                    json.remove("pages")
                 }
 
                 is MapMeta -> {
@@ -334,8 +308,6 @@ object ItemUtils {
                             view["unlimited-tracking"] = mapView.isUnlimitedTracking
                         }
                     }
-//                    json.remove("map")
-//                    json.remove("Decorations")
                 }
 
             }
@@ -346,7 +318,6 @@ object ItemUtils {
                 } else if (this is SpawnEggMeta) {
                     yaml["creature"] = spawnedType.getName()
                 }
-//                json.remove("EntityTag")
             }
 
             // 1.11以上
@@ -354,20 +325,17 @@ object ItemUtils {
                 // 无法破坏
                 if (isUnbreakable) {
                     yaml["unbreakable"] = true
-//                    json.remove("Unbreakable")
                 }
                 // 旗帜
                 if (this is BannerMeta) {
                     yaml.createSection(
                         "banner",
                         patterns.associate { it.pattern.name to it.color.name })
-//                    json.remove("Patterns")
-
                 }
 
             }
             // 1.14 以上
-            if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_14_R1)) {
+            if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_14_R1)) {
                 if (hasAttributeModifiers()) {
                     val mutableMapOf = mutableMapOf<String, Any>()
                     attributeModifiers!!.forEach { t, u ->
@@ -380,12 +348,10 @@ object ItemUtils {
                         mutableMapOf[u.name] = serialize
                     }
                     yaml.createSection("attributes", mutableMapOf)
-//                    json.remove("AttributeModifiers")
                 }
                 // 模型
                 if (hasCustomModelData()) {
                     yaml["custom-model-data"] = customModelData
-//                    json.remove("custom_model_data")
                 }
                 when (this) {
                     //弩
@@ -394,8 +360,6 @@ object ItemUtils {
                             for ((i, projectiles) in chargedProjectiles.withIndex()) {
                                 yaml["projectiles.$i"] = projectiles.toSection()
                             }
-//                            json.remove("ChargedProjectiles")
-//                            json.remove("Charged")
                         }
                     }
                     // 热带鱼桶
@@ -403,58 +367,26 @@ object ItemUtils {
                         yaml["pattern"] = pattern.name
                         yaml["color"] = bodyColor.name
                         yaml["pattern-color"] = patternColor.name
-//                        json.remove("BucketVariantTag")
-//                        json.remove("EntityTag")
                     }
                     // 迷之炖菜
                     is SuspiciousStewMeta -> {
                         yaml["effects"] = customEffects.map { it.toEffectString() }
-//                        json.remove("Effects")
                     }
                 }
             }
         }
-        if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1) && this is CompassMeta) {
+        if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1) && this is CompassMeta) {
             val subSection: ConfigurationSection = yaml.createSection("lodestone")
             subSection["tracked"] = isLodestoneTracked
-//            json.remove("LodestoneTracked")
             if (hasLodestone()) {
                 val location = lodestone
                 subSection["location"] = location!!.toLocationString()
             }
-//            json.remove("LodestoneDimension")
-//            json.remove("LodestonePos")
         }
-        if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1) && this is AxolotlBucketMeta) {
+        if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1) && this is AxolotlBucketMeta) {
             if (hasVariant()) yaml["variant"] = variant.toString()
-//            json.remove("Variant")
         }
-//        json.remove("display")
-        //写入数据
-//        if (json.isNotEmpty()) {
-//            fun deepFor(map: Map<*, *>, config: ConfigurationSection) {
-//                for ((k, v) in map) {
-//                    if (v is Map<*, *>) {
-//                        deepFor(v, config.createSection(k.toString()))
-//                    } else {
-//                        if ((v is Double) && (abs(v - Math.round(v)) < Double.MIN_VALUE)) {
-//                            config.set(k.toString(), v.toInt())
-//                        } else if (v is String && v.endsWith('d')) {
-//                            val double = runCatching {
-//                                v.substring(0, v.length - 1).toDouble()
-//                            }.getOrNull()
-//                            if (double == null) config.set(k.toString(), v)
-//                            else
-//                                config.set(k.toString(), double)
-//                        } else {
-//                            config.set(k.toString(), v)
-//                        }
-//                    }
-//                }
-//            }
-//            deepFor(json, yaml.createSection("nbt"))
-////            yaml["nbt"] = json
-//        }
+
         return yaml
     }
 
@@ -467,8 +399,6 @@ object ItemUtils {
         val material = Material.matchMaterial(mat)
         var item = material?.item ?: itemProviders.firstNotNullOfOrNull { it.provide(mat) } ?: return null
         //处理头颅
-//        val url = section.getString("skull")
-//        if (url != null) item = NBTEditor.getHead(url)
         item.amount = section.getInt("amount", 1)
         item.durability = section.getInt("damage", 0).toShort()
         val subId = section.getInt("data", 0)
@@ -499,7 +429,7 @@ object ItemUtils {
                 is LeatherArmorMeta -> section.getString("color")?.also { setColor(fromColorStr(it)) }
                 // 药水
                 is PotionMeta -> {
-                    if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_19_R1)) {
+                    if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_19_R1)) {
                         section.getString("base-effect")?.also {
                             val split = it.trim().split(',')
                             val type =
@@ -578,7 +508,7 @@ object ItemUtils {
                         book.getString("author")?.also { author = it.toColor() }
                         pages = book.getStringList("pages").toColor()
                     }
-                    if (book != null && !MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_19_R1)
+                    if (book != null && MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_19_R1)
                     ) {
                         book.getString("generation")?.also {
                             generation = kotlin.runCatching { BookMeta.Generation.valueOf(it.uppercase()) }.getOrNull()
@@ -589,12 +519,12 @@ object ItemUtils {
                 is MapMeta -> {
                     val mapSection = section.getConfigurationSection("map")
                     isScaling = mapSection?.getBoolean("scaling") ?: false
-                    if (mapSection != null && !MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_11_R1)
+                    if (mapSection != null && MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_11_R1)
                     ) {
                         mapSection.getString("location")?.also { locationName = it.toColor() }
                         mapSection.getString("color")?.also { color = fromColorStr(it) }
                     }
-                    if (mapSection != null && !MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_14_R1)
+                    if (mapSection != null && MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_14_R1)
                     ) {
                         mapSection.getConfigurationSection("view")?.also {
                             runCatching {
@@ -612,7 +542,7 @@ object ItemUtils {
                 }
             }
             if (!MinecraftVersion.isNewerThan(MinecraftVersion.MC1_13_R1)) {
-                if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_11_R1)) {
+                if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_11_R1)) {
                     if (this is SpawnEggMeta) {
                         val creatureName = section.getString("creature")
                         if (creatureName != null) {
@@ -636,7 +566,7 @@ object ItemUtils {
                     }
                 }
             }
-            if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_14_R1)) {
+            if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_14_R1)) {
                 val section2 = section.getConfigurationSection("attributes")
                 section2?.getKeys(false)?.forEach { name ->
                     val section3 = section2.getConfigurationSection(name)!!
@@ -684,7 +614,7 @@ object ItemUtils {
                     setPattern(pattern)
                 }
             }
-            if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_15_R1) && this is SuspiciousStewMeta
+            if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_15_R1) && this is SuspiciousStewMeta
             ) {
                 for (effects in section.getStringList("effects")) {
                     val fromEffectString = fromEffectString(effects)
@@ -692,7 +622,7 @@ object ItemUtils {
                         addCustomEffect(fromEffectString, true)
                 }
             }
-            if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1) && this is CompassMeta
+            if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_16_R1) && this is CompassMeta
             ) {
 
                 val lodestoneSection = section.getConfigurationSection("lodestone")
@@ -702,7 +632,7 @@ object ItemUtils {
                 }
 
             }
-            if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1) && this is AxolotlBucketMeta
+            if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_17_R1) && this is AxolotlBucketMeta
             ) {
                 val variantStr = section.getString("variant")
                 if (variantStr != null) {
@@ -714,31 +644,6 @@ object ItemUtils {
 
             }
         }
-        // 处理nbt
-//        val nbtSection = section.getConfigurationSection("nbt") ?: return item
-//        val map = mutableMapOf<String, Any>()
-//        fun deepFor(config: ConfigurationSection, map: MutableMap<String, Any>) {
-//            for ((key, value) in config.getValues(false)) {
-//                if (value is ConfigurationSection) {
-//                    val newMap = mutableMapOf<String, Any>()
-//                    map[key] = newMap
-//                    deepFor(value, newMap)
-//                    continue
-//                }
-//                map[key] = value
-//            }
-//        }
-//        deepFor(nbtSection, map)
-//        val nbtCompound = NBTEditor.getNBTCompound(item, "tag")
-//        map.forEach { (k, v) ->
-//            if (v is Map<*, *>) {
-//                val toJson = NBTCompound.fromJson(Gson().toJson(v))
-//                nbtCompound.set(toJson, k)
-//            } else
-//                nbtCompound.set(v, k)
-//        }
-//        item = NBTEditor.set(item, nbtCompound)
-//        println(NBTEditor.getNBTCompound(item, "tag").toJson())
         return item
     }
 
