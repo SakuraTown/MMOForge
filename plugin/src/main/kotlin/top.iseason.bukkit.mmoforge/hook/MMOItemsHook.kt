@@ -5,10 +5,11 @@
  *
  */
 
-package top.iseason.bukkittemplate.hook
+package top.iseason.bukkit.mmoforge.hook
 
 import net.Indyuce.mmoitems.MMOItems
 import org.bukkit.inventory.ItemStack
+import top.iseason.bukkittemplate.hook.BaseHook
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils
 
 object MMOItemsHook : BaseHook("MMOItems") {

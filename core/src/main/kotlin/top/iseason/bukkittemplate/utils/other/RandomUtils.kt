@@ -47,13 +47,13 @@ object RandomUtils {
      * 给定判断给定概率是否生效
      * @return 满足概率返回false,否之返回true
      */
-    fun checkPercentage(percent: Int) = getDouble(end = 100.0) > percent
+    fun checkPercentage(percent: Int) = getDouble(end = 100.0) >= percent
 
     /**
      * 给定判断给定概率是否生效
      * @return 满足概率返回false,否之返回true
      */
-    fun checkPercentage(percent: Double) = getDouble(end = 100.0) > percent
+    fun checkPercentage(percent: Double) = getDouble(end = 100.0) >= percent
 
     /**
      * 获取以0为对称轴，范围为(-1,1)的高斯分布

@@ -34,9 +34,9 @@ import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.decrease
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getDisplayName
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
-import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
 import top.iseason.bukkittemplate.utils.other.RandomUtils
+import top.iseason.bukkittemplate.utils.other.submit
 
 /**
  * 突破界面

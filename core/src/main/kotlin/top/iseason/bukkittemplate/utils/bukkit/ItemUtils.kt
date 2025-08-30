@@ -90,13 +90,19 @@ object ItemUtils {
     /**
      * 检查材质是否是空气
      */
-    fun Material.checkAir(): Boolean = when (this.name) {
-        "AIR",
-        "VOID_AIR",
-        "CAVE_AIR",
-        "LEGACY_AIR" -> true
+    fun Material.checkAir(): Boolean {
+        return if (MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_13_R1)) {
+            when (this) {
+                Material.AIR,
+                Material.CAVE_AIR,
+                Material.VOID_AIR,
+                Material.LEGACY_AIR -> true
 
-        else -> false
+                else -> false
+            }
+        } else {
+            this == Material.AIR
+        }
     }
 
     /**
@@ -222,7 +228,8 @@ object ItemUtils {
                 // 附魔书附魔
                 is EnchantmentStorageMeta ->
                     if (hasStoredEnchants()) {
-                        yaml.createSection("stored-enchants",
+                        yaml.createSection(
+                            "stored-enchants",
                             storedEnchants.mapKeys { it.key.key })
                     }
 
@@ -314,9 +321,9 @@ object ItemUtils {
             //老版本刷怪蛋 1.13 以下
             if (!MinecraftVersion.isNewerThan(MinecraftVersion.MC1_13_R1)) {
                 if (!MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_11_R1)) {
-                    if (data is SpawnEgg) yaml["creature"] = (data as SpawnEgg).spawnedType.getName()
+                    if (data is SpawnEgg) yaml["creature"] = (data as SpawnEgg).spawnedType.name
                 } else if (this is SpawnEggMeta) {
-                    yaml["creature"] = spawnedType.getName()
+                    yaml["creature"] = spawnedType.name
                 }
             }
 
@@ -518,7 +525,7 @@ object ItemUtils {
 
                 is MapMeta -> {
                     val mapSection = section.getConfigurationSection("map")
-                    isScaling = mapSection?.getBoolean("scaling") ?: false
+                    isScaling = mapSection?.getBoolean("scaling") == true
                     if (mapSection != null && MinecraftVersion.isAtLeastVersion(MinecraftVersion.MC1_11_R1)
                     ) {
                         mapSection.getString("location")?.also { locationName = it.toColor() }
@@ -528,14 +535,14 @@ object ItemUtils {
                     ) {
                         mapSection.getConfigurationSection("view")?.also {
                             runCatching {
-                                val mapView = Bukkit.createMap(Bukkit.getWorld(it.getString("world")!!)!!)
-                                mapView.scale = MapView.Scale.valueOf(it.getString("scale")!!)
-                                mapView.centerX = it.getString("center")!!.split(',')[0].toInt()
-                                mapView.centerZ = it.getString("center")!!.split(',')[1].toInt()
-                                mapView.isLocked = it.getBoolean("locked")
-                                mapView.isTrackingPosition = it.getBoolean("tracking-position")
-                                mapView.isUnlimitedTracking = it.getBoolean("unlimited-tracking")
-                                setMapView(mapView)
+                                val mapView2 = Bukkit.createMap(Bukkit.getWorld(it.getString("world")!!)!!)
+                                mapView2.scale = MapView.Scale.valueOf(it.getString("scale")!!)
+                                mapView2.centerX = it.getString("center")!!.split(',')[0].toInt()
+                                mapView2.centerZ = it.getString("center")!!.split(',')[1].toInt()
+                                mapView2.isLocked = it.getBoolean("locked")
+                                mapView2.isTrackingPosition = it.getBoolean("tracking-position")
+                                mapView2.isUnlimitedTracking = it.getBoolean("unlimited-tracking")
+                                mapView = mapView2
                             }
                         }
                     }

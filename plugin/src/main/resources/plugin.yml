@@ -25,5 +25,6 @@ runtime-libraries:
 #    - org.jetbrains.exposed:exposed-jdbc:${exposedVersion}
 #    - org.jetbrains.exposed:exposed-java-time:${exposedVersion}
 #    - com.zaxxer:HikariCP:4.0.3
-
+  exclude:
+    - org.jetbrains.kotlin:kotlin-stdlib-common
 

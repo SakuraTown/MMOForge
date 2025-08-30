@@ -14,19 +14,17 @@ open class Lang(
 
     @Comment(
         "",
-        "消息留空将不会显示，使用 换行符 可以换行",
+        "消息留空将不会显示，使用 '\\n' 或换行符 可以换行",
         "支持 & 颜色符号，1.17以上支持16进制颜色代码，如 #66ccff",
         "{0}、{1}、{2}、{3} 等格式为该消息独有的变量占位符",
         "所有消息支持PlaceHolderAPI",
-        "以下是一些特殊消息, 大小写不敏感，可以通过 多行 自由组合",
+        "以下是一些特殊消息, 大小写不敏感，可以通过 \\n 自由组合",
         "以 [Broadcast] 开头将以广播的形式发送，支持BungeeCord",
         "以 [Actionbar] 开头将发送ActionBar消息",
         "以 [Title] 开头将发送标题消息,格式为 大标题\\n小标题",
         "以 [Command] 开头将以消息接收者的身份运行命令",
         "以 [Console] 开头将以控制台的身份运行命令",
-        "以 [OP-Command] 开头将赋予消息接收者临时op运行命令 (慎用)",
-        "以 [Sound] 开头将播放声音,格式 name[,volume,pitch] name 在这选 https://bukkit.windit.net/javadoc/org/bukkit/Sound.html",
-        "以 [Sound] 例子 BLOCK_ANVIL_BREAK 或者 BLOCK_ANVIL_BREAK,1.0 或者 BLOCK_ANVIL_BREAK,0.5,1.0"
+        "以 [OP-Command] 开头将赋予消息接收者临时op运行命令 (慎用)"
     )
     var readme = ""
 

@@ -2,10 +2,26 @@ plugins {
     kotlin("jvm")
     id("com.gradleup.shadow")
 }
-
+buildscript {
+    dependencies {
+        classpath("com.guardsquare:proguard-gradle:7.7.0")
+    }
+}
 repositories {
     maven {
         url = uri("https://nexus.phoenixdevt.fr/repository/maven-public/")
+    }
+    maven {
+        name = "MMOItems"
+        url = uri("https://nexus.phoenixdevt.fr/repository/maven-public/")
+    }
+    maven {
+        name = "jitpack"
+        url = uri("https://www.jitpack.io")
+    }
+    maven {
+        name = "Oraxen"
+        url = uri("https://repo.oraxen.com/releases")
     }
     mavenCentral()
 }
@@ -22,7 +38,9 @@ dependencies {
     // 本地依赖放在libs文件夹内
     compileOnly(fileTree("libs") { include("*.jar") })
     implementation("org.bstats:bstats-bukkit:3.0.1")
-    compileOnly("net.Indyuce:MMOItems-API:6.10-SNAPSHOT") { isTransitive = false }
+    compileOnly("net.Indyuce:MMOItems-API:6.10.1-SNAPSHOT") { isTransitive = false }
+    compileOnly("com.github.LoneDev6:api-itemsadder:3.4.1-r4") { isTransitive = false }
+    compileOnly("io.th0rgal:oraxen:1.189.0") { isTransitive = false }
     compileOnly("io.lumine:MythicLib-dist:1.6.2-SNAPSHOT") { isTransitive = false }
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") { isTransitive = false }
     compileOnly("me.clip:placeholderapi:2.11.6")
@@ -55,7 +73,7 @@ val obfuscatedMainClass =
     } else "a"
 val isObfuscated = obfuscated == "true"
 val shrink: String by rootProject
-val formatJarOutput = jarOutputFile.replace("\${root}", rootProject.projectDir.absolutePath)
+val formatJarOutput = jarOutputFile.replace($$"${root}", rootProject.projectDir.absolutePath)
 val output: File =
     if (isObfuscated)
         File(formatJarOutput, "${rootProject.name}-${rootProject.version}-obfuscated.jar").absoluteFile

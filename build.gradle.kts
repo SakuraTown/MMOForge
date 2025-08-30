@@ -3,20 +3,10 @@ plugins {
     id("com.gradleup.shadow")
 }
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.5.0")
-    }
-}
-
 subprojects {
     group = rootProject.group
     version = rootProject.version
     apply {
-        plugin<com.github.jengelman.gradle.plugins.shadow.ShadowPlugin>()
         plugin<JavaPlugin>()
         plugin<JavaLibraryPlugin>()
     }

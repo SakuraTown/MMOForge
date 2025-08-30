@@ -13,8 +13,7 @@ import net.Indyuce.mmoitems.api.ConfigFile
 import net.Indyuce.mmoitems.manager.ConfigManager
 import top.iseason.bukkit.mmoforge.command.mainCommands
 import top.iseason.bukkit.mmoforge.config.*
-import top.iseason.bukkit.mmoforge.hook.PAPIHook
-import top.iseason.bukkit.mmoforge.hook.VaultHook
+import top.iseason.bukkit.mmoforge.hook.*
 import top.iseason.bukkit.mmoforge.listener.MMOListener
 import top.iseason.bukkit.mmoforge.stats.BreakChance
 import top.iseason.bukkit.mmoforge.stats.ForgeChance
@@ -26,9 +25,6 @@ import top.iseason.bukkittemplate.BukkitPlugin
 import top.iseason.bukkittemplate.command.CommandHandler
 import top.iseason.bukkittemplate.config.SimpleYAMLConfig
 import top.iseason.bukkittemplate.debug.info
-import top.iseason.bukkittemplate.hook.ItemsAdderHook
-import top.iseason.bukkittemplate.hook.MMOItemsHook
-import top.iseason.bukkittemplate.hook.OraxenHook
 import top.iseason.bukkittemplate.ui.UIListener
 import top.iseason.bukkittemplate.utils.bukkit.EventUtils.registerListener
 

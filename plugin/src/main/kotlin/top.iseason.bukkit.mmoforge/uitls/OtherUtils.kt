@@ -8,9 +8,10 @@
 package top.iseason.bukkit.mmoforge.uitls
 
 import top.iseason.bukkit.mmoforge.config.MainConfig
+import kotlin.math.min
 
 fun getProcessBar(size: Int, current: Double, max: Double): String {
-    val fillCount = ((current / max) * size).toInt()
+    val fillCount = min(((current / max) * size).toInt(), size)
     return "${MainConfig.forgeProgressChar.repeat(fillCount)}${" ".repeat(size - fillCount)}"
 }
 

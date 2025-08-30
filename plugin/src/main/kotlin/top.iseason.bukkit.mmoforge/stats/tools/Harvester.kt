@@ -19,7 +19,7 @@ import org.bukkit.scheduler.BukkitTask
 import top.iseason.bukkit.mmoforge.event.MMOBlockBreakEvent
 import top.iseason.bukkit.mmoforge.uitls.getFlatBlocksByMatrix
 import top.iseason.bukkit.mmoforge.uitls.isHoe
-import top.iseason.bukkittemplate.utils.bukkit.SchedulerUtils.submit
+import top.iseason.bukkittemplate.utils.other.submit
 
 object Harvester : MMOAttribute(
     "HARVESTER",

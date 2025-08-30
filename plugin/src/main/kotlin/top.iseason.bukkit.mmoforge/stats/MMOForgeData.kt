@@ -103,7 +103,16 @@ data class MMOForgeData(
      * 获取当前强化等级升级所需要的经验
      */
     fun getForgeUpdateExp() =
-        MainConfig.getValueByFormula(MainConfig.getForgeExpression(forge), star, forge, limit, refine)
+        MainConfig.getValueByFormula(
+            MainConfig.getForgeExpression(forge),
+            star,
+            forge = forge,
+            limit = limit,
+            refine = refine,
+            nowForge = forge,
+            nowLimit = limit,
+            nowRefine = refine
+        )
 
     /**
      * 获取升级所需的经验
@@ -128,7 +137,9 @@ data class MMOForgeData(
                 star = star,
                 nowForge = fl,
                 forge = fl,
+                limit = limit,
                 nowLimit = limit,
+                refine = refine,
                 nowRefine = refine
             )
             //剩余的经验加上本身拥有的 是否能够升级

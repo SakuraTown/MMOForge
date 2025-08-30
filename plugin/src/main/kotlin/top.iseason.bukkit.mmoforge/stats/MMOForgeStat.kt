@@ -76,7 +76,11 @@ object MMOForgeStat : ItemStat<MMOForgeData, MMOForgeData>(
     }
 
     override fun whenApplied(item: ItemStackBuilder, statData: MMOForgeData) {
-        item.lore.insert(this.path, MainConfig.getItemLore(statData))
+        try {
+            item.lore.insert(this.path, MainConfig.getItemLore(statData))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
 //        MainConfig.getItemLore(statData).forEach {
 ////            item.lore.lore.add(it)
 //            item.lore.end(it)
