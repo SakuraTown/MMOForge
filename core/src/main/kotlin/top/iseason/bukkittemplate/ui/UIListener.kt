@@ -86,7 +86,10 @@ object UIListener : Listener {
         }
         var isCancelled = false
         val rawSlot = event.rawSlot
-
+        if (event.action == COLLECT_TO_CURSOR) {
+            event.isCancelled = true
+            return
+        }
         val clickedClickSlot: ClickSlot? = baseUI.getSlot(rawSlot) as? ClickSlot
 
         // 上下锁
@@ -118,7 +121,9 @@ object UIListener : Listener {
 
     @EventHandler
     fun onInventoryDragEvent(event: InventoryDragEvent) {
-        runCatching { event.ioEvent() }.getOrElse { it.printStackTrace() }
+        if (BaseUI.fromInventory(event.inventory) != null) {
+            event.isCancelled = true
+        }
     }
 
 }
