@@ -169,6 +169,8 @@ fun LiveMMOItem.refine(data: MMOForgeData, times: Int) {
             data.refineGain != null
         )
     }
+    if (hasUpgradeTemplate())
+        upgradeTemplate.upgradeTo(this, refine + times)
 }
 
 /**

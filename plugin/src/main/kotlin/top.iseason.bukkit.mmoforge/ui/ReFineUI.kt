@@ -21,7 +21,6 @@ import top.iseason.bukkit.mmoforge.stats.MMOForgeStat
 import top.iseason.bukkit.mmoforge.stats.RefineChance
 import top.iseason.bukkit.mmoforge.uitls.getForgeData
 import top.iseason.bukkit.mmoforge.uitls.refine
-import top.iseason.bukkit.mmoforge.uitls.setName
 import top.iseason.bukkittemplate.ui.container.ChestUI
 import top.iseason.bukkittemplate.ui.slot.*
 import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.applyMeta
@@ -29,7 +28,6 @@ import top.iseason.bukkittemplate.utils.bukkit.ItemUtils.getDisplayName
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.formatBy
 import top.iseason.bukkittemplate.utils.bukkit.MessageUtils.sendColorMessage
 import top.iseason.bukkittemplate.utils.other.EasyCoolDown
-import top.iseason.bukkittemplate.utils.other.NumberUtils.toRoman
 import top.iseason.bukkittemplate.utils.other.RandomUtils
 import top.iseason.bukkittemplate.utils.other.submit
 
@@ -235,9 +233,6 @@ class ReFineUI(val player: Player) : ChestUI(
         resultSlot.outputAble(false)
         val buildSilently = mmoItem.newBuilder().build()
 //        println(NBTItem.get(buildSilently).tags.contains("MMOITEMS_FIRE_DAMAGE"))\
-        buildSilently?.applyMeta {
-            setName("$displayName ${forgeData.refine.toRoman()}")
-        }
         resultSlot.itemStack = buildSilently
     }
 

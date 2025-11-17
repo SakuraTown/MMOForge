@@ -308,10 +308,7 @@ class BreakThroughUI(val player: Player) : ChestUI(
         outputSlot.ejectSilently(player)
         //上锁
         outputSlot.outputAble(false)
-        val oldName = itemStack.getDisplayName()
-        outputSlot.itemStack = liveMMOItem.newBuilder().build()?.applyMeta {
-            setDisplayName(oldName)
-        }
+        outputSlot.itemStack = liveMMOItem.newBuilder().build()
         val modelDataHis = liveMMOItem.getStatHistory(ItemStats.CUSTOM_MODEL_DATA)
         if (modelDataHis != null) {
             val modelData = modelDataHis.recalculate(liveMMOItem.upgradeLevel) as DoubleData

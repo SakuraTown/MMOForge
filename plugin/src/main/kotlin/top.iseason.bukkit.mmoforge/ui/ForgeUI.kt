@@ -264,10 +264,7 @@ class ForgeUI(val player: Player) : ChestUI(
         liveMMOItem.setData(MMOForgeStat, forgeData)
         resultSlot.ejectSilently(player)
         resultSlot.outputAble(false)
-        val oldName = inputItem.getDisplayName()
-        resultSlot.itemStack = liveMMOItem.newBuilder().build()?.applyMeta {
-            setDisplayName(oldName)
-        }
+        resultSlot.itemStack = liveMMOItem.newBuilder().build()
         ForgeUIConfig.slots["allow-forge"]?.forEach { (item, indexes) ->
             val stack = PAPIHook.setPlaceHolderAndColor(item.clone(), player).applyMeta {
                 if (hasDisplayName()) setDisplayName(
