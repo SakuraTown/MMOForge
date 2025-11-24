@@ -36,6 +36,10 @@ abstract class MMOAttribute(
 ) : SimpleYAMLConfig(defaultPath = defaultPath), Listener {
     var loreKey: String = mID.lowercase().replace('_', '-')
 
+    @Comment("当数值为0时，不显示lore")
+    @Key
+    var hideZeroLore: Boolean = true
+
     @Comment("格式字符，负责翻译lore")
     @Key("loreFormat")
     var loreFormat: String = format
@@ -71,7 +75,7 @@ abstract class MMOAttribute(
                     upgradeShift = value - uData.value
                 }
             }
-            if (value != 0.0 || upgradeShift != 0.0) {
+            if (value != 0.0 || !hideZeroLore) {
                 var loreInsert: String? = formatLore(this, data)
                 if (upgradeShift != 0.0) loreInsert += MythicLib.plugin.parseColors(
                     UpgradeTemplate.getUpgradeChangeSuffix(
@@ -83,9 +87,7 @@ abstract class MMOAttribute(
                 )
                 item.lore.insert(path, loreInsert)
             }
-            if (data.value != 0.0) {
-                item.addItemTag(getAppliedNBT(data))
-            }
+            item.addItemTag(getAppliedNBT(data))
         }
     }
 }
