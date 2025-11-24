@@ -20,6 +20,7 @@ mmoforge 别名 `mf`, `mforge`, `mmof`
 
 结构如下
 
+~~~ text
 MMOForge
 │ config.yml #插件主配置
 │
@@ -44,6 +45,7 @@ MMOForge
 break_through.yml
 forge.yml
 refine.yml
+~~~ 
 
 ### MMOItems 配置
 
@@ -61,6 +63,14 @@ LONG_SWORD:
       spread: 0.1
       max-spread: 0.3
       
+    # 用于概率的mi属性 
+    # 值是小数 100.0=必定成功
+    # 给具有forge-attribute属性的物品就是该物品默认的强化/突破/精炼概率，没配置就是 100.0
+    # 给材料配置可以用于加成概率
+    forge-chance: 20.0   # 强化概率
+    break-chance: 20.0   # 突破概率
+    refine-chance: 20.0  # 精炼概率
+
     forge-attribute: # 本插件支持的属性名
       star: 3  # 星级, 必选，否则视为不可强化、精炼、突破的物品
       
@@ -71,6 +81,7 @@ LONG_SWORD:
       max-refine: 5 # 最大精炼等级
       max-limit: 20  # 最大突破等级
       max-forge: 100  # 最大强化等级
+      
       
       gain-refine: # 强化增益，具体看下面
         '1':
